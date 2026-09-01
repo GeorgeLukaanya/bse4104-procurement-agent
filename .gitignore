@@ -216,3 +216,13 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- Project ---
+.env
+*.env.local
+__pycache__/
+.venv/
+venv/
+.DS_Store
+evidence/**/*.tmp
+knowledge/data/*.restricted.*

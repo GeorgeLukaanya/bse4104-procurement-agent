@@ -226,3 +226,5 @@ venv/
 .DS_Store
 evidence/**/*.tmp
 knowledge/data/*.restricted.*
+BSE4104 AI Agentic Capstone Assignment (1).docx*
+.kiro/*

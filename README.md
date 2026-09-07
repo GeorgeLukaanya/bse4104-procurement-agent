@@ -49,7 +49,7 @@ records are used anywhere in this project.
 
 | Role | Member |
 |---|---|
-| Project / Requirements Lead | |
+| Project / Requirements Lead |Shakiran Nannyombi |
 | Application / Integration Lead | |
 | AI Engineering Lead | |
 | Quality / Security Lead | |

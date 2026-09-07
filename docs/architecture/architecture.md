@@ -1,6 +1,6 @@
-# Architecture — context diagram
+# Architecture / context diagram
 
-![Context diagram of the SME procurement-preparation agent](context-diagram.png)
+![Context diagram of the SME procurement-preparation agent](context-diagram.svg)
 
 *Context diagram of the SME procurement-preparation agent.*
 

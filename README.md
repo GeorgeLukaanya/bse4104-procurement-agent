@@ -1,7 +1,6 @@
 # SME Procurement-Preparation Agent
 
-BSE4104 Emerging Trends in Software Engineering — AI-Native & Agentic Engineering Capstone
-Makerere University, College of Computing and Information Sciences
+**AI-Native & Agentic Engineering Capstone** under BSE4104 Emerging Trends in Software Engineering, Makerere University, College of Computing and Information Sciences
 
 ## What this is
 
@@ -16,7 +15,7 @@ purchase order, contacts a supplier, commits funds or approves anything itself.
 
 ## Status
 
-Week 1 of 8 — problem framing and requirements.
+Week 1 of 8: problem framing and requirements.
 
 ## Repository layout
 
@@ -47,13 +46,15 @@ records are used anywhere in this project.
 
 ## Team
 
-| Role | Member |
-|---|---|
-| Project / Requirements Lead |Shakiran Nannyombi |
-| Application / Integration Lead | |
-| AI Engineering Lead | |
-| Quality / Security Lead | |
-| DevOps / Documentation Lead | |
+Group Y — BSE4104.
+
+| Role | Member | GitHub |
+|---|---|---|
+| Project / Requirements Lead | Nannyombi Shakiran | [Shakiran-Nannyombi](https://github.com/Shakiran-Nannyombi) |
+| Application / Integration Lead | Ainamani Jim Isaac | [Jimisaq](https://github.com/Jimisaq) |
+| AI Engineering Lead | Beingana Jim Junior | [jim-junior](https://github.com/jim-junior) |
+| Quality / Security Lead | Sekyeza Elroy Nunda | [NundaElroy](https://github.com/NundaElroy) |
+| DevOps / Documentation Lead | Lukaanya George | [GeorgeLukaanya](https://github.com/GeorgeLukaanya) |
 
 Roles rotate. Every member is accountable for explaining any part of the system.
 
@@ -66,4 +67,4 @@ before merge, and every team member can explain the work submitted under their n
 
 ## Task board
 
-ClickUp: [link]
+ClickUp: [Group Y board](https://app.clickup.com/9012272120/v/s/90129079418)

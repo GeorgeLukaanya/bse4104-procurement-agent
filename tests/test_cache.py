@@ -39,22 +39,23 @@ def test_changing_the_model_invalidates_the_cache(make_extractor):
 
 
 def test_changing_the_prompt_version_invalidates_the_cache(make_extractor):
-    """The defect this prevents: serving a v1.0 result as though it were v1.1.
+    """The defect this prevents: serving one prompt version's result as another's.
 
     Keyed on the document alone, the second extraction below would return the
-    record produced under prompt version 1.0 and report it against 1.1, and
+    record produced under the current prompt version and report it against the
+    bumped one, and
     every accuracy figure computed from the cache would attribute one prompt's
     behaviour to another with nothing in the output to show it.
     """
     backend = StubBackend()
     make_extractor(backend).extract(MARKDOWN, source="q.md")
 
-    bumped = ExtractionConfig(prompt_version="1.1")
+    bumped = ExtractionConfig(prompt_version="1.2")
     result = make_extractor(backend, config=bumped).extract(MARKDOWN, source="q.md")
 
     assert backend.call_count == 2
     assert result.cache_hit is False
-    assert result.config_fingerprint["prompt_version"] == "1.1"
+    assert result.config_fingerprint["prompt_version"] == "1.2"
 
 
 def test_every_fingerprint_field_changes_the_key():

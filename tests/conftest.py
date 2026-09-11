@@ -37,8 +37,16 @@ FIXTURES_DIR = ROOT / "fixtures"
 
 @pytest.fixture(autouse=True)
 def no_api_key(monkeypatch):
-    """Guarantee no key is visible to any test, so nothing can call out."""
+    """Guarantee no key is visible to any test, so nothing can call out.
+
+    The model variables are cleared for a different reason: they are not a
+    safety risk, but a developer with MODEL_NAME exported would otherwise see
+    the fingerprint assertions fail against their own shell rather than against
+    the pinned default.
+    """
     for name in ("GEMINI_API_KEY", "GOOGLE_API_KEY", "MODEL_API_KEY"):
+        monkeypatch.delenv(name, raising=False)
+    for name in ("MODEL_NAME", "GEMINI_MODEL"):
         monkeypatch.delenv(name, raising=False)
 
 

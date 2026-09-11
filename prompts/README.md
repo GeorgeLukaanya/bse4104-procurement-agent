@@ -8,4 +8,4 @@ evaluation results recorded against the old version.
 
 | File | Purpose |
 |---|---|
-| [`quotation-extraction-v1.md`](quotation-extraction-v1.md) | Prompt Specification v1.0 and version history (Week 2) |
+| [`quotation-extraction-v1.md`](quotation-extraction-v1.md) | Prompt Specification v1.1 and version history (Week 2) |

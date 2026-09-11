@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "procurement-agent"
+version = "0.2.0"
+description = "Quotation field extraction baseline for the SME Procurement-Preparation Agent"
+requires-python = ">=3.10"
+# No application framework. Project Charter v1.1 has not chosen one, and Week 2
+# must not force that decision.
+dependencies = []
+
+[project.optional-dependencies]
+# The provider SDK is optional so that the test suite installs and runs without
+# it, with no API key and no network.
+gemini = ["google-genai>=1.0"]
+dev = ["pytest>=7.0"]
+
+[project.scripts]
+procurement-extract = "procurement_agent.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"

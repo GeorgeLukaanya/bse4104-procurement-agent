@@ -2,6 +2,9 @@
 # These rules pass today (the functions do not exist) and fail CI if someone
 # adds a tool or helper that issues a purchase order, messages a supplier, or
 # commits funds. That is a hard gate (S7/S8), not a style preference.
+#
+# Patterns must be valid Python: a def with no body is a parse error, which
+# makes `semgrep --error` fail the job even when there are zero findings.
 rules:
   - id: procurement-no-purchase-order-helper
     languages: [python]
@@ -10,10 +13,18 @@ rules:
       The charter forbids issuing a purchase order. Do not add a helper,
       tool, or API that places an order. Purchasing happens outside the agent.
     pattern-either:
-      - pattern: def issue_purchase_order(...)
-      - pattern: def create_purchase_order(...)
-      - pattern: def send_purchase_order(...)
-      - pattern: def place_order(...)
+      - pattern: |
+          def issue_purchase_order(...):
+              ...
+      - pattern: |
+          def create_purchase_order(...):
+              ...
+      - pattern: |
+          def send_purchase_order(...):
+              ...
+      - pattern: |
+          def place_order(...):
+              ...
 
   - id: procurement-no-supplier-contact-helper
     languages: [python]
@@ -22,10 +33,18 @@ rules:
       The charter forbids contacting suppliers. Do not add a helper that
       emails, messages, or otherwise reaches a supplier.
     pattern-either:
-      - pattern: def contact_supplier(...)
-      - pattern: def email_supplier(...)
-      - pattern: def message_supplier(...)
-      - pattern: def send_supplier_message(...)
+      - pattern: |
+          def contact_supplier(...):
+              ...
+      - pattern: |
+          def email_supplier(...):
+              ...
+      - pattern: |
+          def message_supplier(...):
+              ...
+      - pattern: |
+          def send_supplier_message(...):
+              ...
 
   - id: procurement-no-funds-commitment-helper
     languages: [python]
@@ -34,7 +53,15 @@ rules:
       The charter forbids committing funds. Do not add a helper that pays,
       disburses, or books a financial commitment.
     pattern-either:
-      - pattern: def commit_funds(...)
-      - pattern: def initiate_payment(...)
-      - pattern: def disburse(...)
-      - pattern: def book_financial_commitment(...)
+      - pattern: |
+          def commit_funds(...):
+              ...
+      - pattern: |
+          def initiate_payment(...):
+              ...
+      - pattern: |
+          def disburse(...):
+              ...
+      - pattern: |
+          def book_financial_commitment(...):
+              ...

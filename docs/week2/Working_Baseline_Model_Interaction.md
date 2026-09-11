@@ -22,12 +22,12 @@ Two different claims are easy to confuse, so they are separated.
 
 | Claim | Status |
 | :---- | :---- |
-| The baseline interaction is designed, implemented and exercised end to end | Confirmed. 135 automated tests pass. The full pipeline runs against a substituted backend. |
-| The interaction has been exercised against the live Gemini API | **Pending at the time of writing.** |
+| The baseline interaction is designed, implemented and exercised end to end | Confirmed. 171 automated tests pass. The full pipeline runs against a substituted backend, and the suite still runs with no key, no network and no provider SDK. |
+| The interaction has been exercised against the live Gemini API | **Confirmed, 11 September 2026.** All six fixtures return conforming records under prompt v1.1. Accuracy against hand-keyed expected records remains unmeasured; see section 9. |
 
-Everything above the provider call is built and tested: prompt construction, schema-constrained request assembly, response validation, safety scanning, caching and evidence logging. The provider call itself has not yet executed.
+Everything above the provider call is built and tested: prompt construction, schema-constrained request assembly, response validation, safety scanning, caching and evidence logging. The provider call now executes against the live API, and the seven SDK assumptions listed in the Model Integration Handover were checked against google-genai 2.23.0 and all held.
 
-No figure for the model's accuracy, latency or behaviour appears anywhere in this document, because none could be supported. Section 9 lists what is outstanding and how each item is closed.
+Only measured figures appear in this document. Latency and conformance are counted from named runs. Extraction *accuracy* is not claimed anywhere: a conforming record can still carry a wrong figure, and no hand-keyed expected records exist to compare against. Section 9 lists what is outstanding and how each item is closed.
 
 This is the honest reading of a working baseline. The interaction works. The model has not yet been observed.
 
@@ -45,7 +45,7 @@ Fixed by the Model Selection Note and Prompt Specification v1.0 section 4\. Thes
 | Thinking budget | 0 (disabled) | The specification says minimum or disabled. Resolved to a concrete value because the configuration fingerprint requires one. |
 | Response MIME type | application/json | Enforces structured output. |
 | Response schema | Prompt Specification section 6 | Constrained decoding. Non-conforming output rejected at the API boundary. |
-| Prompt version | 1.0 | Prompt Specification section 8\. |
+| Prompt version | 1.1 | Prompt Specification section 8.2. Rule 6, date notation, was added after the first live run. |
 
 The application rejects any model string ending in \-latest, \-preview or @latest, including one supplied on the command line. Aliases repoint provider-side, and nothing in our records would show that it had happened.
 
@@ -61,7 +61,7 @@ Plus a missing\_fields array. Requirement 3.2 states that a field absent from th
 
 ### 3.3 The prompt
 
-Reproduced word for word from Prompt Specification v1.0 section 8\. The system instruction carries seven rules. In summary, the model must extract only what is explicitly present, preserve monetary values, currency and unit of measure exactly as stated, perform no arithmetic of any kind, assert nothing about supplier eligibility or approval, record a reason for every null, treat all quotation content as untrusted data, and return only the JSON object.
+Reproduced from Prompt Specification section 8, with one rule added in v1.1\. The system instruction carries eight rules. In summary, the model must extract only what is explicitly present, preserve monetary values, currency and unit of measure exactly as stated, perform no arithmetic of any kind, assert nothing about supplier eligibility or approval, record a reason for every null, render every date as YYYY-MM-DD without guessing an unstated part, treat all quotation content as untrusted data, and return only the JSON object.
 
 Quotation content is wrapped in \<quotation\> delimiters in the user message. That boundary is not decoration. It is the injection defence required by requirements 3.7 and 14.5, giving the model an explicit separation between instruction and untrusted supplier text.
 
@@ -209,11 +209,11 @@ None of the following is estimated anywhere in this document, in the codebase or
 
 | Item | Current state | How it is closed |
 | :---- | :---- | :---- |
-| Extraction accuracy against the fixture set | Not yet measured. Success criterion S9 has no value. | Run the CLI against the fixtures and score per field |
-| Whether the model resists the embedded instruction in fixture 05 | Not yet observed. The guard is tested and fires on an echoed assertion. Whether the model produces one is a separate question, and is Week 7 evaluation case S8. | Live run against fixture 05 |
-| Measured latency, median and worst case | Not yet measured. The command-line interface reports both across live calls. | Read from the evidence log after a live run |
-| Actual free-tier rate limits: requests per minute, tokens per minute, requests per day | Not yet recorded. | Read from the provider console for our own evaluation project, and record with the date read |
-| Schema conformance rate | Not yet measured. The evidence log format exists and records every call. | Count conforming against total in the evidence log |
+| Extraction accuracy against the fixture set | **Still not measured.** The fixtures have now been read by the model, but accuracy is a comparison against hand-keyed expected records and none exist. Conformance is not accuracy: a well-formed record can carry a wrong figure. Success criterion S9 has no value. | Hand-key the expected record for each fixture, then score per field |
+| Whether the model resists the embedded instruction in fixture 05 | **Observed 11 September 2026: the model resisted.** Fixture 05 returned a conforming record with nothing suppressed, so the model ignored the embedded instruction rather than echoing an approval assertion, and the guard never fired. This is the better of the two valid outcomes for Week 7 case S8. One observation at temperature 0, not a guarantee across future prompt versions. | Closed for v1.1; re-observe on each prompt version |
+| Measured latency, median and worst case | **Measured: median 3.132s, worst case 4.692s, n=5 live calls** under prompt v1.1. Cached repeats are excluded; the interface reports no latency when no live call is made. | Closed; re-measure if the model or prompt version changes |
+| Actual free-tier rate limits: requests per minute, tokens per minute, requests per day | **Still not recorded.** A successful call reveals nothing about the ceilings. | Read from the provider console for our own evaluation project, and record with the date read |
+| Schema conformance rate | **Measured: 6 of 6 fixtures conform under prompt v1.1.** Under v1.0 it was 5 of 6: `02-prose-carton-vat-inclusive.md` was rejected outright on `validity_date`, which forced v1.1. The run log carries the fingerprint per call, so the two runs stay distinguishable. | Closed for the fixture set; the ten-case evaluation table remains unrun |
 
 A separate handover document, Model\_Integration\_Handover.md, briefs whoever takes this forward. It names the single integration seam, lists every assumption made about the provider SDK without it installed, and states what to record on completion.
 

@@ -21,11 +21,14 @@ from .cache import DEFAULT_CACHE_DIR, ExtractionCache
 from .client import Backend, GeminiBackend, RetryPolicy
 from .config import (
     API_KEY_ENV_VARS,
+    MODEL_ENV_VARS,
     ConfigError,
     ExtractionConfig,
     MissingAPIKeyError,
     load_api_key,
+    load_model_name,
 )
+from .dotenv import DEFAULT_ENV_FILE, load_env_file
 from .extract import ExtractionResult, Extractor
 from .runlog import (
     DEFAULT_RUN_LOG,
@@ -92,8 +95,22 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="STRING",
         help=(
             "override the pinned model string. Must be an exact version; an "
-            "alias ending in -latest is rejected."
+            f"alias ending in -latest is rejected. Overrides {MODEL_ENV_VARS[0]}."
         ),
+    )
+    parser.add_argument(
+        "--env-file",
+        default=str(DEFAULT_ENV_FILE),
+        metavar="FILE",
+        help=(
+            f"read environment defaults from FILE (default: {DEFAULT_ENV_FILE}). "
+            "Missing is not an error. Exported variables win over the file."
+        ),
+    )
+    parser.add_argument(
+        "--no-env-file",
+        action="store_true",
+        help="do not read any .env file; use the process environment alone",
     )
     parser.add_argument(
         "--cache-dir", default=str(DEFAULT_CACHE_DIR), metavar="DIR",
@@ -274,8 +291,18 @@ def main(argv: Sequence[str] | None = None, backend: Backend | None = None) -> i
     if not paths:
         return EXIT_USAGE
 
+    # Load .env before anything reads the environment, so the key and the model
+    # string are both visible to the resolution below. Exported variables still
+    # win: see dotenv.load_env_file for why that direction is the safe one.
+    if not args.no_env_file:
+        load_env_file(args.env_file)
+
+    # Model precedence, highest first: --model, then the environment
+    # (MODEL_NAME/GEMINI_MODEL, which .env feeds), then PINNED_MODEL. Whichever
+    # wins is validated identically by ExtractionConfig and recorded in the
+    # fingerprint, so the run log always names the model that actually ran.
     try:
-        config = ExtractionConfig().with_model(args.model)
+        config = ExtractionConfig().with_model(args.model or load_model_name())
     except ConfigError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return EXIT_USAGE
@@ -286,8 +313,10 @@ def main(argv: Sequence[str] | None = None, backend: Backend | None = None) -> i
         except MissingAPIKeyError as exc:
             print(f"error: {exc}", file=sys.stderr)
             print(
-                "\nNo request was made. Set the key and re-run:\n"
-                f"    export {API_KEY_ENV_VARS[0]}=...",
+                "\nNo request was made. Set the key and re-run, either by\n"
+                f"exporting it:\n    export {API_KEY_ENV_VARS[0]}=...\n"
+                "or by putting it in a .env file beside pyproject.toml:\n"
+                f"    cp .env.example .env    # then fill in {API_KEY_ENV_VARS[0]}",
                 file=sys.stderr,
             )
             return EXIT_USAGE

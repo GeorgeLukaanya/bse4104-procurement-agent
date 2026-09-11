@@ -222,6 +222,12 @@ def main(argv: list[str]) -> int:
     if not _has_explicit_inputs(args):
         args = _default_fixture_args() + args
 
+    # The demo's output is meant to be identical on every machine, so it never
+    # reads a .env: a teammate with MODEL_NAME set would otherwise see a
+    # different model in the fingerprint than the one printed in the handover.
+    if "--no-env-file" not in args:
+        args.append("--no-env-file")
+
     as_json = "--json" in args
     if not as_json:
         # Written to stdout, not stderr, so it stays in order with the report

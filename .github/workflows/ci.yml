@@ -38,6 +38,9 @@ jobs:
       rag: ${{ steps.filter.outputs.rag }}
       tools: ${{ steps.filter.outputs.tools }}
       agent: ${{ steps.filter.outputs.agent }}
+      rag_tests: ${{ steps.exists.outputs.rag_tests }}
+      tool_tests: ${{ steps.exists.outputs.tool_tests }}
+      agent_tests: ${{ steps.exists.outputs.agent_tests }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -73,6 +76,18 @@ jobs:
               - 'src/**/workflow/**'
               - 'tests/test_agent*.py'
               - 'tests/test_workflow*.py'
+      # hashFiles is not valid in a job-level if; check existence here instead.
+      - name: Whether specialist test files exist
+        id: exists
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          rag=(tests/test_rag*.py tests/test_retrieval*.py)
+          tools=(tests/test_tools*.py tests/test_authorization*.py)
+          agent=(tests/test_agent*.py tests/test_workflow*.py)
+          echo "rag_tests=$([ ${#rag[@]} -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "tool_tests=$([ ${#tools[@]} -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "agent_tests=$([ ${#agent[@]} -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
   based-on-main:
     name: Branch contains origin/main
@@ -192,7 +207,7 @@ jobs:
   rag-tests:
     name: RAG tests
     needs: changes
-    if: needs.changes.outputs.rag == 'true' && hashFiles('tests/test_rag*.py', 'tests/test_retrieval*.py') != ''
+    if: needs.changes.outputs.rag == 'true' && needs.changes.outputs.rag_tests == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -208,7 +223,7 @@ jobs:
   tool-tests:
     name: Tool / authorization tests
     needs: changes
-    if: needs.changes.outputs.tools == 'true' && hashFiles('tests/test_tools*.py', 'tests/test_authorization*.py') != ''
+    if: needs.changes.outputs.tools == 'true' && needs.changes.outputs.tool_tests == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -224,7 +239,7 @@ jobs:
   agent-tests:
     name: Bounded-agent tests
     needs: changes
-    if: needs.changes.outputs.agent == 'true' && hashFiles('tests/test_agent*.py', 'tests/test_workflow*.py') != ''
+    if: needs.changes.outputs.agent == 'true' && needs.changes.outputs.agent_tests == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

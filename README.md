@@ -316,7 +316,7 @@ will consume this output. See the AI Boundary Matrix v1.1 and requirement 6.6.
 | `tools/offline_demo.py` | Drive the CLI with no key, no network, no quota |
 | `docs/README.md` | Week-by-week deliverable index, owners and ClickUp copy list |
 | `docs/requirements/` | Charter, user stories, AI boundary matrix |
-| `docs/architecture/` | Diagrams, model note, baseline write-up, integration handover |
+| `docs/architecture/` | Diagrams, model note, baseline write-up, integration handover, CI map |
 | `docs/weekly-reports/` | Weekly progress reports |
 | `docs/evaluation/` | Prompt and later-week evaluation tables |
 | `docs/AI-ENGINEERING-LOG.md` | Material AI-assisted decisions, per brief section 6 |
@@ -415,3 +415,7 @@ before merge, and every team member can explain the work submitted under their n
 ClickUp: [Group Y board](https://app.clickup.com/9012272120/v/s/90129079418)
 
 Weekly deliverables, owners and GitHub paths: [`docs/README.md`](docs/README.md). Copy the ClickUp list from that file onto the board, one list per week.
+
+## CI
+
+Every push and pull request runs GitHub Actions: pytest, Bandit, Semgrep, pip-audit, a secrets check, and a check that the branch contains latest `main`. Read [`docs/architecture/ci.md`](docs/architecture/ci.md) for what each job means and how to run the same commands locally.

@@ -1,0 +1,281 @@
+# Group Y CI — BSE4104 SME Procurement-Preparation Agent
+#
+# Jobs run only when the changed files match that job. A docs-only PR does not
+# run Bandit or pytest. GitHub still needs one check that always reports:
+# the job named "CI" at the bottom. Protect main with that name only.
+#
+# Skipped = not relevant to this change (does not block).
+# Failed = relevant and broken (blocks merge if "CI" is required).
+
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PYTEST_ADDOPTS: "-q"
+
+jobs:
+  changes:
+    name: Which checks apply
+    runs-on: ubuntu-latest
+    outputs:
+      python: ${{ steps.filter.outputs.python }}
+      security: ${{ steps.filter.outputs.security }}
+      dependencies: ${{ steps.filter.outputs.dependencies }}
+      rag: ${{ steps.filter.outputs.rag }}
+      tools: ${{ steps.filter.outputs.tools }}
+      agent: ${{ steps.filter.outputs.agent }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            python:
+              - 'src/**'
+              - 'tests/**'
+              - 'fixtures/**'
+              - 'tools/**'
+              - 'pyproject.toml'
+            security:
+              - 'src/**'
+              - '.semgrep/**'
+              - 'pyproject.toml'
+              - '.github/workflows/ci.yml'
+            dependencies:
+              - 'pyproject.toml'
+            rag:
+              - 'src/**/rag/**'
+              - 'src/**/*retriev*'
+              - 'tests/test_rag*.py'
+              - 'tests/test_retrieval*.py'
+              - 'knowledge/**'
+            tools:
+              - 'src/**/tools/**'
+              - 'src/**/*tool*'
+              - 'tests/test_tools*.py'
+              - 'tests/test_authorization*.py'
+            agent:
+              - 'src/**/agent/**'
+              - 'src/**/workflow/**'
+              - 'tests/test_agent*.py'
+              - 'tests/test_workflow*.py'
+
+  based-on-main:
+    name: Branch contains origin/main
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fail if this branch has not merged or rebased origin/main
+        run: |
+          set -euo pipefail
+          git fetch origin main --quiet
+          if git merge-base --is-ancestor origin/main HEAD; then
+            echo "HEAD contains origin/main ($(git rev-parse --short origin/main))."
+            exit 0
+          fi
+          echo "::error::This branch is behind origin/main. Merge or rebase main, then push again."
+          echo "Commits on main that you do not have:"
+          git log --oneline HEAD..origin/main | head -20
+          echo
+          echo "Fix (from your branch):"
+          echo "  git fetch origin"
+          echo "  git merge origin/main"
+          echo "  git push"
+          exit 1
+
+  tests:
+    name: Pytest (no API key, no network)
+    needs: changes
+    if: needs.changes.outputs.python == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install package and pytest
+        run: pip install -e ".[dev]"
+      - name: Run the suite
+        run: pytest
+
+  bandit:
+    name: Bandit (Python SAST)
+    needs: changes
+    if: needs.changes.outputs.security == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Bandit
+        run: pip install "bandit[toml]>=1.7"
+      - name: Scan src/
+        run: bandit -r src -c pyproject.toml -ll -q
+
+  semgrep:
+    name: Semgrep (SAST + agent safety rules)
+    needs: changes
+    if: needs.changes.outputs.security == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Semgrep
+        run: pip install semgrep
+      - name: Scan
+        run: |
+          semgrep scan \
+            --config p/python \
+            --config p/security-audit \
+            --config p/secrets \
+            --config .semgrep/ \
+            --error \
+            --metrics=off
+
+  pip-audit:
+    name: pip-audit (dependency CVEs)
+    needs: changes
+    if: needs.changes.outputs.dependencies == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install runtime extras and pip-audit
+        run: |
+          python -m pip install -U pip
+          pip install -e ".[dev,gemini]" pip-audit
+      - name: Audit installed packages
+        run: pip-audit --skip-editable
+
+  secrets-hygiene:
+    name: Secrets not committed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: .env must stay untracked
+        run: |
+          set -euo pipefail
+          if git ls-files --error-unmatch .env >/dev/null 2>&1; then
+            echo "::error::.env is tracked. Remove it from git and keep it gitignored."
+            exit 1
+          fi
+          tracked="$(git ls-files '*.env' ':!.env.example' || true)"
+          if [ -n "$tracked" ]; then
+            echo "::error::Tracked env files that are not .env.example:"
+            echo "$tracked"
+            exit 1
+          fi
+          echo ".env is not tracked. .env.example is the only env template."
+
+  rag-tests:
+    name: RAG tests
+    needs: changes
+    if: needs.changes.outputs.rag == 'true' && hashFiles('tests/test_rag*.py', 'tests/test_retrieval*.py') != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]"
+      - run: |
+          shopt -s nullglob
+          files=(tests/test_rag*.py tests/test_retrieval*.py)
+          pytest "${files[@]}"
+
+  tool-tests:
+    name: Tool / authorization tests
+    needs: changes
+    if: needs.changes.outputs.tools == 'true' && hashFiles('tests/test_tools*.py', 'tests/test_authorization*.py') != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]"
+      - run: |
+          shopt -s nullglob
+          files=(tests/test_tools*.py tests/test_authorization*.py)
+          pytest "${files[@]}"
+
+  agent-tests:
+    name: Bounded-agent tests
+    needs: changes
+    if: needs.changes.outputs.agent == 'true' && hashFiles('tests/test_agent*.py', 'tests/test_workflow*.py') != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]"
+      - run: |
+          shopt -s nullglob
+          files=(tests/test_agent*.py tests/test_workflow*.py)
+          pytest "${files[@]}"
+
+  # Require this job name ("CI") on main. It is green when every *relevant*
+  # check passed, and also green when a check was skipped as not applicable.
+  ci-ok:
+    name: CI
+    if: always()
+    needs:
+      - changes
+      - based-on-main
+      - tests
+      - bandit
+      - semgrep
+      - pip-audit
+      - secrets-hygiene
+      - rag-tests
+      - tool-tests
+      - agent-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail only if a relevant check failed
+        run: |
+          set -euo pipefail
+          results=(
+            "${{ needs.changes.result }}"
+            "${{ needs.based-on-main.result }}"
+            "${{ needs.tests.result }}"
+            "${{ needs.bandit.result }}"
+            "${{ needs.semgrep.result }}"
+            "${{ needs.pip-audit.result }}"
+            "${{ needs.secrets-hygiene.result }}"
+            "${{ needs.rag-tests.result }}"
+            "${{ needs.tool-tests.result }}"
+            "${{ needs.agent-tests.result }}"
+          )
+          echo "Job results (success|skipped is OK; failure|cancelled is not):"
+          printf '  %s\n' "${results[@]}"
+          for r in "${results[@]}"; do
+            if [ "$r" = "failure" ] || [ "$r" = "cancelled" ]; then
+              echo "::error::A check that applied to this change failed."
+              exit 1
+            fi
+          done
+          echo "All applicable checks passed."

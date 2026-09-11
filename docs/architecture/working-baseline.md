@@ -151,37 +151,51 @@ The log is append-only. An evidence log that can be rewritten is not evidence.
 
 ## **7\. Reproducing this**
 
-Python 3.10 or newer. Verified on 3.13 and 3.14.
+Python 3.10 or newer is required. The commands below were verified on 3.13 and 3.14.
 
+There are three ways to run this, and they are not interchangeable. The test suite and the offline demo exercise the pipeline with no key, no network and no quota. Only the live CLI run is a Gemini observation. Section 2 already records that the live path has been exercised; these steps exist so someone else can repeat it.
+
+### 7.1 Install
+
+```bash
 git clone https://github.com/GeorgeLukaanya/bse4104-procurement-agent.git
-
 cd bse4104-procurement-agent
+python3 -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -e ".[dev]"
+```
 
-python3 \-m venv .venv
+### 7.2 Tests (no key)
 
-source .venv/bin/activate
-
-pip install \-e ".\[dev\]"
-
-Run the tests. No key, no network, no quota consumed:
-
+```bash
 pytest
+```
 
-Run the pipeline without an API key. This drives the real command-line interface with a substituted backend, exercising every step:
+The suite substitutes a stub for the provider. It does not call Gemini and it does not consume free-tier quota.
 
-python tools/offline\_demo.py
+### 7.3 Pipeline without a key
 
-Expect five OK, one SUPPRESSED, one NOT READY for landed cost, and exit code 1\. That exit code is correct, because fixture 05 is deliberately adversarial and not every file comes back clean. Running it a second time serves every file from cache, makes no call, and reports that no latency figure is available rather than inventing one.
+```bash
+python tools/offline_demo.py
+```
 
-Run against the live API, which requires the SDK and a key:
+This drives the real command-line interface with a substituted backend, so every pipeline step runs: cache, schema validation, the requirement 14.2 guard, landed-cost readiness and the evidence log.
 
-pip install \-e ".\[gemini\]"
+Expect five `OK`, one `SUPPRESSED` (fixture 05), one `NOT READY` for landed cost (fixture 04), and exit code 1. That exit code is correct. Fixture 05 is deliberately adversarial; a clean exit would mean the guard had not fired.
 
-export GEMINI\_API\_KEY=...
+Run it a second time. Every file is served from cache, no call is made, and the interface reports that no latency figure is available rather than inventing one.
 
-python \-m procurement\_agent.cli fixtures/\*.md
+This demonstration is of the pipeline, not of the model. The records are hand-written, the latency is a simulated delay, and the script prints a banner saying so. Nothing it produces is evidence about Gemini 3.1 Flash-Lite.
 
-The demonstration without a key exercises the pipeline, not the model. Its records are hand-written and its latency is a simulated delay, and it prints a banner saying so. Nothing it produces is evidence about Gemini 3.1 Flash-Lite.
+### 7.4 Live API
+
+```bash
+pip install -e ".[gemini]"
+export GEMINI_API_KEY=...
+python -m procurement_agent.cli fixtures/*.md
+```
+
+This is the only command in this section that contacts the model. Recorded latency, schema conformance and fixture 05 behaviour in section 9 come from this path, not from 7.3.
 
 ## 8\. Structure
 

@@ -1,4 +1,12 @@
-# Evaluation Table
+# 10-case Prompt Evaluation
+
+| Field | Value |
+|---|---|
+| Week | 2 |
+| Owner | Sekyeza Elroy Nunda |
+| Due | 11 September 2026 |
+| Status | In progress — cases written; Actual Behaviour and Result not yet filled |
+| Path | `docs/evaluation/prompt-evaluation.md` |
 
 This evaluation assesses how reliably the first quotation-extraction prompt converts varied supplier quotations into accurate, structured data while handling missing, ambiguous, irrelevant, or potentially malicious content safely.
 

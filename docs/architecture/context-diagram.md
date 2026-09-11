@@ -6,8 +6,6 @@
 
 ### **Version:** 1.1 
 
-### **Revised:** Week 2 (11th September 2026\)
-
 ## **System Context**
 
 The context diagram defines the system boundary for the eight-week project. Everything inside the boundary is developed by the team. Everything outside represents a person or service that interacts with or supports the system.  

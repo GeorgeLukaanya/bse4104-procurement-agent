@@ -4,7 +4,6 @@
 
 **Group:** Y   
 **Version:** 1.1   
-**Revised:** Week 2 (11th September 2026\)
 
 This matrix defines which responsibilities belong to the AI layer, which must remain deterministic, and which require human control. The goal is to use AI only where language understanding, retrieval and drafting add value, while calculations, conversion, eligibility checks, routing and procurement authority remain outside the model.
 
@@ -25,8 +24,6 @@ This matrix defines which responsibilities belong to the AI layer, which must re
 | Approval or rejection | None | Present the requisition on the manager's review screen; record and route the decision; write the Approval Record | Procurement Manager approves or rejects, with a mandatory reason on rejection |
 | Purchase order, payment or supplier contact | **Not allowed** | No such agent tool or interface shall exist | Must happen outside the agent, if required |
 | Audit and traceability | AI actions are recorded as part of the trace | Record model calls, retrieval results, conversion outcomes, workflow events, status transitions, suppressions and failures | Review audit evidence when necessary |
-
-> **Changes in v1.1:** Document conversion added as an explicit row, with AI responsibility set to none, because Requirements v1.0 assigned file parsing and corruption detection to the AI Layer. Currency conversion, unit and VAT normalisation, and requisition status transitions added as rows, each of which was implicit in v1.0 and therefore unenforced. Price comparison renamed to landed cost comparison.
 
 ## **Key AI Boundaries**
 

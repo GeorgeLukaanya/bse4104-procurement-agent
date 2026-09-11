@@ -37,14 +37,14 @@ required by section 6 of the project brief. Append entries; do not rewrite histo
 - **Outcome:** Accepted into the repository as the Week 2 baseline, subject to
   the live-call verification listed at the end of this entry.
 
-- **Deliverable produced:** `docs/week2/Working_Baseline_Model_Interaction.md` —
+- **Deliverable produced:** `docs/architecture/working-baseline.md` —
   the Week 2 written deliverable, for the shared Google Docs folder. It separates
   two claims that are easy to conflate: the baseline *interaction* is built and
   exercised end to end (135 tests), while the *provider call* has never executed.
   No accuracy, latency or rate-limit figure appears in it, because none could be
   supported.
 
-- **Handover produced:** `Model_Integration_Handover.md` — a briefing
+- **Handover produced:** `docs/architecture/model-integration-handover.md` — a briefing
   for whoever owns the Gemini API integration. It names the single seam
   (`GeminiBackend.generate()`), lists what is already built, and states plainly
   that the body of that method was written without the SDK installed and has
@@ -55,8 +55,8 @@ required by section 6 of the project brief. Append entries; do not rewrite histo
 - **Documents amended:** `README.md` (setup, run and test instructions),
   `.env.example` (temperature `0.2`→`0`, max tokens `1024`→`2048`, both of which
   contradicted Prompt Specification section 4; pinned model string and
-  `GEMINI_API_KEY` added), `docs/week2/Model_Selection_Note.md` (see below) and
-  `docs/week2/Prompt_Specification_And_Prompt_Version_History.md` (a pointer from
+  `GEMINI_API_KEY` added), `docs/architecture/model-selection-note.md` (see below) and
+  `prompts/quotation-extraction-v1.md` (a pointer from
   section 8 to its implementation in `prompts.py`, and the warning about bumping
   the version). **The Model Selection Note is a team deliverable and was edited;
   its author should review the change.** Section 2 asserted 15 RPM / 250,000 TPM
@@ -173,9 +173,9 @@ nothing in the run log would show it.
 | Prompt Specification section 4 gives the thinking budget as "Minimum or disabled", not a number. | Set to `0` (disabled). The configuration fingerprint needs a concrete value or it cannot distinguish two runs. Revisit if measured accuracy suffers. |
 | Requirement 6.3 names three landed-cost blockers (unit of measure, VAT treatment, delivery cost), but 6.1 needs more to compute anything. | Both are checked, and every blocker is reported with the clause it comes from. The 6.1 additions are `currency`, `unit_price`, and `vat_rate_percent` *only when* treatment is exclusive. `quantity` is deliberately **not** a blocker: 6.1 extends cost over the Reorder Quantity, which comes from the Inventory Snapshot, not from the supplier's quoted quantity. |
 | Requirement 14.2 says suppress "that output" without saying whether the whole record or the offending value is withheld. | The offending string values are replaced with a placeholder and the rest of the record survives. The officer still needs to see which quotation misbehaved and what the rest of it said. |
-| The Model Selection Note states 15 RPM / 250,000 TPM / 1,000 RPD as fact in section 2, then says immediately below that those figures are to be measured, not estimated, because the provider no longer publishes them. | Treated as **unmeasured**. No rate limit figure is encoded anywhere in the package, this log, or the README. The contradiction should be resolved in the Note itself before submission. |
-| Prompt Specification section 8 runs rules 4 and 5 together on one line. | A Markdown export artefact, not a semantic difference. Rendered as seven separate numbered rules; a test asserts all seven are present and that there is no rule 8. |
-| Where the AI Boundary Matrix and Requirements Document existed in two versions (v1.0 on `origin/main`, v1.1 in the working tree), which governs. | v1.1 in every case. The v1.0 AI Boundary Matrix still lists the six-field extraction set that the Week 1 cross-document audit found to be defective. |
+| The Model Selection Note states 15 RPM / 250,000 TPM / 1,000 RPD as fact in section 2, then says immediately below that those figures are to be measured, not estimated, because the provider no longer publishes them. | Treated as **unmeasured**. The Model Selection Note now marks those figures pending. No rate limit figure is encoded anywhere in the package, this log, or the README. |
+| Prompt Specification section 8 runs rules 4 and 5 together on one line. | A Markdown export artefact, not a semantic difference. Rendered as eight separate numbered rules in v1.1 (date notation is rule 6); a test asserts the literal prompt text. |
+| Where the AI Boundary Matrix and Requirements Document existed in two versions. | The tree holds one copy of each: Requirements `docs/requirements/user-stories.md`, AI Boundary Matrix `docs/requirements/ai-boundary-matrix.md`. Both use the eleven-field schema. |
 
 #### Claims that remain unverified
 

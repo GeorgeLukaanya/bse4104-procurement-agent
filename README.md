@@ -179,7 +179,7 @@ file came back clean — that is the correct result, not a failure to run.
 ### Run a real extraction
 
 > **Wiring up the model for the first time?** Read
-> [`Model_Integration_Handover.md`](Model_Integration_Handover.md)
+> [`docs/architecture/model-integration-handover.md`](docs/architecture/model-integration-handover.md)
 > first. The body of `GeminiBackend.generate()` was written without the SDK
 > installed and has never executed — that document lists exactly which lines are
 > assumptions to check against the real library.
@@ -275,7 +275,7 @@ if not result.landed_cost.ready:
 Inject any object with a `generate(system_instruction, user_message, config)`
 method as the backend to run offline. That method is the only place in the
 repository that talks to the provider — see
-[`Model_Integration_Handover.md`](Model_Integration_Handover.md).
+[`docs/architecture/model-integration-handover.md`](docs/architecture/model-integration-handover.md).
 
 ## What the package does, in order
 
@@ -314,11 +314,14 @@ will consume this output. See the AI Boundary Matrix v1.1 and requirement 6.6.
 | `tests/` | Test suite — runs with no key, no network, no quota |
 | `fixtures/` | Synthetic quotation fixtures in Markdown |
 | `tools/offline_demo.py` | Drive the CLI with no key, no network, no quota |
-| `Model_Integration_Handover.md` | Briefing for whoever wires up the Gemini API |
-| `docs/week1/` | Charter, Requirements, AI Boundary Matrix, Architecture — all v1.1 |
-| `docs/week2/` | Prompt Specification v1.0, Model Selection Note, Working Baseline Model Interaction |
+| `docs/README.md` | Week-by-week deliverable index, owners and ClickUp copy list |
+| `docs/requirements/` | Charter, user stories, AI boundary matrix |
+| `docs/architecture/` | Diagrams, model note, baseline write-up, integration handover |
+| `docs/weekly-reports/` | Weekly progress reports |
+| `docs/evaluation/` | Prompt and later-week evaluation tables |
 | `docs/AI-ENGINEERING-LOG.md` | Material AI-assisted decisions, per brief section 6 |
-| `evidence/traces/` | Run logs — the evidence behind conformance and backoff claims |
+| `prompts/` | Versioned prompt specifications |
+| `evidence/` | Traces, screenshots, demo recordings |
 | `knowledge/` | Corpus metadata and provenance — no restricted data |
 
 | Module | Responsibility |
@@ -338,32 +341,16 @@ will consume this output. See the AI Boundary Matrix v1.1 and requirement 6.6.
 The package is built against these documents. Where they say something specific,
 they govern:
 
-- Project Charter **v1.1** — `docs/week1/Project_Charter.md`
-- Requirements Document **v1.1** — `docs/week1/User_Stories_And_Acceptance_Criteria.md`
-- AI Boundary Matrix **v1.1** — `docs/week1/Ai_Boundary_Matrix.md`
-- Prompt Specification **v1.0** — `docs/week2/Prompt_Specification_And_Prompt_Version_History.md`
-- Model Selection Note — `docs/week2/Model_Selection_Note.md`
+- Project Charter **v1.1** — `docs/requirements/project-charter.md`
+- Requirements Document **v1.1** — `docs/requirements/user-stories.md`
+- AI Boundary Matrix **v1.1** — `docs/requirements/ai-boundary-matrix.md`
+- Prompt Specification **v1.1** — `prompts/quotation-extraction-v1.md`
+- Model Selection Note — `docs/architecture/model-selection-note.md`
+- Week-by-week index — `docs/README.md`
 
-### Superseded documents still in the tree
-
-The merge of the earlier branch history brought the pre-audit versions back into
-the repository. Both generations now sit side by side. **Do not build against
-these:**
-
-| Superseded file | Replaced by |
-|---|---|
-| `docs/prompts/quotation-extraction-v1.txt` | `src/procurement_agent/prompts.py` + Prompt Specification v1.0 §8 |
-| `docs/requirements/requirements.md` | `docs/week1/User_Stories_And_Acceptance_Criteria.md` (v1.1) |
-| `docs/ai-matrix-boundaries/ai-matrix.md` | `docs/week1/Ai_Boundary_Matrix.md` (v1.1) |
-| `docs/architecture/architecture.md` | `docs/week1/Initial_Architecture_Context_Diagram.md` (v1.1) |
-| `docs/evaluation/prompt-evaluation-table.md` | Pending — the ten-case table is not yet run |
-
-`docs/prompts/quotation-extraction-v1.txt` is the dangerous one. It is the v0.1
-prompt asking for **six** fields, which is exactly the defect the Week 1
-cross-document audit found: six fields cannot produce the inputs for Landed Cost.
-The prompt actually sent lives in `prompts.py` and has eleven.
-
-The team should decide whether to delete these or mark them superseded.
+The prompt actually sent lives in `prompts.py` (eleven fields, version 1.1). The ten-case
+evaluation table is at `docs/evaluation/prompt-evaluation.md` and still
+needs Actual Behaviour and Result filled in.
 
 ## Changing the prompt
 
@@ -375,8 +362,8 @@ under the old wording would be served and reported as though they came from the
 new one.
 
 To change it: edit the text, bump the version, add a row to the Prompt Version
-History table naming the evaluation case that forced the change, and re-run the
-evaluation set.
+History table in `prompts/quotation-extraction-v1.md` naming the evaluation case
+that forced the change, and re-run the evaluation set.
 
 ## Security and data
 
@@ -426,3 +413,5 @@ before merge, and every team member can explain the work submitted under their n
 ## Task board
 
 ClickUp: [Group Y board](https://app.clickup.com/9012272120/v/s/90129079418)
+
+Weekly deliverables, owners and GitHub paths: [`docs/README.md`](docs/README.md). Copy the ClickUp list from that file onto the board, one list per week.

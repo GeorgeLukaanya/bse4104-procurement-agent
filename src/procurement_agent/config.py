@@ -37,6 +37,14 @@ FORBIDDEN_MODEL_SUFFIXES = ("-latest", "-preview", "@latest")
 # Environment variable names searched, in order, for the API key.
 API_KEY_ENV_VARS = ("GEMINI_API_KEY", "GOOGLE_API_KEY", "MODEL_API_KEY")
 
+# Environment variable names searched, in order, for the model string.
+#
+# An environment-supplied model is still validated by ExtractionConfig: the
+# alias rejection in __post_init__ applies to it exactly as it applies to
+# --model. Configurability here is about not editing source to change models,
+# never about relaxing the pinning rule the Model Selection Note sets.
+MODEL_ENV_VARS = ("MODEL_NAME", "GEMINI_MODEL")
+
 
 class ConfigError(ValueError):
     """Raised when a configuration value violates the specification."""
@@ -147,6 +155,23 @@ def load_api_key(env: Mapping[str, str] | None = None) -> str:
         + " in the environment (see .env.example). The key is read from the "
         "environment only and is never written to the cache or the run log."
     )
+
+
+def load_model_name(env: Mapping[str, str] | None = None) -> str | None:
+    """Read the model string from the environment, or None when unset.
+
+    Returns None rather than PINNED_MODEL so that a caller can tell "the
+    environment asked for a model" apart from "nothing was configured" and
+    apply its own precedence. The returned string is *not* validated here;
+    ExtractionConfig validates it, so an alias is rejected by the same rule
+    whatever route it arrived by.
+    """
+    source = os.environ if env is None else env
+    for name in MODEL_ENV_VARS:
+        value = source.get(name, "").strip()
+        if value:
+            return value
+    return None
 
 
 def redact(text: str, env: Mapping[str, str] | None = None) -> str:

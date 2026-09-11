@@ -18,9 +18,13 @@ def quotation(tmp_path):
 
 
 def _args(tmp_path, *extra):
+    # --no-env-file keeps every CLI test hermetic. Without it a developer's own
+    # .env sitting in the working directory would feed MODEL_NAME into the run
+    # and change the fingerprint these tests assert on.
     return [
         "--cache-dir", str(tmp_path / "cache"),
         "--run-log", str(tmp_path / "runs.jsonl"),
+        "--no-env-file",
         *extra,
     ]
 

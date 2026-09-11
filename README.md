@@ -1,7 +1,6 @@
 # SME Procurement-Preparation Agent
 
-BSE4104 Emerging Trends in Software Engineering — AI-Native & Agentic Engineering Capstone
-Makerere University, College of Computing and Information Sciences
+**AI-Native & Agentic Engineering Capstone** under BSE4104 Emerging Trends in Software Engineering, Makerere University, College of Computing and Information Sciences
 
 ## What this is
 
@@ -345,11 +344,26 @@ they govern:
 - Prompt Specification **v1.0** — `docs/week2/Prompt_Specification_And_Prompt_Version_History.md`
 - Model Selection Note — `docs/week2/Model_Selection_Note.md`
 
-Earlier v1.0 copies of the Requirements Document and the AI Boundary Matrix still
-exist on the `origin/main` branch (`docs/requirements/requirements.md`,
-`docs/ai-matrix-boundaries/ai-matrix.md`). **Do not build against them.** The v1.0
-matrix still lists the six-field extraction set that the Week 1 cross-document
-audit found to be defective; the field set is eleven.
+### Superseded documents still in the tree
+
+The merge of the earlier branch history brought the pre-audit versions back into
+the repository. Both generations now sit side by side. **Do not build against
+these:**
+
+| Superseded file | Replaced by |
+|---|---|
+| `docs/prompts/quotation-extraction-v1.txt` | `src/procurement_agent/prompts.py` + Prompt Specification v1.0 §8 |
+| `docs/requirements/requirements.md` | `docs/week1/User_Stories_And_Acceptance_Criteria.md` (v1.1) |
+| `docs/ai-matrix-boundaries/ai-matrix.md` | `docs/week1/Ai_Boundary_Matrix.md` (v1.1) |
+| `docs/architecture/architecture.md` | `docs/week1/Initial_Architecture_Context_Diagram.md` (v1.1) |
+| `docs/evaluation/prompt-evaluation-table.md` | Pending — the ten-case table is not yet run |
+
+`docs/prompts/quotation-extraction-v1.txt` is the dangerous one. It is the v0.1
+prompt asking for **six** fields, which is exactly the defect the Week 1
+cross-document audit found: six fields cannot produce the inputs for Landed Cost.
+The prompt actually sent lives in `prompts.py` and has eleven.
+
+The team should decide whether to delete these or mark them superseded.
 
 ## Changing the prompt
 

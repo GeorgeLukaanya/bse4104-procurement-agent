@@ -6,7 +6,6 @@
 **Group:** Y   
 **Members:** Sekyeza Elroy Nunda, Lukaanya George, Ainamani Jim Isaac, Beingana Jim Junior, Nannyombi Shakiran   
 **Version:** 1.1   
-**Baselined:** Week 1, revised Week 2 (11th September 2026\)   
 **Repository:** [https://github.com/GeorgeLukaanya/bse4104-procurement-agent.git](https://github.com/GeorgeLukaanya/bse4104-procurement-agent.git)
 
 ## **1\. Proposal Statement**
@@ -39,8 +38,6 @@ The justification is the weakest artefact of all. The approver receives a suppli
 
 **Secondary user: Procurement Manager.** Holds financial authority. Reviews the compiled requisition and records an approval or rejection decision through a dedicated review screen in the system. The manager does not operate the agent loop, does not upload documents and does not initiate reviews, but is a system user, because the approval decision must be captured as an immutable audit record rather than reported second-hand.
 
-> **Revision note (v1.1):** In v1.0 the manager was described as not using the system at all. That was incompatible with the approval and audit requirements, which depend on the system capturing the decision directly. The manager is now a secondary user with a read-and-decide interface only.
-
 ## **4\. Where AI Adds Value, and Where It Must Not Decide**
 
 AI is justified here for three specific reasons.
@@ -69,9 +66,7 @@ Three consequences follow, and all three are deliberate.
 - Converted Markdown is cached and versioned, so the same input produces the same model input on every evaluation run. This makes the Week 7 evaluation reproducible.  
 - Token cost per quotation drops sharply, which is what allows a thirty-scenario evaluation set to run repeatedly within free-tier limits.
 
-Scanned documents, photographs and CSV price lists are out of scope for the quotation path. Conversion is limited to PDF and Word files carrying a machine-readable text layer. A scanned quotation is routed to manual entry rather than to OCR.
-
-> **Revision note (v1.1):** The Requirements Document v1.0 admitted CSV quotations. CSV is structured data requiring no model extraction, and admitting it would have removed the justification for the AI layer on this path. CSV and spreadsheet formats remain valid for the Inventory Snapshot only.
+Scanned documents, photographs and CSV price lists are out of scope for the quotation path. Conversion is limited to PDF and Word files carrying a machine-readable text layer. A scanned quotation is routed to manual entry rather than to OCR. CSV and spreadsheet formats remain valid for the Inventory Snapshot only.
 
 ## **6\. Primary End-to-End Workflow**
 
@@ -142,8 +137,6 @@ Five members with mixed prior exposure to LLM APIs, retrieval and evaluation too
 
 S2, S7 and S8 are hard gates. Any failure is a defect, not a score.
 
-> **Revision note (v1.1):** S9 was added. Extraction is the core AI capability and the Week 2 baseline, and v1.0 had no measurable target for it. A model that reliably misreads unit prices would have passed every v1.0 criterion.
-
 ## **11\. Key Risks**
 
 | Risk | Impact | Response |
@@ -155,21 +148,19 @@ S2, S7 and S8 are hard gates. Any failure is a defect, not a score.
 | Prompt injection through quotation text | High | Quotation content treated as untrusted data, tool allow-list enforced, injection scenarios in the Week 7 evaluation set |
 | Synthetic corpus too uniform to expose real failures | Medium | Contradictions, gaps, mixed units, mixed VAT treatment and expired quotations seeded deliberately during Week 3 |
 | Scope creep toward a general procurement platform | High, threatens completion | The out-of-scope list is binding, and changes require a documented charter revision |
-| Documents drifting apart under parallel authorship | Medium, produces unimplementable requirements | Cross-document consistency check at each re-baseline, as performed for v1.1 |
+| Documents drifting apart under parallel authorship | Medium, produces unimplementable requirements | Single shared glossary and a consistency check before each weekly freeze |
 
 ## **12\. Team and Ownership**
 
 | Role | Member | Week 1 ownership |
 | :---- | :---- | :---- |
-| Project and Requirements Lead | Nannyombi Shakiran | Charter, user stories and acceptance criteria |
+| Project and Requirements Lead | Nannyombi Shakiran | User stories and acceptance criteria |
 | Application and Integration Lead | Ainamani Jim Isaac | Architecture and context diagram, repository scaffold |
 | AI Engineering Lead | Beingana Jim Junior | AI Boundary Matrix, model access setup |
 | Quality and Security Lead | Sekyeza Elroy Nunda | Acceptance-criteria review, boundary definitions |
-| DevOps and Documentation Lead | Lukaanya George | ClickUp board, repository structure, weekly progress report |
+| DevOps and Documentation Lead | Lukaanya George | Project charter, ClickUp board, repository structure, weekly progress report |
 
-Roles rotate across the project. Every member is accountable for explaining any part of the system.
-
-> **Action required:** This table and the Week 1 Progress Report task table disagreed in v1.0 on two rows, the architecture diagram and the weekly progress report. Both documents have been aligned to the role definitions above. Confirm this reflects who actually did the work before submission.
+Roles rotate across the project. Every member is accountable for explaining any part of the system. Week 1 ownership matches the Week 1 progress report.
 
 ## **13\. Terminology**
 
@@ -184,4 +175,4 @@ To keep the documents consistent, the following terms are used throughout and ar
 
 ## **Approval**
 
-Baselined at v1.0 for Week 1 submission. Re-baselined at v1.1 following a cross-document consistency audit conducted at the start of Week 2, which reconciled contradictions between the charter and the requirements document. Material changes to scope, boundaries or success criteria will continue to be recorded as versioned revisions with a stated rationale.  
+This document is the current project baseline. Changes to scope, boundaries or success criteria are made in this file and recorded in git.  

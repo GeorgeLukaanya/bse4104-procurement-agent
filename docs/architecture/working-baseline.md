@@ -96,7 +96,7 @@ The AI Boundary Matrix v1.1 sets limits on what the model layer may do. Each is 
 | :---- | :---- |
 | No arithmetic | The package performs no totalling, VAT application, unit conversion, currency conversion, landed-cost computation or ranking. All of it belongs to the deterministic calculator downstream, per requirement 6.6. |
 | No eligibility or approval assertions | Prohibited-pattern scan across six categories, per requirement 14.2. Offending values are suppressed before reaching any user or record, and a suppression audit entry is written. |
-| Untrusted document content | Delimiter-wrapped input, plus system-instruction rule 6, plus the output scan. Quotation text is never treated as instruction. |
+| Untrusted document content | Delimiter-wrapped input, plus system-instruction rule 7, plus the output scan. Quotation text is never treated as instruction. |
 | No inference of missing values | Schema validation requires a stated reason for every null, per requirement 3.2. An entry without a reason is a conformance failure. |
 | Model cannot drift | Exact version pinning. Aliases rejected. |
 | Credentials | The API key is read from the environment only. It is never hardcoded, never written to the cache or evidence log, and is redacted from transport errors. |
@@ -224,7 +224,7 @@ A separate handover document, Model\_Integration\_Handover.md, briefs whoever ta
 | Requirement 3.1, eleven fields within 30 seconds | Eleven-field contract implemented and tested. The time ceiling is unmeasured. |
 | Requirement 3.2, null with a stated reason, never inferred | missing\_fields array. Validation rejects an entry without a reason. |
 | Requirement 3.3, non-conforming output rejected | Outright rejection, no salvage path |
-| Requirement 3.7, quotation content treated as untrusted | Delimiter wrapping, system-instruction rule 6, output scan |
+| Requirement 3.7, quotation content treated as untrusted | Delimiter wrapping, system-instruction rule 7, output scan |
 | Requirement 6.3, missing landed-cost inputs named | Readiness check reports each field with its clause |
 | Requirement 6.6, AI performs no arithmetic | No arithmetic in the package, asserted by test |
 | Requirement 13.1, extraction results recorded | Append-only evidence log |
@@ -233,9 +233,9 @@ A separate handover document, Model\_Integration\_Handover.md, briefs whoever ta
 
 ## 11\. References
 
-Project Charter v1.1. Requirements Document v1.1, specifically the glossary entry for Normalised Quotation and requirements 2, 3, 6 and 14\. AI Boundary Matrix v1.1. Prompt Specification and Prompt Version History v1.0, sections 3 to 8\. Model Selection Note. Model Integration Handover v1.0. AI Engineering Log, Week 2 entry.
+Project Charter v1.1. Requirements Document v1.1, specifically the glossary entry for Normalised Quotation and requirements 2, 3, 6 and 14. AI Boundary Matrix v1.1. Prompt Specification and Prompt Version History v1.1, sections 3 to 8. Model Selection Note. Model Integration Handover. AI Engineering Log, Week 2 entry.
 
-Earlier v1.0 copies of the Requirements Document, AI Boundary Matrix and architecture narrative remain on the repository's origin/main branch, along with a v0.1 extraction prompt asking for only six fields. These are superseded and must not be used. The field set is eleven.
+The field set is eleven. The prompt actually sent lives in `src/procurement_agent/prompts.py`.
 
 ## Appendix A. Completion checklist
 

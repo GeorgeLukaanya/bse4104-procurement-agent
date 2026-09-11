@@ -340,7 +340,7 @@ than accumulated is not evidence.
   (glossary "Normalised Quotation"; requirements 2, 3, 6, 14)
 - AI Boundary Matrix **v1.1** — `docs/requirements/ai-boundary-matrix.md`
 - Project Charter **v1.1** — `docs/requirements/project-charter.md`
-- Prompt Specification **v1.0** — `prompts/quotation-extraction-v1.md`
+- Prompt Specification **v1.1** — `prompts/quotation-extraction-v1.md`
 - Model Selection Note — `docs/architecture/model-selection-note.md`
 - Working Baseline Model Interaction — `docs/architecture/working-baseline.md`
 - Ten-case evaluation table — `docs/evaluation/prompt-evaluation.md`
@@ -348,8 +348,4 @@ than accumulated is not evidence.
 - Week-by-week index — `docs/README.md`
 - Setup, running and troubleshooting — `README.md`
 
-The pre-audit v1.0 copies have been removed, including the six-field
-`docs/prompts/quotation-extraction-v1.txt`. That prompt asked for six fields —
-supplier, item, quantity, unit price, currency, validity date — which cannot
-produce the inputs for Landed Cost. The prompt you send is the one in
-`prompts.py`. It is eleven fields.
+The prompt you send is the one in `prompts.py`. It is eleven fields, version 1.1.

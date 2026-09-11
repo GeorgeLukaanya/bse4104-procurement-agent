@@ -348,10 +348,7 @@ they govern:
 - Model Selection Note — `docs/architecture/model-selection-note.md`
 - Week-by-week index — `docs/README.md`
 
-The pre-audit v1.0 copies (`docs/requirements/requirements.md`,
-`docs/ai-matrix-boundaries/ai-matrix.md`, the old architecture note, and the
-six-field `docs/prompts/quotation-extraction-v1.txt`) have been removed. The
-prompt actually sent lives in `prompts.py` and has eleven fields. The ten-case
+The prompt actually sent lives in `prompts.py` (eleven fields, version 1.1). The ten-case
 evaluation table is at `docs/evaluation/prompt-evaluation.md` and still
 needs Actual Behaviour and Result filled in.
 

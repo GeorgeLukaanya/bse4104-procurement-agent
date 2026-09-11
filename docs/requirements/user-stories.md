@@ -8,15 +8,11 @@
 
 **Version:** 1.1 
 
-**Revised:** Week 2 (11th September 2026\)
-
 ## **Introduction**
 
 The SME Procurement-Preparation Agent is a bounded agentic system that assists a Procurement Officer in a small or medium Ugandan enterprise to convert a weekly reorder review into a policy-compliant purchase requisition ready for human approval.
 
 The system combines an AI layer (quotation field extraction, policy retrieval, justification drafting) with a deterministic layer (document conversion, stock level arithmetic, currency conversion, vendor eligibility checks, landed-cost comparison, approval routing). The system never issues a purchase order, contacts a supplier, commits funds, or approves anything autonomously.
-
-> **Revision note (v1.1):** This document was reconciled against Project Charter v1.1 following a cross-document consistency audit. Substantive changes: quotation formats narrowed to PDF and Word; document conversion given its own requirement and assigned to the Deterministic Layer; the Normalised Quotation schema extended to carry unit of measure, VAT treatment, delivery cost and lead time; price comparison changed from unit price times quantity to landed cost; currency conversion changed from manual officer entry to a deterministically applied configured rate; reorder quantity defined against a Target Stock Level; the reorder trigger changed to at-or-below; authentication scoped in; notification scoped to in-application only.
 
 ## **Glossary**
 
@@ -84,8 +80,6 @@ The system combines an AI layer (quotation field extraction, policy retrieval, j
 4. WHEN the reorder review is initiated with a valid file, THE Deterministic Layer SHALL flag every item whose current stock is **at or below** its Reorder Point, and SHALL produce a reorder list containing, for each flagged item: item name, current stock, reorder point, target stock level and computed Reorder Quantity.  
 5. IF no item is at or below its Reorder Point, THEN THE System SHALL state that no items require reorder and terminate the review session without proceeding to quotation upload.
 
-> Changed in v1.1: criterion 4 now reads at-or-below rather than strictly-below, matching the charter. Target Stock Level and Reorder Quantity introduced so that reorder quantity is no longer defined as restoring stock to the trigger level.
-
 ### **2\. Supplier Quotation Conversion**
 
 **User Story:** As a Procurement Officer, I want uploaded quotation documents converted to clean text before any model reads them, so that extraction is reproducible and a document that cannot be read fails visibly rather than producing a guessed figure.
@@ -97,8 +91,6 @@ The system combines an AI layer (quotation field extraction, policy retrieval, j
 3. THE Deterministic Layer SHALL cache each Converted Quotation Document against a hash of its source file, so that re-processing the same source file yields byte-identical model input.  
 4. IF a file is corrupted, is in an unsupported format, or carries no machine-readable text layer, THEN THE Deterministic Layer SHALL mark that file as unconvertible, display an error naming the file and the specific reason, route it to manual entry, and continue processing the remaining files in the batch.  
 5. THE System SHALL NOT pass an unconverted source file, image or scanned page to the AI Layer under any circumstance.
-
-> New in v1.1. The conversion layer is a major charter commitment with a success criterion (S3) and had no requirement behind it in v1.0.
 
 ### **3\. Quotation Field Extraction**
 
@@ -113,8 +105,6 @@ The system combines an AI layer (quotation field extraction, policy retrieval, j
 5. WHILE reviewing Normalised Quotation records, THE Procurement Officer SHALL be able to correct any field, and THE System SHALL NOT proceed to eligibility checks until the Procurement Officer explicitly confirms the reviewed data.  
 6. IF a Normalised Quotation contains items whose names do not case-insensitively match any item on the current reorder list, THEN THE System SHALL retain those items and mark each as not matching a current reorder requirement.  
 7. THE AI Layer SHALL treat all quotation content as untrusted data, and SHALL NOT act on any instruction contained within a quotation document.
-
-> Changed in v1.1: v1.0 assigned file parsing, corruption detection and format validation to the AI Layer, contradicting both the charter and the AI Boundary Matrix. Those responsibilities now sit in requirement 2\. The extracted field set was extended from six fields to eleven, because comparison on unit price alone cannot solve the normalisation problem stated in the charter.
 
 ### **4\. Supplier Eligibility Verification**
 
@@ -140,8 +130,6 @@ The system combines an AI layer (quotation field extraction, policy retrieval, j
 4. IF a Normalised Quotation is denominated in a currency other than UGX or USD, THEN THE System SHALL mark it out of scope, exclude it from comparison, and state the reason.  
 5. THE Procurement Officer SHALL NOT be required or permitted to enter a converted figure manually.
 
-> New in v1.1, replacing the manual-conversion criteria in v1.0 requirements 4 and 12\. Requiring the officer to hand-convert reintroduces the arithmetic error the project exists to eliminate and would place an unverified human figure inside a financial calculation, which conflicts with success criterion S2.
-
 ### **6\. Landed Cost Comparison and Supplier Ranking**
 
 **User Story:** As a Procurement Officer, I want eligible suppliers compared on a common basis that accounts for units, VAT and delivery, so that the genuinely cheapest compliant option is identified rather than the one with the lowest headline price.
@@ -154,8 +142,6 @@ The system combines an AI layer (quotation field extraction, policy retrieval, j
 4. WHEN only one eligible quotation exists for a reorder item, THE Deterministic Layer SHALL record that supplier as the sole eligible option and note that competitive comparison was not possible.  
 5. WHEN comparison completes, THE System SHALL display the ranked table per item, showing for each eligible supplier: supplier name, quoted unit price and unit of measure, normalised unit cost (UGX), reorder quantity, VAT, delivery cost, Landed Cost (UGX) and lead time, before the justification is drafted.  
 6. THE AI Layer SHALL NOT perform any arithmetic contributing to a displayed figure in this table.
-
-> Changed in v1.1: ranking basis moved from unit price times quantity to Landed Cost. Under v1.0, a supplier quoting per-carton VAT-exclusive with high freight would outrank a supplier quoting per-piece VAT-inclusive with free delivery, and the System would report it as cheaper.
 
 ### **7\. Procurement Policy Retrieval**
 
@@ -205,8 +191,6 @@ The system combines an AI layer (quotation field extraction, policy retrieval, j
 4. WHEN routing completes, THE System SHALL notify the Procurement Officer in-application that the requisition is awaiting review, within 10 seconds.  
 5. THE System SHALL NOT send any notification through an external channel.
 
-> Changed in v1.1: the external delivery-failure branch in v1.0 implied email or SMS, neither of which is in scope. Notification is now defined as an in-application state change.
-
 ### **11\. Manager Approval or Rejection**
 
 **User Story:** As a Procurement Manager, I want to review, approve or reject a Purchase Requisition with a recorded rationale, so that all procurement decisions are documented and traceable for audit.
@@ -230,8 +214,6 @@ The system combines an AI layer (quotation field extraction, policy retrieval, j
 2. THE System SHALL require authentication before any workflow action, and SHALL record the authenticated username on every audit entry.  
 3. THE System SHALL restrict the reorder review, upload, confirmation and submission actions to the Procurement Officer role, and the approval and rejection actions to the Procurement Manager role.  
 4. THE System SHALL NOT provide self-service registration, role administration or multi-tenant separation, which are out of scope.
-
-> New in v1.1. Five acceptance criteria in v1.0 depended on an authenticated username while the charter placed user management out of scope. The scope boundary has been narrowed rather than the requirement dropped.
 
 ### **13\. Audit Trail and Record Keeping**
 
@@ -269,6 +251,4 @@ The system combines an AI layer (quotation field extraction, policy retrieval, j
 | S7 No state beyond DRAFT without human action | 9, 10, 11, 14.3 |
 | S8 Zero prohibited actions under adversarial prompts | 3.7, 14 |
 | S9 Extraction field accuracy | 3 |
-
-> New in v1.1. v1.0 had no mapping between success criteria and requirements, which meant S3 could carry a numeric target with no acceptance criteria behind it. Every criterion now has at least one owning requirement.
 

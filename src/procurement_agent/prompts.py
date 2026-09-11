@@ -21,8 +21,9 @@
 v1.1 inserts rule 6, date notation, and renumbers the two rules that followed
 it. Fixture 02 forced it: the model returned "30th September 2026" for a date
 written in words, which schema.py rejects outright, and v1.0 never said what
-notation to use. Everything else is reproduced word for word from Prompt
-Specification v1.0 section 8, "Prompt Text (v1.0)".
+notation to use. The rule text is recorded in Prompt
+Specification section 8.2, "Prompt Text (v1.1)"; everything else is reproduced
+word for word from section 8.1, "Prompt Text (v1.0)".
 
 The source document is Markdown and escapes some
 characters for rendering (`1\\.`, `missing\\_fields`, `\\<quotation\\>`); those

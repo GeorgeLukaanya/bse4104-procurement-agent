@@ -346,13 +346,12 @@ than accumulated is not evidence.
 - Week 2 engineering log entry — `docs/AI-ENGINEERING-LOG.md`
 - Setup, running and troubleshooting — `README.md`
 
-### Stale copies on `origin/main` — read before you pick up a file
+### Superseded documents still in the tree — read before you pick up a file
 
-`origin/main` still carries the pre-audit versions of several documents. After a
-merge, the repository will contain both generations side by side. **Do not build
-against these:**
+The earlier branch history has been merged, so the repository now contains both
+generations of several documents side by side. **Do not build against these:**
 
-| Stale file on `origin/main` | Superseded by |
+| Superseded file | Replaced by |
 |---|---|
 | `docs/prompts/quotation-extraction-v1.txt` | `src/procurement_agent/prompts.py` and Prompt Specification v1.0 section 8 |
 | `docs/requirements/requirements.md` (v1.0) | `docs/week1/User_Stories_And_Acceptance_Criteria.md` (v1.1) |

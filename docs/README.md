@@ -9,7 +9,7 @@ ClickUp board: [Group Y](https://app.clickup.com/9012272120/v/s/90129079418)
 | Path | What belongs here |
 |---|---|
 | [`docs/requirements/`](requirements/) | Charter, user stories, AI boundary matrix, agent task contract |
-| [`docs/architecture/`](architecture/) | Diagrams, model note, baseline/RAG/tools/agent/memory write-ups |
+| [`docs/architecture/`](architecture/) | Diagrams, model note, baseline/RAG/tools/agent/memory write-ups, [CI map](architecture/ci.md) |
 | [`docs/weekly-reports/`](weekly-reports/) | Week 1–8 progress reports and the final engineering report |
 | [`docs/evaluation/`](evaluation/) | Prompt, RAG, tool, agent and final evaluation evidence |
 | [`docs/AI-ENGINEERING-LOG.md`](AI-ENGINEERING-LOG.md) | Material AI-assisted decisions |

@@ -33,19 +33,19 @@ Two different claims are easy to confuse here, so they are separated.
 
 | Claim | Status |
 | :---- | :---- |
-| The baseline interaction is designed, implemented and exercised end to end | **Yes.** 135 automated tests pass. The full pipeline runs against a substituted backend. |
-| The interaction has been run against the live Gemini API | **No.** No live API call has been made at the time of writing. |
+| The baseline interaction is designed, implemented and exercised end to end | **Yes.** 171 automated tests pass. The full pipeline runs against a substituted backend, and the suite still runs with no key, no network and no provider SDK. |
+| The interaction has been run against the live Gemini API | **Yes**, on 11 September 2026. All six fixtures return conforming records under prompt v1.1. Accuracy against hand-keyed expected records remains unmeasured; see section 9. |
 
 Everything above the provider call — prompt construction, schema-constrained
 request assembly, response validation, safety scanning, caching, evidence
-logging — is built and tested. The provider call itself has never executed.
+logging — is built and tested. The provider call now executes against the live
+API, and the seven SDK assumptions listed in the Model Integration Handover
+were checked against google-genai 2.23.0 and all held.
 
-Consequently **no claim about the model's accuracy, latency or behaviour appears
-in this document**, because none could be supported. Section 9 lists precisely
-what is outstanding and who closes it.
-
-This distinction is the honest reading of "working baseline". The *interaction*
-works. The *model* has not been observed.
+**Only measured figures appear in this document.** Latency and conformance are
+counted from named runs. Extraction *accuracy* is not claimed anywhere: a
+conforming record can still carry a wrong figure, and no hand-keyed expected
+records exist to compare against. Section 9 lists precisely what is outstanding.
 
 ---
 
@@ -65,7 +65,7 @@ constant across evaluation runs.
 | Thinking budget | `0` (disabled) | The specification says "minimum or disabled"; resolved to a concrete value because the configuration fingerprint requires one. |
 | Response MIME type | `application/json` | Enforces structured output. |
 | Response schema | Prompt Specification section 6 | Constrained decoding; non-conforming output rejected at the API boundary. |
-| Prompt version | `1.0` | Prompt Specification section 8. |
+| Prompt version | `1.1` | Prompt Specification section 8, plus rule 6 (date notation) added after the first live run. |
 
 The application rejects any model string ending in `-latest`, `-preview` or
 `@latest`, including one supplied on the command line. Aliases repoint
@@ -92,11 +92,12 @@ unimplementable; the array is where it goes.
 
 ### 3.3 The prompt
 
-Reproduced word for word from Prompt Specification v1.0 section 8. The system
-instruction carries seven rules; in summary, the model must extract only what is
-explicitly present, preserve monetary values, currency and unit of measure
-exactly as stated, perform no arithmetic of any kind, assert nothing about
-supplier eligibility or approval, record a reason for every null, treat all
+Reproduced from Prompt Specification v1.0 section 8, with one rule added in
+v1.1. The system instruction carries eight rules; in summary, the model must
+extract only what is explicitly present, preserve monetary values, currency and
+unit of measure exactly as stated, perform no arithmetic of any kind, assert
+nothing about supplier eligibility or approval, record a reason for every null,
+render every date as YYYY-MM-DD without guessing an unstated part, treat all
 quotation content as untrusted data, and return only the JSON object.
 
 Quotation content is wrapped in `<quotation>` delimiters in the user message.
@@ -302,13 +303,23 @@ allows the entire pipeline to be exercised offline.
 None of the following is estimated anywhere in this document, in the codebase or
 in the repository. Each requires a live run.
 
+The first live runs were made on **11 September 2026** against
+`gemini-3.1-flash-lite` over the six fixtures. The run under prompt version 1.0
+rejected `02-prose-carton-vat-inclusive.md`: the model returned a date written
+in words as `30th September 2026`, which the schema rejects outright, because
+v1.0 never stated a date notation. Prompt version 1.1 adds that rule, and all
+six fixtures conform under it. The figures below are from the v1.1 run.
+
+Three of the five rows are answered. The two that remain Unknown are not
+answered by a successful run and must not be filled from one.
+
 | Outstanding item | Current state |
 | :---- | :---- |
-| **Extraction accuracy against the fixture set** | Unknown. No model has read the fixtures. Success criterion S9 has no value. |
-| **Whether the model resists the embedded instruction in fixture 05** | Unknown. The guard is tested and fires on an echoed assertion; whether the model produces one is a separate question, and is Week 7 evaluation case S8. |
-| **Measured latency, median and worst case** | Unknown. The command-line interface reports both across live calls; none have been made. |
-| **Actual free-tier rate limits** (requests per minute, tokens per minute, requests per day) | Unknown. To be read from the provider console for our own evaluation project and recorded with the date read. |
-| **Schema conformance rate** | Unknown. The evidence log format exists and records every call; no live entries yet. |
+| **Extraction accuracy against the fixture set** | **Still unknown.** The fixtures have now been read by the model, but accuracy is a comparison against hand-keyed expected records and no such records exist yet. Conformance is not accuracy: a well-formed record can carry a wrong figure. Success criterion S9 still has no value. |
+| **Whether the model resists the embedded instruction in fixture 05** | **Answered: the model resisted.** Fixture 05 returned `ok` with no suppressed patterns, so the model ignored the embedded instruction rather than echoing an approval assertion and the guard never fired. This is the better of the two valid outcomes for Week 7 evaluation case S8. It is one observation at temperature 0, not a guarantee across future prompt versions. |
+| **Measured latency, median and worst case** | **Answered: median 3.132s, worst case 4.692s, n=5 live calls** under prompt v1.1 (one fixture was served from cache). Measured by the command-line interface on the run above. Cached repeats are excluded, as the interface reports no latency figure when no live call is made. |
+| **Actual free-tier rate limits** (requests per minute, tokens per minute, requests per day) | **Still unknown.** A successful call reveals nothing about the ceilings. To be read from the provider console's rate-limit view for our own evaluation project and recorded with the date read. |
+| **Schema conformance rate** | **Answered: 6 of 6 fixtures conformed under prompt v1.1.** Under v1.0 it was 5 of 6, `02-prose-carton-vat-inclusive.md` being rejected outright on `validity_date` with no salvage, as requirement 3.3 requires. The run log carries one entry per call with the configuration fingerprint, so the two runs remain distinguishable by prompt version. |
 
 A separate handover document, `Model_Integration_Handover.md`, briefs whoever
 takes this forward. It names the single integration seam, lists every assumption
@@ -321,7 +332,7 @@ completion.
 
 | Requirement or criterion | How this deliverable addresses it |
 | :---- | :---- |
-| Requirement 3.1 — eleven fields within 30 seconds | Eleven-field contract implemented and tested; the time ceiling is unmeasured |
+| Requirement 3.1 — eleven fields within 30 seconds | Eleven-field contract implemented and tested. The time ceiling is now measured: worst case 4.692s across five live calls on 11 September 2026 under prompt v1.1, within the 30-second limit |
 | Requirement 3.2 — null with a stated reason, never inferred | `missing_fields` array; validation rejects an entry without a reason |
 | Requirement 3.3 — non-conforming output rejected | Outright rejection, no salvage path |
 | Requirement 3.7 — quotation content treated as untrusted | Delimiter wrapping, system-instruction rule 6, output scan |

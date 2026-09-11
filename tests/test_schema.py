@@ -101,7 +101,7 @@ def test_absent_required_key_is_rejected():
 
 
 def test_prose_and_code_fences_are_rejected_not_stripped():
-    """System instruction rule 7 forbids fences, so a fenced body is a failure."""
+    """System instruction rule 8 forbids fences, so a fenced body is a failure."""
     fenced = "```json\n" + json.dumps(conforming_payload()) + "\n```"
     with pytest.raises(schema.SchemaValidationError):
         schema.validate_raw(fenced)

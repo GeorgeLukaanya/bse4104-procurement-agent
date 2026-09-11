@@ -82,7 +82,7 @@ class ExtractionConfig:
 
     # Prompt Specification v1.0 section 8. Must be bumped whenever the literal
     # prompt text in prompts.py changes. See prompts.py for why.
-    prompt_version: str = "1.0"
+    prompt_version: str = "1.1"
 
     def __post_init__(self) -> None:
         if not self.model or not self.model.strip():

@@ -42,7 +42,7 @@ def test_decoding_settings_match_the_prompt_specification():
     assert config.max_output_tokens == 2048
     assert config.thinking_budget == 0
     assert config.response_mime_type == "application/json"
-    assert config.prompt_version == "1.0"
+    assert config.prompt_version == "1.1"
 
 
 def test_fingerprint_contains_every_setting_that_changes_output():
@@ -60,7 +60,7 @@ def test_fingerprint_contains_every_setting_that_changes_output():
 def test_fingerprint_digest_is_stable_and_order_independent():
     a, b = ExtractionConfig(), ExtractionConfig()
     assert a.fingerprint_digest() == b.fingerprint_digest()
-    assert a.fingerprint_digest() != ExtractionConfig(prompt_version="1.1").fingerprint_digest()
+    assert a.fingerprint_digest() != ExtractionConfig(prompt_version="9.9").fingerprint_digest()
 
 
 def test_api_key_is_read_from_the_environment_only():
@@ -88,14 +88,15 @@ def test_config_is_immutable():
 
 
 def test_prompt_version_matches_the_config():
-    assert prompts.PROMPT_VERSION == ExtractionConfig().prompt_version == "1.0"
+    assert prompts.PROMPT_VERSION == ExtractionConfig().prompt_version == "1.1"
 
 
-def test_system_instruction_carries_all_seven_rules():
+def test_system_instruction_carries_all_eight_rules():
+    """v1.1 inserted rule 6 (date notation) and renumbered the two after it."""
     text = prompts.SYSTEM_INSTRUCTION
-    for n in range(1, 8):
+    for n in range(1, 9):
         assert f"\n{n}. " in text, f"rule {n} missing or not on its own line"
-    assert "8. " not in text
+    assert "9. " not in text
 
 
 @pytest.mark.parametrize(

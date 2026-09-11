@@ -37,14 +37,14 @@ required by section 6 of the project brief. Append entries; do not rewrite histo
 - **Outcome:** Accepted into the repository as the Week 2 baseline, subject to
   the live-call verification listed at the end of this entry.
 
-- **Deliverable produced:** `docs/week2/Working_Baseline_Model_Interaction.md` —
+- **Deliverable produced:** `docs/architecture/working-baseline.md` —
   the Week 2 written deliverable, for the shared Google Docs folder. It separates
   two claims that are easy to conflate: the baseline *interaction* is built and
   exercised end to end (135 tests), while the *provider call* has never executed.
   No accuracy, latency or rate-limit figure appears in it, because none could be
   supported.
 
-- **Handover produced:** `Model_Integration_Handover.md` — a briefing
+- **Handover produced:** `docs/architecture/model-integration-handover.md` — a briefing
   for whoever owns the Gemini API integration. It names the single seam
   (`GeminiBackend.generate()`), lists what is already built, and states plainly
   that the body of that method was written without the SDK installed and has
@@ -55,8 +55,8 @@ required by section 6 of the project brief. Append entries; do not rewrite histo
 - **Documents amended:** `README.md` (setup, run and test instructions),
   `.env.example` (temperature `0.2`→`0`, max tokens `1024`→`2048`, both of which
   contradicted Prompt Specification section 4; pinned model string and
-  `GEMINI_API_KEY` added), `docs/week2/Model_Selection_Note.md` (see below) and
-  `docs/week2/Prompt_Specification_And_Prompt_Version_History.md` (a pointer from
+  `GEMINI_API_KEY` added), `docs/architecture/model-selection-note.md` (see below) and
+  `prompts/quotation-extraction-v1.md` (a pointer from
   section 8 to its implementation in `prompts.py`, and the warning about bumping
   the version). **The Model Selection Note is a team deliverable and was edited;
   its author should review the change.** Section 2 asserted 15 RPM / 250,000 TPM

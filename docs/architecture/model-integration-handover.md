@@ -308,10 +308,10 @@ in with measurements, never estimates.
 
 | Document | What it needs |
 |---|---|
-| `docs/week2/Model_Selection_Note.md` — measurement table | RPM, TPM, RPD read from the AI Studio rate limit view **for our own project**, with the date read |
+| `docs/architecture/model-selection-note.md` — measurement table | RPM, TPM, RPD read from the AI Studio rate limit view **for our own project**, with the date read |
 | Same, same table | Median and worst-case extraction latency, with *n*. The CLI prints both across live calls |
 | Same, evidence table | Count of extraction calls, how many schema-conformant, how many rejected — from the run log |
-| `docs/week2/Prompt_Specification_And_Prompt_Version_History.md` — version history | The `Result` cell for v1.0, against the ten-case evaluation table |
+| `prompts/quotation-extraction-v1.md` — version history | The `Result` cell for v1.0, against the ten-case evaluation table |
 | `docs/AI-ENGINEERING-LOG.md` | A dated entry: what you changed in `GeminiBackend`, which assumptions in section 5 above turned out wrong, and what you measured |
 
 Commit the run log. It is the evidence behind the Model Selection Note's
@@ -336,38 +336,20 @@ than accumulated is not evidence.
 
 ## 10. Reference
 
-- Requirements Document **v1.1** — `docs/week1/User_Stories_And_Acceptance_Criteria.md`
+- Requirements Document **v1.1** — `docs/requirements/user-stories.md`
   (glossary "Normalised Quotation"; requirements 2, 3, 6, 14)
-- AI Boundary Matrix **v1.1** — `docs/week1/Ai_Boundary_Matrix.md`
-- Project Charter **v1.1** — `docs/week1/Project_Charter.md`
-- Prompt Specification **v1.0** — `docs/week2/Prompt_Specification_And_Prompt_Version_History.md`
-- Model Selection Note — `docs/week2/Model_Selection_Note.md`
-- Working Baseline Model Interaction — `docs/week2/Working_Baseline_Model_Interaction.md`
+- AI Boundary Matrix **v1.1** — `docs/requirements/ai-boundary-matrix.md`
+- Project Charter **v1.1** — `docs/requirements/project-charter.md`
+- Prompt Specification **v1.0** — `prompts/quotation-extraction-v1.md`
+- Model Selection Note — `docs/architecture/model-selection-note.md`
+- Working Baseline Model Interaction — `docs/architecture/working-baseline.md`
+- Ten-case evaluation table — `docs/evaluation/prompt-evaluation.md`
 - Week 2 engineering log entry — `docs/AI-ENGINEERING-LOG.md`
+- Week-by-week index — `docs/README.md`
 - Setup, running and troubleshooting — `README.md`
 
-### Superseded documents still in the tree — read before you pick up a file
-
-The earlier branch history has been merged, so the repository now contains both
-generations of several documents side by side. **Do not build against these:**
-
-| Superseded file | Replaced by |
-|---|---|
-| `docs/prompts/quotation-extraction-v1.txt` | `src/procurement_agent/prompts.py` and Prompt Specification v1.0 section 8 |
-| `docs/requirements/requirements.md` (v1.0) | `docs/week1/User_Stories_And_Acceptance_Criteria.md` (v1.1) |
-| `docs/ai-matrix-boundaries/ai-matrix.md` (v1.0) | `docs/week1/Ai_Boundary_Matrix.md` (v1.1) |
-| `docs/architecture/architecture.md` (v1.0) | `docs/week1/Initial_Architecture_Context_Diagram.md` (v1.1) |
-
-**`docs/prompts/quotation-extraction-v1.txt` is the one most likely to catch
-you.** It is the v0.1 prompt and it asks for **six** fields — supplier, item,
-quantity, unit price, currency, validity date. That is precisely the defect the
-Week 1 cross-document audit found: six fields cannot produce the inputs for
-Landed Cost, which Requirements Document v1.1 makes the basis for supplier
-ranking. A supplier quoting per carton, VAT exclusive, with high freight would
-outrank a cheaper one and the system would report it as the better option.
-
-The prompt you send is the one in `prompts.py`. It is eleven fields. Do not copy
-text out of that `.txt` file.
-
-The team should decide whether to delete these stale files or mark them
-superseded; until that happens, this table is the guide.
+The pre-audit v1.0 copies have been removed, including the six-field
+`docs/prompts/quotation-extraction-v1.txt`. That prompt asked for six fields —
+supplier, item, quantity, unit price, currency, validity date — which cannot
+produce the inputs for Landed Cost. The prompt you send is the one in
+`prompts.py`. It is eleven fields.

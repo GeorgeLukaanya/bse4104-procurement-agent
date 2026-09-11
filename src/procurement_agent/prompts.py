@@ -14,7 +14,7 @@
  Changing this text therefore invalidates every evaluation result recorded
  against the old version. Bump the version, add a row to the Prompt Version
  History table in
- docs/week2/Prompt_Specification_And_Prompt_Version_History.md naming the
+ prompts/quotation-extraction-v1.md naming the
  evaluation case that forced the change, and re-run the evaluation set.
 =============================================================================
 

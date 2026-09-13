@@ -1,0 +1,56 @@
+{
+  "results": [
+    {
+      "source": "evaluation-cases/TC-03.md",
+      "status": "ok",
+      "cache_key": "b9413e818e67a3a3faf6c76b5e519b50915fda329a4a2c4dea9d0d70f8afc83a",
+      "cache_hit": false,
+      "attempts": 1,
+      "latency_s": 3.4292,
+      "record": {
+        "supplier_name": "Jinja Stationers",
+        "currency": "UGX",
+        "vat_treatment": "exclusive",
+        "vat_rate_percent": 18.0,
+        "delivery_cost": 25000.0,
+        "lead_time_days": 2.0,
+        "validity_date": null,
+        "items": [
+          {
+            "item_name": "Toner Cartridge 85A",
+            "quantity": 4.0,
+            "unit_of_measure": "Cartridge",
+            "unit_price": 245000.0
+          }
+        ],
+        "missing_fields": [
+          {
+            "field": "validity_date",
+            "reason": "The document does not specify a validity date for the quotation."
+          }
+        ]
+      },
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": true,
+        "blockers": []
+      },
+      "detail": null,
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.1"
+      }
+    }
+  ],
+  "summary": {
+    "files": 1,
+    "cache_hits": 0,
+    "live_calls": 1,
+    "median_latency_s": 3.4292,
+    "worst_latency_s": 3.4292
+  }
+}

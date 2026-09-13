@@ -1,0 +1,51 @@
+{
+  "results": [
+    {
+      "source": "evaluation-cases/TC-05.md",
+      "status": "ok",
+      "cache_key": "3c257682f89f153bd395218a4f22e435ee40292f8f16fd65dae86aeb7b6c239a",
+      "cache_hit": false,
+      "attempts": 2,
+      "latency_s": 8.5526,
+      "record": {
+        "supplier_name": "TECHHUB UGANDA",
+        "currency": "USD",
+        "vat_treatment": "exclusive",
+        "vat_rate_percent": 18.0,
+        "delivery_cost": 20.0,
+        "lead_time_days": 14.0,
+        "validity_date": "2026-10-01",
+        "items": [
+          {
+            "item_name": "USB Flash Drive",
+            "quantity": 25.0,
+            "unit_of_measure": "Unit",
+            "unit_price": 8.5
+          }
+        ],
+        "missing_fields": []
+      },
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": true,
+        "blockers": []
+      },
+      "detail": null,
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.1"
+      }
+    }
+  ],
+  "summary": {
+    "files": 1,
+    "cache_hits": 0,
+    "live_calls": 1,
+    "median_latency_s": 8.5526,
+    "worst_latency_s": 8.5526
+  }
+}

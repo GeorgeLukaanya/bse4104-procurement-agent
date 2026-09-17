@@ -181,7 +181,11 @@ jobs:
           python-version: "3.11"
       - name: Install runtime extras and pip-audit
         run: |
-          python -m pip install -U pip
+          # setuptools is upgraded because the runner's Python ships with its
+          # own copy, which pip-audit audits along with our dependencies. The
+          # preinstalled 79.0.1 carries PYSEC-2026-3447 (fixed in 83.0.0).
+          # Upgrading patches it; ignoring the advisory would only hide it.
+          python -m pip install -U pip setuptools
           pip install -e ".[dev,gemini,rag]" pip-audit
       - name: Audit installed packages
         run: pip-audit --skip-editable

@@ -126,7 +126,9 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install package and pytest
-        run: pip install -e ".[dev]"
+        # rag: the RAG tests run Qdrant in local in-memory mode. No server, no
+        # network, and no embedding model is downloaded (tests use a fake).
+        run: pip install -e ".[dev,rag]"
       - name: Run the suite
         run: pytest
 
@@ -180,7 +182,7 @@ jobs:
       - name: Install runtime extras and pip-audit
         run: |
           python -m pip install -U pip
-          pip install -e ".[dev,gemini]" pip-audit
+          pip install -e ".[dev,gemini,rag]" pip-audit
       - name: Audit installed packages
         run: pip-audit --skip-editable
 
@@ -214,7 +216,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install -e ".[dev]"
+      - run: pip install -e ".[dev,rag]"
       - run: |
           shopt -s nullglob
           files=(tests/test_rag*.py tests/test_retrieval*.py)

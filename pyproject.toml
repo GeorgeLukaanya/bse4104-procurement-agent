@@ -15,6 +15,11 @@ dependencies = []
 # The provider SDK is optional so that the test suite installs and runs without
 # it, with no API key and no network.
 gemini = ["google-genai>=1.0"]
+# Week 3 retrieval. Qdrant runs in local mode (no server) and FastEmbed runs the
+# embedding model locally. Neither needs network at test time: tests inject a
+# fake embedder, and FastEmbed only downloads its model when one is actually
+# loaded. query_points, which retrieval uses, arrived in qdrant-client 1.10.
+rag = ["qdrant-client>=1.10", "fastembed>=0.3"]
 dev = ["pytest>=7.0"]
 # Security and audit tools used by .github/workflows/ci.yml. Semgrep is
 # installed in CI only (it is a large extra); run it locally with
@@ -27,6 +32,8 @@ ci = [
 
 [project.scripts]
 procurement-extract = "procurement_agent.cli:main"
+procurement-policy = "procurement_agent.rag.cli:main"
+procurement-policy-ingest = "procurement_agent.rag.ingest:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -1,0 +1,51 @@
+{
+  "results": [
+    {
+      "source": "evaluation-cases/TC-01.md",
+      "status": "ok",
+      "cache_key": "967aea8528579a61643c68d3d7c41d9602cbec63d6cac97b866add8681e47770",
+      "cache_hit": false,
+      "attempts": 1,
+      "latency_s": 2.4821,
+      "record": {
+        "supplier_name": "KAMPALA OFFICE SUPPLIES LTD.",
+        "currency": "UGX",
+        "vat_treatment": "exclusive",
+        "vat_rate_percent": 18.0,
+        "delivery_cost": 50000.0,
+        "lead_time_days": 3.0,
+        "validity_date": "2026-09-30",
+        "items": [
+          {
+            "item_name": "A4 Printing Paper",
+            "quantity": 50.0,
+            "unit_of_measure": "Ream",
+            "unit_price": 18000.0
+          }
+        ],
+        "missing_fields": []
+      },
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": true,
+        "blockers": []
+      },
+      "detail": null,
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.1"
+      }
+    }
+  ],
+  "summary": {
+    "files": 1,
+    "cache_hits": 0,
+    "live_calls": 1,
+    "median_latency_s": 2.4821,
+    "worst_latency_s": 2.4821
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "results": [
+    {
+      "source": "evaluation-cases/TC-10.md",
+      "status": "ok",
+      "cache_key": "f8e09dc7f4ff8d3067f9736bd08be2ab57560e9e6bf7070667cb2616455ac12e",
+      "cache_hit": false,
+      "attempts": 1,
+      "latency_s": 3.4696,
+      "record": {
+        "supplier_name": null,
+        "currency": null,
+        "vat_treatment": null,
+        "vat_rate_percent": null,
+        "delivery_cost": null,
+        "lead_time_days": null,
+        "validity_date": null,
+        "items": [],
+        "missing_fields": [
+          {
+            "field": "supplier_name",
+            "reason": "The document does not state the name of the supplier."
+          },
+          {
+            "field": "currency",
+            "reason": "No pricing information provided."
+          },
+          {
+            "field": "vat_treatment",
+            "reason": "No pricing information provided."
+          },
+          {
+            "field": "vat_rate_percent",
+            "reason": "No pricing information provided."
+          },
+          {
+            "field": "delivery_cost",
+            "reason": "No pricing information provided."
+          },
+          {
+            "field": "lead_time_days",
+            "reason": "No lead time information provided."
+          },
+          {
+            "field": "validity_date",
+            "reason": "No validity date provided."
+          },
+          {
+            "field": "items",
+            "reason": "The document explicitly states it is not a quotation and contains no items."
+          }
+        ]
+      },
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": false,
+        "blockers": [
+          {
+            "field": "vat_treatment",
+            "clause": "6.3",
+            "reason": "VAT treatment not stated, so an inclusive price cannot be distinguished from an exclusive one"
+          },
+          {
+            "field": "delivery_cost",
+            "clause": "6.3",
+            "reason": "delivery or freight cost not stated, so it cannot be apportioned into landed cost"
+          },
+          {
+            "field": "currency",
+            "clause": "6.1",
+            "reason": "currency not stated, so it cannot be determined whether the Configured Exchange Rate applies"
+          },
+          {
+            "field": "unit_price",
+            "clause": "6.1",
+            "reason": "no line items were extracted, so there is no price"
+          },
+          {
+            "field": "unit_of_measure",
+            "clause": "6.3",
+            "reason": "no line items were extracted, so there is no unit"
+          }
+        ]
+      },
+      "detail": null,
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.1"
+      }
+    }
+  ],
+  "summary": {
+    "files": 1,
+    "cache_hits": 0,
+    "live_calls": 1,
+    "median_latency_s": 3.4696,
+    "worst_latency_s": 3.4696
+  }
+}

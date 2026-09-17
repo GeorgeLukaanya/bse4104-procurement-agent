@@ -1,0 +1,57 @@
+{
+  "results": [
+    {
+      "source": "evaluation-cases/TC-02.md",
+      "status": "ok",
+      "cache_key": "6eeb7569519a02de69d95f215725b27787b997e389ed7160b1efbdfcf23f117e",
+      "cache_hit": false,
+      "attempts": 1,
+      "latency_s": 2.6436,
+      "record": {
+        "supplier_name": "NILE TRADERS",
+        "currency": "UGX",
+        "vat_treatment": "inclusive",
+        "vat_rate_percent": 18.0,
+        "delivery_cost": 100000.0,
+        "lead_time_days": 5.0,
+        "validity_date": "2026-10-15",
+        "items": [
+          {
+            "item_name": "Blue ballpoint pens",
+            "quantity": 20.0,
+            "unit_of_measure": "box",
+            "unit_price": 12500.0
+          },
+          {
+            "item_name": "Staplers",
+            "quantity": 10.0,
+            "unit_of_measure": "Each",
+            "unit_price": 8000.0
+          }
+        ],
+        "missing_fields": []
+      },
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": true,
+        "blockers": []
+      },
+      "detail": null,
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.1"
+      }
+    }
+  ],
+  "summary": {
+    "files": 1,
+    "cache_hits": 0,
+    "live_calls": 1,
+    "median_latency_s": 2.6436,
+    "worst_latency_s": 2.6436
+  }
+}

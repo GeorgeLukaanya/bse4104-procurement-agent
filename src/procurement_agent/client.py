@@ -233,7 +233,16 @@ class GeminiBackend:
     require google-genai to be installed.
     """
 
-    def __init__(self, api_key: str, client: Any | None = None) -> None:
+    def __init__(
+        self,
+        api_key: str,
+        client: Any | None = None,
+        response_schema: dict[str, Any] | None = None,
+    ) -> None:
+        # None means the Normalised Quotation schema, so extraction is unchanged.
+        # Policy grounding passes its own; sending the quotation schema there
+        # would constrain the model to emit a quotation record.
+        self._response_schema = response_schema
         if client is not None:
             self._client = client
             return
@@ -265,7 +274,11 @@ class GeminiBackend:
                     temperature=config.temperature,
                     max_output_tokens=config.max_output_tokens,
                     response_mime_type=config.response_mime_type,
-                    response_schema=response_schema(),
+                    response_schema=(
+                        self._response_schema
+                        if self._response_schema is not None
+                        else response_schema()
+                    ),
                     thinking_config=types.ThinkingConfig(
                         thinking_budget=config.thinking_budget
                     ),

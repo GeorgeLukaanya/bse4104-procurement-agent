@@ -1,0 +1,9 @@
+{
+  "_note": "Synthetic example requisition. Totals stand in for landed-cost figures from the deterministic calculator, which does not exist yet.",
+  "items": [
+    {"item": "120 bags of cement", "category": "building materials", "estimated_total": 4140000, "currency": "UGX"},
+    {"item": "25 kg binding wire coils", "category": "building materials", "estimated_total": 900000, "currency": "UGX"},
+    {"item": "40 safety helmets", "category": "safety equipment", "estimated_total": 800000, "currency": "UGX"},
+    {"item": "diesel for the delivery truck", "category": "fuel", "estimated_total": 1000000, "currency": "UGX"}
+  ]
+}

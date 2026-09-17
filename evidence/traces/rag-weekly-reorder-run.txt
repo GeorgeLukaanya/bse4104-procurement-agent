@@ -1,0 +1,166 @@
+REQUISITION: 4 item(s) | top 5 per search | cutoffs general 0.5, item 0.58
+             BAAI/bge-small-en-v1.5
+
+============================================================================
+ITEM 1 of 4: 120 bags of cement
+============================================================================
+  category        : building materials
+  estimated total : UGX 4,140,000
+
+  retrieved clauses
+    general rules
+      0.616  Competitive Quotation Policy v1.0, POL-001-C03  (Higher value purchases)
+      0.576  Competitive Quotation Policy v1.0, POL-001-C02  (Standard purchases)
+      0.557  Competitive Quotation Policy v1.0, POL-001-C01  (Low value purchases)
+      0.551  Quotation Evaluation Policy v1.0, POL-003-C01  (Requisition currency)
+      0.528  Weekly Reorder Review Procedure v1.0, PRO-001-C03  (Collect current offers)
+    item rules
+      0.684  Cement and Masonry Product Specifications v1.0, SPEC-001-C01  (Cement)
+      0.585  Cement and Masonry Product Specifications v1.0, SPEC-001-C03  (Substitution)
+
+  explanation
+    This purchase requires at least three comparable written quotations from
+    eligible suppliers [POL-001-C02]. Any foreign-currency quotations must
+    include the original currency and the approved exchange-rate reference
+    [POL-003-C01]. The procurement officer must group items, check
+    requirements, and assemble offers [PRO-001-C03]. Cement must be compared
+    using the same strength grade and 50 kg bag size, with deterministic
+    conversion for any prices per tonne [SPEC-001-C01], and any ambiguous
+    alternatives require review [SPEC-001-C03].
+
+  applicable clauses
+    Competitive Quotation Policy v1.0, POL-001-C02
+      The estimated total falls within the range for standard purchases.
+    Quotation Evaluation Policy v1.0, POL-003-C01
+      Applies to all purchase requisitions regarding currency.
+    Weekly Reorder Review Procedure v1.0, PRO-001-C03
+      Applies to the weekly reorder review procedure.
+    Cement and Masonry Product Specifications v1.0, SPEC-001-C01
+      Specifies requirements for cement products.
+    Cement and Masonry Product Specifications v1.0, SPEC-001-C03
+      Specifies requirements for cement substitution.
+
+  citation check  : PASSED, all 5 citation(s) name clauses supplied for this item
+  item status     : OK
+
+============================================================================
+ITEM 2 of 4: 25 kg binding wire coils
+============================================================================
+  category        : building materials
+  estimated total : UGX 900,000
+
+  retrieved clauses
+    general rules
+      0.641  Competitive Quotation Policy v1.0, POL-001-C03  (Higher value purchases)
+      0.620  Competitive Quotation Policy v1.0, POL-001-C02  (Standard purchases)
+      0.605  Quotation Evaluation Policy v1.0, POL-003-C01  (Requisition currency)
+      0.595  Competitive Quotation Policy v1.0, POL-001-C01  (Low value purchases)
+      0.589  Quotation Evaluation Policy v1.0, POL-003-C02  (Foreign currency)
+    item rules
+      0.727  Cement and Masonry Product Specifications v1.0, SPEC-001-C02  (Binding wire)
+      0.615  Cement and Masonry Product Specifications v1.0, SPEC-001-C01  (Cement)
+      0.602  Electrical and Plumbing Product Specifications v1.0, SPEC-003-C01  (Electrical cable)
+
+  explanation
+    This purchase requires at least three comparable written quotations from
+    eligible suppliers [POL-001-C02]. Foreign-currency quotations must show
+    the original currency and exchange-rate reference [POL-003-C01], and
+    bulk units must have a stated conversion factor matching the
+    specification [POL-003-C02]. Coil quotations for binding wire must
+    include a stated coil weight to allow for unit conversion
+    [SPEC-001-C02].
+
+  applicable clauses
+    Competitive Quotation Policy v1.0, POL-001-C02
+      The estimated total falls within the range for standard purchases.
+    Quotation Evaluation Policy v1.0, POL-003-C01
+      Applies to all purchase requisitions regarding currency.
+    Quotation Evaluation Policy v1.0, POL-003-C02
+      Specifies requirements for comparing bulk units.
+    Cement and Masonry Product Specifications v1.0, SPEC-001-C02
+      Specifies requirements for binding wire.
+
+  citation check  : PASSED, all 4 citation(s) name clauses supplied for this item
+  item status     : OK
+
+============================================================================
+ITEM 3 of 4: 40 safety helmets
+============================================================================
+  category        : safety equipment
+  estimated total : UGX 800,000
+
+  retrieved clauses
+    general rules
+      0.656  Competitive Quotation Policy v1.0, POL-001-C03  (Higher value purchases)
+      0.633  Competitive Quotation Policy v1.0, POL-001-C02  (Standard purchases)
+      0.631  Competitive Quotation Policy v1.0, POL-001-C01  (Low value purchases)
+      0.616  Quotation Evaluation Policy v1.0, POL-003-C01  (Requisition currency)
+      0.570  Weekly Reorder Review Procedure v1.0, PRO-001-C03  (Collect current offers)
+    item rules
+      0.608  Hand Tools and Safety Equipment Specifications v1.0, SPEC-002-C02  (Protective equipment)
+      0.584  Hand Tools and Safety Equipment Specifications v1.0, SPEC-002-C03  (Unstated attributes)
+
+  explanation
+    This purchase requires at least three comparable written quotations from
+    eligible suppliers [POL-001-C02]. Foreign-currency quotations must
+    include the original currency and exchange-rate reference [POL-003-C01],
+    and the procurement officer must assemble offers [PRO-001-C03]. Helmets
+    must be compared per piece and state the applicable rating
+    [SPEC-002-C02], and the agent must not infer any unstated attributes
+    [SPEC-002-C03].
+
+  applicable clauses
+    Competitive Quotation Policy v1.0, POL-001-C02
+      The estimated total falls within the range for standard purchases.
+    Quotation Evaluation Policy v1.0, POL-003-C01
+      Applies to all purchase requisitions regarding currency.
+    Weekly Reorder Review Procedure v1.0, PRO-001-C03
+      Applies to the weekly reorder review procedure.
+    Hand Tools and Safety Equipment Specifications v1.0, SPEC-002-C02
+      Specifies requirements for safety equipment.
+    Hand Tools and Safety Equipment Specifications v1.0, SPEC-002-C03
+      Prohibits inferring unstated attributes.
+
+  citation check  : PASSED, all 5 citation(s) name clauses supplied for this item
+  item status     : OK
+
+============================================================================
+ITEM 4 of 4: diesel for the delivery truck
+============================================================================
+  category        : fuel
+  estimated total : UGX 1,000,000
+
+  retrieved clauses
+    general rules
+      0.652  Competitive Quotation Policy v1.0, POL-001-C03  (Higher value purchases)
+      0.636  Competitive Quotation Policy v1.0, POL-001-C02  (Standard purchases)
+      0.621  Competitive Quotation Policy v1.0, POL-001-C01  (Low value purchases)
+      0.607  Quotation Evaluation Policy v1.0, POL-003-C01  (Requisition currency)
+      0.583  Weekly Reorder Review Procedure v1.0, PRO-001-C03  (Collect current offers)
+    item rules
+      (none kept)
+    notes
+      No product specification in the Policy Corpus was found for diesel for
+      the delivery truck (fuel).
+
+  explanation
+    This purchase requires at least three comparable written quotations from
+    eligible suppliers [POL-001-C02]. Foreign-currency quotations must
+    include the original currency and exchange-rate reference [POL-003-C01],
+    and the procurement officer must assemble offers [PRO-001-C03]. No
+    product specification was found for this item in the Policy Corpus.
+
+  applicable clauses
+    Competitive Quotation Policy v1.0, POL-001-C02
+      The estimated total falls within the range for standard purchases.
+    Quotation Evaluation Policy v1.0, POL-003-C01
+      Applies to all purchase requisitions regarding currency.
+    Weekly Reorder Review Procedure v1.0, PRO-001-C03
+      Applies to the weekly reorder review procedure.
+
+  citation check  : PASSED, all 3 citation(s) name clauses supplied for this item
+  item status     : OK
+
+============================================================================
+requisition    : OK, every item can be shown (4 of 4)
+               : 1 model call, 1 attempt(s), 42.01s

@@ -86,10 +86,12 @@ pytest tests/test_rag_*.py
 | 1 | Embedding Model | `BAAI/bge-small-en-v1.5` through FastEmbed, run locally | [`embedder.py`](../../src/procurement_agent/rag/embedder.py) |
 | 1 | Vector Index | Qdrant on disk in `.cache/policy-index/`, with a manifest recording the model and a fingerprint of every clause | [`ingest.py`](../../src/procurement_agent/rag/ingest.py), [`index.py`](../../src/procurement_agent/rag/index.py) |
 | 2 | Retrieval Query Builder | Per item: `Purchase of 120 bags of cement, category building materials, estimated total UGX 4,140,000` | [`retriever.py`](../../src/procurement_agent/rag/retriever.py) |
-| 2 | Vector Search | Two searches per item, explained below | [`retriever.py`](../../src/procurement_agent/rag/retriever.py) |
+| 2 | Vector Search | Two searches per item where the diagram shows one; explained below | [`retriever.py`](../../src/procurement_agent/rag/retriever.py) |
 | 3 | Prompt Builder + Gemini | Every item with its own clauses goes to `gemini-3.1-flash-lite` in one call, prompt version `grounding-1.1` | [`grounding.py`](../../src/procurement_agent/rag/grounding.py) |
 | 3 | Citation Validator | Every cited clause must match, by document, version and clause ID, a clause retrieved for that item | [`citations.py`](../../src/procurement_agent/rag/citations.py) |
-| 3 | Officer review | Each item is shown or withheld on its own, and the run is traced | [`pipeline.py`](../../src/procurement_agent/rag/pipeline.py), [`cli.py`](../../src/procurement_agent/rag/cli.py) |
+| 3 | Procurement Officer Review | Not built here. The pipeline decides what may be shown: each item is shown or withheld on its own, and the run is traced | [`pipeline.py`](../../src/procurement_agent/rag/pipeline.py), [`cli.py`](../../src/procurement_agent/rag/cli.py) |
+
+The implementation departs from the diagram in four places, set out in [Where this differs from the architecture diagram](#where-this-differs-from-the-architecture-diagram).
 
 **Why two searches.** General rules (policies and procedures) apply to every purchase, so the top 5 are always kept above a low floor of 0.50. Product specifications apply only to particular goods, so they are kept only above 0.58. One cutoff cannot serve both: every query is phrased as a purchase, so purchases the corpus says nothing specific about still score 0.583 to 0.687 against the general rules, as high as purchases it does cover. Without a specification cutoff, a purchase of airline tickets was matched to the cement specification. Best specification scores do separate, which is where the 0.58 cutoff comes from. Measured over nine purchases:
 
@@ -127,7 +129,7 @@ Every run also appends one JSON line to `evidence/traces/rag-runs.jsonl`. It rec
 | No index, or a policy changed since ingestion | The command stops with *"run ingest"* and makes no call | `test_rag_ingest.py` |
 | Rate limit or network failure | Bounded retries, then the affected items are withheld with the reason | `test_rag_pipeline.py` |
 
-Withheld items keep their retrieved clauses in the output and the trace, so a retry does not need to search again.
+Withheld items keep their retrieved clauses and the reason in the output and the trace, so the officer can see what was found and why it was held back. Nothing carries over between runs: retrying means running the command again, which searches again and makes a new Gemini call. See point 1 under [Where this differs from the architecture diagram](#where-this-differs-from-the-architecture-diagram).
 
 ### Run example
 
@@ -192,6 +194,29 @@ When the index is missing, the command stops before any call:
 error: no policy index at .cache\does-not-exist. Build it first with `python -m procurement_agent.rag.ingest`.
 ```
 
+### Where this differs from the architecture diagram
+
+The implementation follows the [RAG architecture](rag-architecture.md)'s three stages but differs from the diagram in four places. Where they disagree, this section describes what is actually built. These were raised in team review and passed to the diagram's owner.
+
+**1. Failure handling is split, and state is not preserved.** The diagram sends both *validation failed* and *corpus unavailable* to one box: pause the workflow, preserve state, allow retry. The implementation treats them differently, and does not preserve state.
+
+| Diagram | Implementation |
+|---|---|
+| Corpus unavailable: pause, preserve state | A missing or out-of-date index stops the command **before** any search or model call, with instructions to run ingest (exit code 2) |
+| Validation failed: pause, preserve state | A citation failure withholds **only that item**. The other items are still shown and the run completes (exit code 1) |
+| Allow retry without repeating completed steps | **Not built.** Nothing is saved between runs. The trace records what was retrieved and why an item was withheld, but a retry searches again and calls Gemini again |
+
+Withholding per item was chosen so that one ungrounded citation for cement does not hide a correctly grounded answer for binding wire. Preserving state so that a retry skips completed steps is still required, by Requirement 7.5 and by the AI Boundary Matrix (*"the workflow pauses while preserving current state, so that a retry does not repeat completed steps"*). It belongs to the Week 5 state model and remains a gap until then.
+
+**2. Two searches, not one.** The diagram has one vector search returning the top-k chunks, with an absence note only when nothing relevant is found. The implementation runs two searches per item: general rules (policies and procedures, top 5 above 0.50) and product specifications (top 5 above 0.58). The absence note is per search, so the normal case is an item with general rules but no specification, as with item 4 (diesel) in the run example. The measurements behind the split are under *Why two searches* above.
+
+**3. A requisition, not a single request.** The diagram follows one request through. The implementation takes every item on a requisition: each item is searched on its own, all items go to Gemini in one call, and each item's answer is checked and then shown or withheld on its own. The reasons are under *Why one Gemini call per requisition* above.
+
+**4. Two steps the diagram does not show.**
+
+- **Prohibited-pattern suppression** (Requirement 14.2) runs on every answer alongside the citation check, and takes priority over it. An answer asserting approval, supplier selection or a financial commitment is suppressed, and its text is never written to the trace.
+- **The trace.** Every run appends one entry to `evidence/traces/rag-runs.jsonl`, as the AI Boundary Matrix requires model calls, retrieval results, suppressions and failures to be recorded.
+
 ### Known limitations
 
 - **The 30-second limit in requirement 7.1 was not met on the recorded run.** The single Gemini call took 42.01 seconds on its first attempt. An earlier development run of the same requisition, not in the committed evidence, took 6.29 seconds. The time is spent at the provider, so it needs measuring across more runs before anything is concluded.
@@ -199,7 +224,7 @@ error: no policy index at .cache\does-not-exist. Build it first with `python -m 
 - **Specification cutoffs are borderline.** For binding wire, the cement (0.615) and electrical cable (0.602) specifications passed the 0.58 cutoff. Gemini did not cite them. The cutoffs come from nine purchases and should be tuned by the evaluation.
 - **All four sample items fall in the same band** (UGX 500,000 to 5,000,000), so this run does not test band selection at the boundaries.
 - **Items are entered by hand.** Requirement 7.1 takes them from the confirmed landed-cost comparison, which no one has built yet. The command line and requisition file stand in for it.
-- **State is not kept across sessions.** Requirement 7.5 asks for the comparison table to be preserved for retry. A withheld item keeps its retrieved clauses within the run and the trace; persistent workflow state belongs to the Week 5 state model.
+- **Workflow state is not preserved for retry.** A retry repeats the search and the Gemini call. See point 1 under *Where this differs from the architecture diagram*.
 - **The documents disagree on when retrieval happens.** The Project Charter (workflow step 3) retrieves policy before extraction, from an estimated value band. Requirement 7.1 and the RAG architecture retrieve after the comparison is confirmed. This pipeline follows requirement 7.1.
 - **The prohibited-pattern guard misses some phrasings,** such as *"Nakawa is selected as the supplier"*. It is shared with extraction in `guards.py`.
 
@@ -211,4 +236,4 @@ error: no policy index at .cache\does-not-exist. Build it first with `python -m 
 | 7.2 Only the Policy Corpus | Prompt rule 1, plus the citation validator rejecting anything not retrieved |
 | 7.3 Explicit statement when no clause is found for an item | Absence notes, per item |
 | 7.4 Clauses shown by document name, version and clause ID | Report output and trace |
-| 7.5 Corpus unavailable: notify, halt, allow retry | Missing or stale index stops the command with instructions; comparison-table preservation is pending the calculator |
+| 7.5 Corpus unavailable: notify, halt, allow retry | Missing or stale index stops the command before any call, with instructions. **Not met:** preserving the comparison table so a retry skips earlier steps, pending the calculator and the Week 5 state model |

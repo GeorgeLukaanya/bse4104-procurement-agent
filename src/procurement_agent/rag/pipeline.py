@@ -19,10 +19,15 @@ whether all, some or none of its items can be shown, so nothing downstream
 mistakes a partial result for a complete one.
 
 When an answer is withheld, the retrieved clauses and the reason are still
-returned and traced, so the officer can see what was found and the run can be
-retried. That is the "pause and preserve state for retry" branch of the
-architecture, to the extent a single run can hold it; persisting workflow
-state across sessions belongs to the Week 5 state model.
+returned and traced, so the officer can see what was found and why.
+
+This is *not* the architecture's "pause workflow, preserve state, allow retry"
+branch. Nothing is kept between runs: a retry repeats retrieval and the model
+call. The AI Boundary Matrix and Requirement 7.5 require a retry that skips
+completed steps, which needs the Week 5 state model. The diagram also routes a
+citation failure and an unavailable corpus to that one branch. Here they
+differ: an unavailable corpus stops before any call (`ingest.open_index`),
+while a citation failure withholds only its own item.
 """
 
 from __future__ import annotations

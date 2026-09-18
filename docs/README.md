@@ -58,7 +58,7 @@ Due dates are the Friday of each teaching week.
 | Corpus / source register | [`knowledge/source-register.md`](../knowledge/source-register.md) | Nannyombi Shakiran | Done (write-up) |
 | RAG architecture diagram | [`docs/architecture/rag-architecture.md`](architecture/rag-architecture.md) | Ainamani Jim Isaac | Done |
 | Working RAG pipeline | [`docs/architecture/working-rag-pipeline.md`](architecture/working-rag-pipeline.md) | Beingana Jim Junior | Done |
-| 15-case RAG evaluation | [`docs/evaluation/rag-evaluation.md`](evaluation/rag-evaluation.md) | Sekyeza Elroy Nunda | Not started |
+| 15-case RAG evaluation | [`docs/evaluation/rag-evaluation.md`](evaluation/rag-evaluation.md) | Sekyeza Elroy Nunda | Done (write-up) |
 | Week 3 progress report | [`docs/weekly-reports/week-03.md`](weekly-reports/week-03.md) | Lukaanya George | Not started |
 
 ## Week 4 — 25 September 2026

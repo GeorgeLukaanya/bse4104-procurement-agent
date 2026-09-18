@@ -7,4 +7,4 @@ send that data to an external model.
 
 | File | Purpose |
 |---|---|
-| [`source-register.md`](source-register.md) | Week 3 corpus/source register (owner: Nannyombi Shakiran) |
+| [`source-register.md`](source-register.md) | Human-readable corpus provenance register |

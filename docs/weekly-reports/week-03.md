@@ -1,6 +1,10 @@
 # Group Y Progress Report: Week 3
 
-**Course:** BSE4104 Emerging Trends in Software Engineering **Group:** Y **Week ending:** 18th September 2026 **Version:** 1.0 **Repository:** [https://github.com/GeorgeLukaanya/bse4104-procurement-agent](https://github.com/GeorgeLukaanya/bse4104-procurement-agent)
+**Course:** BSE4104 Emerging Trends in Software Engineering 
+**Group:** Y 
+**Week ending:** 18th September 2026 
+**Version:** 1.0 
+**Repository:** [https://github.com/GeorgeLukaanya/bse4104-procurement-agent](https://github.com/GeorgeLukaanya/bse4104-procurement-agent)
 
 ## Introduction
 

@@ -1,28 +1,24 @@
 # Group Y Progress Report: Week 3
 
-**Course:** BSE4104 Emerging Trends in Software Engineering
-**Group:** Y
-**Week ending:** 18th September 2026
-**Version:** 1.0
-**Repository:** https://github.com/GeorgeLukaanya/bse4104-procurement-agent
+**Course:** BSE4104 Emerging Trends in Software Engineering **Group:** Y **Week ending:** 18th September 2026 **Version:** 1.0 **Repository:** [https://github.com/GeorgeLukaanya/bse4104-procurement-agent](https://github.com/GeorgeLukaanya/bse4104-procurement-agent)
 
 ## Introduction
 
 This report summarises Week 3 progress on the SME Procurement-Preparation Agent. The weekly focus was context engineering and retrieval-augmented generation: making the application answer from a controlled, traceable knowledge source rather than from model memory.
 
-The week delivered a working policy retrieval pipeline implementing Requirement 7. Given the items on a requisition, it retrieves the policy clauses that apply to each item, has the model explain them, and verifies that every clause cited was actually retrieved for that item before anything is displayed. A citation the model did not receive causes that item to be withheld.
+The week delivered a working policy retrieval pipeline implementing Requirement 7\. Given the items on a requisition, it retrieves the policy clauses that apply to each item, has the model explain them, and verifies that every clause cited was actually retrieved for that item before anything is displayed. A citation the model did not receive causes that item to be withheld.
 
 ## Tasks
 
 | Task | Description | Status | Assignee |
 | :---- | :---- | :---- | :---- |
-| Corpus and Source Register | Assembled 23 team-authored synthetic documents for the fictional Kampala distributor, covering policy, procedure, product specification, quotation, requisition and supplier terms. Recorded provenance across three stores that must agree: YAML front matter, a canonical CSV register carrying licence, verifier and SHA-256, and the human-readable register document. Defined the indexing boundary and seeded evaluation defects deliberately. | Done | Nannyombi Shakiran |
-| RAG architecture diagram | Produced the three-stage architecture covering offline corpus preparation, runtime retrieval and grounded generation with review. | Done | Ainamani Jim Isaac |
-| Working RAG pipeline | Implemented ingestion, clause-level chunking with metadata, local embedding, vector indexing, retrieval, grounded generation and citation validation. Twelve documents and 45 citable clauses are indexed. Every run appends a trace entry recording retrieved clauses with scores, absence notes, the model answer, the citation result and any suppressions. | Done | Beingana Jim Junior |
-| 15-case RAG evaluation | Built and ran 15 cases spanning answerable, partially answerable and deliberately unanswerable questions, including grounding attacks using a real but unretrieved clause, an invented clause, a version mismatch and the adversarial quotation. Recorded results and three root-caused failures. | Done | Sekyeza Elroy Nunda |
+| Corpus and Source Register | Assembled 23 team-authored synthetic documents for the fictional Kampala distributor, covering policy, procedure, product specification, quotation, requisition and supplier terms. Recorded provenance across three stores that must agree: YAML front matter, a canonical CSV register carrying licence, verifier and SHA-256, and the human-readable register document. Defined the indexing boundary and seeded evaluation defects deliberately. | Done | Ainamani Jim Isaac |
+| RAG architecture diagram | Produced the three-stage architecture covering offline corpus preparation, runtime retrieval and grounded generation with review. | Done | Beingana Jim Junior |
+| Working RAG pipeline | Implemented ingestion, clause-level chunking with metadata, local embedding, vector indexing, retrieval, grounded generation and citation validation. Twelve documents and 45 citable clauses are indexed. Every run appends a trace entry recording retrieved clauses with scores, absence notes, the model answer, the citation result and any suppressions. | Done | Sekyeza Elroy Nunda |
+| 15-case RAG evaluation | Built and ran 15 cases spanning answerable, partially answerable and deliberately unanswerable questions, including grounding attacks using a real but unretrieved clause, an invented clause, a version mismatch and the adversarial quotation. Recorded results and three root-caused failures. | Done | Nannyombi Shakiran |
 | Week 3 progress report | Compiled this report. | Done | Lukaanya George |
 
-> **Action required:** Assignees follow the role definitions in Charter section 12. Confirm against what each member actually delivered before submission.
+> **Action required:** Assignees follow the role definitions in Charter section 12\. Confirm against what each member actually delivered before submission.
 
 ## Key Design Decisions
 
@@ -60,10 +56,10 @@ On the live requisition, all four items were shown and every citation was ground
 
 ## Upcoming Tasks
 
-Tune the item cutoff and re-measure the affected cases. Add an evaluation case carrying a non-UGX total, which the current set lacks. Add cases at the monetary band boundaries, since all four sample items fall inside a single band. Measure latency across more runs. Resolve the retrieval-ordering contradiction between the charter and Requirement 7.1. Close the outstanding v1.1 row in the prompt version history carried over from Week 2. Begin the Week 4 deliverables.
+Tune the item cutoff and re-measure the affected cases. Add an evaluation case carrying a non-UGX total, which the current set lacks. Add cases at the monetary band boundaries, since all four sample items fall inside a single band. Measure latency across more runs. Resolve the retrieval-ordering contradiction between the charter and Requirement 7.1. Close the outstanding v1.1 row in the prompt version history carried over from Week 2\. Begin the Week 4 deliverables.
 
 ## Summary of Progress
 
 All five Week 3 deliverables were completed. The application now answers from a controlled corpus with per-clause provenance, states absence rather than inventing a rule, and withholds any item whose citation cannot be traced to a clause it was actually given.
 
-The week's main learning concerned what an evaluation is for. Every case that exercised the grounding guards passed, and it would have been easy to report the week as a clean result. The two failures came from asking a different question: not whether the model cited something it was not given, but whether the right clauses were retrieved in the first place. A citation check passing on a run where unrelated specifications were retrieved is luck rather than a guarantee, and recording it as a pass would have hidden a real defect behind a green result.
+The week's main learning concerned what an evaluation is for. Every case that exercised the grounding guards passed, and it would have been easy to report the week as a clean result. The two failures came from asking a different question: not whether the model cited something it was not given, but whether the right clauses were retrieved in the first place. A citation check passing on a run where unrelated specifications were retrieved is luck rather than a guarantee, and recording it as a pass would have hidden a real defect behind a green result.  

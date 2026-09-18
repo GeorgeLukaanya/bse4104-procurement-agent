@@ -55,9 +55,9 @@ Due dates are the Friday of each teaching week.
 
 | Deliverable | Path | Owner | Status |
 |---|---|---|---|
-| Corpus / source register | [`knowledge/source-register.md`](../knowledge/source-register.md) | Nannyombi Shakiran | Not started |
-| RAG architecture diagram | [`docs/architecture/rag-architecture.md`](architecture/rag-architecture.md) | Ainamani Jim Isaac | Not started |
-| Working RAG pipeline | [`docs/architecture/working-rag-pipeline.md`](architecture/working-rag-pipeline.md) | Beingana Jim Junior | Not started |
+| Corpus / source register | [`knowledge/source-register.md`](../knowledge/source-register.md) | Nannyombi Shakiran | Done (write-up) |
+| RAG architecture diagram | [`docs/architecture/rag-architecture.md`](architecture/rag-architecture.md) | Ainamani Jim Isaac | Done |
+| Working RAG pipeline | [`docs/architecture/working-rag-pipeline.md`](architecture/working-rag-pipeline.md) | Beingana Jim Junior | Done |
 | 15-case RAG evaluation | [`docs/evaluation/rag-evaluation.md`](evaluation/rag-evaluation.md) | Sekyeza Elroy Nunda | Not started |
 | Week 3 progress report | [`docs/weekly-reports/week-03.md`](weekly-reports/week-03.md) | Lukaanya George | Not started |
 

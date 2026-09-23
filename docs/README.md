@@ -31,7 +31,7 @@ Working code stays in `src/` and `tests/`. The markdown file for a “working �
 
 Due dates are the Friday of each teaching week.
 
-> **Owners follow the GitHub issues.** The Week 4 rows below were reconciled against issues [#15](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/15)–[#19](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/19) on 23 September 2026. Weeks 5–8 still disagree with the tracker and need the same reconciliation.
+> **Owners follow the GitHub issues.** Every week below was reconciled against issues [#15](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/15)–[#40](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/40) on 23 September 2026. Weeks 4 to 7 had owners that did not match the tracker; Week 8 already agreed. If a row and its issue ever disagree again, **the issue wins** — change the assignee there, then update this file.
 
 ## Week 1 — 4 September 2026 — done
 
@@ -58,7 +58,7 @@ Due dates are the Friday of each teaching week.
 | Deliverable | Path | Owner | Status |
 |---|---|---|---|
 | Corpus / source register | [`knowledge/source-register.md`](../knowledge/source-register.md) | Nannyombi Shakiran | Done (write-up) |
-| RAG architecture diagram | [`docs/architecture/rag-architecture.md`](architecture/rag-architecture.md) | Ainamani Jim Isaac | Done |
+| RAG architecture diagram | [`docs/architecture/rag-architecture.md`](architecture/rag-architecture.md) | Beingana Jim Junior | Done |
 | Working RAG pipeline | [`docs/architecture/working-rag-pipeline.md`](architecture/working-rag-pipeline.md) | Beingana Jim Junior | Done |
 | 15-case RAG evaluation | [`docs/evaluation/rag-evaluation.md`](evaluation/rag-evaluation.md) | Sekyeza Elroy Nunda | Done (write-up) |
 | Week 3 progress report | [`docs/weekly-reports/week-03.md`](weekly-reports/week-03.md) | Lukaanya George | Not started |
@@ -77,31 +77,31 @@ Due dates are the Friday of each teaching week.
 
 | Deliverable | Path | Owner | Status |
 |---|---|---|---|
-| Agent architecture diagram | [`docs/architecture/agent-architecture.md`](architecture/agent-architecture.md) | Ainamani Jim Isaac | Not started |
-| Agent task contract | [`docs/requirements/agent-task-contract.md`](requirements/agent-task-contract.md) | Nannyombi Shakiran | Not started |
-| Working bounded agent workflow | [`docs/architecture/working-agent.md`](architecture/working-agent.md) | Beingana Jim Junior | Not started |
-| Three execution traces | [`docs/evaluation/execution-traces.md`](evaluation/execution-traces.md) | Sekyeza Elroy Nunda | Not started |
-| Week 5 progress report | [`docs/weekly-reports/week-05.md`](weekly-reports/week-05.md) | Lukaanya George | Not started |
+| Agent architecture diagram | [`docs/architecture/agent-architecture.md`](architecture/agent-architecture.md) | Lukaanya George | Not started |
+| Agent task contract | [`docs/requirements/agent-task-contract.md`](requirements/agent-task-contract.md) | Sekyeza Elroy Nunda | Not started |
+| Working bounded agent workflow | [`docs/architecture/working-agent.md`](architecture/working-agent.md) | Nannyombi Shakiran | Not started |
+| Three execution traces | [`docs/evaluation/execution-traces.md`](evaluation/execution-traces.md) | Ainamani Jim Isaac | Not started |
+| Week 5 progress report | [`docs/weekly-reports/week-05.md`](weekly-reports/week-05.md) | Beingana Jim Junior | Not started |
 
 ## Week 6 — 9 October 2026
 
 | Deliverable | Path | Owner | Status |
 |---|---|---|---|
-| State model | [`docs/architecture/state-model.md`](architecture/state-model.md) | Ainamani Jim Isaac | Not started |
-| Memory design and data handling | [`docs/architecture/memory-design.md`](architecture/memory-design.md) | Nannyombi Shakiran | Not started |
-| Working memory / state demonstration | [`docs/architecture/working-memory.md`](architecture/working-memory.md) | Beingana Jim Junior | Not started |
-| MCP-style interface specification | [`docs/architecture/mcp-interface.md`](architecture/mcp-interface.md) | Sekyeza Elroy Nunda | Not started |
-| Week 6 progress report | [`docs/weekly-reports/week-06.md`](weekly-reports/week-06.md) | Lukaanya George | Not started |
+| State model | [`docs/architecture/state-model.md`](architecture/state-model.md) | Sekyeza Elroy Nunda | Not started |
+| Memory design and data handling | [`docs/architecture/memory-design.md`](architecture/memory-design.md) | Beingana Jim Junior | Not started |
+| Working memory / state demonstration | [`docs/architecture/working-memory.md`](architecture/working-memory.md) | Lukaanya George | Not started |
+| MCP-style interface specification | [`docs/architecture/mcp-interface.md`](architecture/mcp-interface.md) | Nannyombi Shakiran | Not started |
+| Week 6 progress report | [`docs/weekly-reports/week-06.md`](weekly-reports/week-06.md) | Ainamani Jim Isaac | Not started |
 
 ## Week 7 — 16 October 2026
 
 | Deliverable | Path | Owner | Status |
 |---|---|---|---|
-| 30+ scenario evaluation | [`docs/evaluation/scenarios.md`](evaluation/scenarios.md) | Nannyombi Shakiran | Not started |
-| Observability / tracing evidence | [`docs/evaluation/observability.md`](evaluation/observability.md) | Ainamani Jim Isaac | Not started |
-| Guardrail implementation evidence | [`docs/evaluation/guardrails.md`](evaluation/guardrails.md) | Beingana Jim Junior | Not started |
-| Failure catalogue | [`docs/evaluation/failure-catalogue.md`](evaluation/failure-catalogue.md) | Sekyeza Elroy Nunda | Not started |
-| Week 7 progress report | [`docs/weekly-reports/week-07.md`](weekly-reports/week-07.md) | Lukaanya George | Not started |
+| 30+ scenario evaluation | [`docs/evaluation/scenarios.md`](evaluation/scenarios.md) | Ainamani Jim Isaac | Not started |
+| Observability / tracing evidence | [`docs/evaluation/observability.md`](evaluation/observability.md) | Beingana Jim Junior | Not started |
+| Guardrail implementation evidence | [`docs/evaluation/guardrails.md`](evaluation/guardrails.md) | Sekyeza Elroy Nunda | Not started |
+| Failure catalogue | [`docs/evaluation/failure-catalogue.md`](evaluation/failure-catalogue.md) | Lukaanya George | Not started |
+| Week 7 progress report | [`docs/weekly-reports/week-07.md`](weekly-reports/week-07.md) | Nannyombi Shakiran | Not started |
 
 ## Week 8 — 23 October 2026
 
@@ -127,7 +127,7 @@ Issues: [https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues](htt
 ### Week 3 — due 18 Sep 2026
 
 - Corpus / source register — Nannyombi Shakiran — `knowledge/source-register.md` — [#10](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/10)
-- RAG architecture diagram — Ainamani Jim Isaac — `docs/architecture/rag-architecture.md` — [#11](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/11)
+- RAG architecture diagram — Beingana Jim Junior — `docs/architecture/rag-architecture.md` — [#11](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/11)
 - Working RAG pipeline — Beingana Jim Junior — `docs/architecture/working-rag-pipeline.md` — [#12](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/12)
 - 15-case RAG evaluation — Sekyeza Elroy Nunda — `docs/evaluation/rag-evaluation.md` — [#13](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/13)
 - Week 3 progress report — Lukaanya George — `docs/weekly-reports/week-03.md` — [#14](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/14)
@@ -142,27 +142,27 @@ Issues: [https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues](htt
 
 ### Week 5 — due 2 Oct 2026
 
-- Agent architecture diagram — Ainamani Jim Isaac — `docs/architecture/agent-architecture.md` — [#20](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/20)
-- Agent task contract — Nannyombi Shakiran — `docs/requirements/agent-task-contract.md` — [#21](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/21)
-- Working bounded agent workflow — Beingana Jim Junior — `docs/architecture/working-agent.md` — [#22](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/22)
-- Three execution traces — Sekyeza Elroy Nunda — `docs/evaluation/execution-traces.md` — [#23](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/23)
-- Week 5 progress report — Lukaanya George — `docs/weekly-reports/week-05.md` — [#24](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/24)
+- Agent architecture diagram — Lukaanya George — `docs/architecture/agent-architecture.md` — [#20](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/20)
+- Agent task contract — Sekyeza Elroy Nunda — `docs/requirements/agent-task-contract.md` — [#21](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/21)
+- Working bounded agent workflow — Nannyombi Shakiran — `docs/architecture/working-agent.md` — [#22](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/22)
+- Three execution traces — Ainamani Jim Isaac — `docs/evaluation/execution-traces.md` — [#23](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/23)
+- Week 5 progress report — Beingana Jim Junior — `docs/weekly-reports/week-05.md` — [#24](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/24)
 
 ### Week 6 — due 9 Oct 2026
 
-- State model — Ainamani Jim Isaac — `docs/architecture/state-model.md` — [#26](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/26)
-- Memory design and data handling — Nannyombi Shakiran — `docs/architecture/memory-design.md` — [#27](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/27)
-- Working memory / state demonstration — Beingana Jim Junior — `docs/architecture/working-memory.md` — [#28](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/28)
-- MCP-style interface specification — Sekyeza Elroy Nunda — `docs/architecture/mcp-interface.md` — [#29](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/29)
-- Week 6 progress report — Lukaanya George — `docs/weekly-reports/week-06.md` — [#30](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/30)
+- State model — Sekyeza Elroy Nunda — `docs/architecture/state-model.md` — [#26](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/26)
+- Memory design and data handling — Beingana Jim Junior — `docs/architecture/memory-design.md` — [#27](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/27)
+- Working memory / state demonstration — Lukaanya George — `docs/architecture/working-memory.md` — [#28](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/28)
+- MCP-style interface specification — Nannyombi Shakiran — `docs/architecture/mcp-interface.md` — [#29](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/29)
+- Week 6 progress report — Ainamani Jim Isaac — `docs/weekly-reports/week-06.md` — [#30](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/30)
 
 ### Week 7 — due 16 Oct 2026
 
-- 30+ scenario evaluation — Nannyombi Shakiran — `docs/evaluation/scenarios.md` — [#31](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/31)
-- Observability / tracing evidence — Ainamani Jim Isaac — `docs/evaluation/observability.md` — [#32](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/32)
-- Guardrail implementation evidence — Beingana Jim Junior — `docs/evaluation/guardrails.md` — [#33](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/33)
-- Failure catalogue — Sekyeza Elroy Nunda — `docs/evaluation/failure-catalogue.md` — [#34](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/34)
-- Week 7 progress report — Lukaanya George — `docs/weekly-reports/week-07.md` — [#35](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/35)
+- 30+ scenario evaluation — Ainamani Jim Isaac — `docs/evaluation/scenarios.md` — [#31](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/31)
+- Observability / tracing evidence — Beingana Jim Junior — `docs/evaluation/observability.md` — [#32](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/32)
+- Guardrail implementation evidence — Sekyeza Elroy Nunda — `docs/evaluation/guardrails.md` — [#33](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/33)
+- Failure catalogue — Lukaanya George — `docs/evaluation/failure-catalogue.md` — [#34](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/34)
+- Week 7 progress report — Nannyombi Shakiran — `docs/weekly-reports/week-07.md` — [#35](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/35)
 
 ### Week 8 — due 23 Oct 2026
 

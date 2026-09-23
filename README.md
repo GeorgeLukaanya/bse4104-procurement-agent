@@ -397,7 +397,7 @@ The package is built against these documents. Where they say something specific,
 they govern:
 
 - Project Charter **v1.1** — `docs/requirements/project-charter.md`
-- Requirements Document **v1.1** — `docs/requirements/user-stories.md`
+- Requirements Document **v1.2** — `docs/requirements/user-stories.md`
 - AI Boundary Matrix **v1.1** — `docs/requirements/ai-boundary-matrix.md`
 - Prompt Specification **v1.1** — `prompts/quotation-extraction-v1.md`
 - Model Selection Note — `docs/architecture/model-selection-note.md`

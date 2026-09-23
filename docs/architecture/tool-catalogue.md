@@ -884,12 +884,13 @@ dependency.
 7. Adding a fifth — a policy-retrieval tool, or the deferred document-conversion tool — needs a
 charter amendment, not just a new file here.
 
-**Two exclusion reasons extend Requirement 4.** Requirement 4 names `AVL_ABSENT`, `BLACKLISTED`
-and `EXPIRED`. `check_supplier_eligibility` also returns `SUSPENDED` and `OUT_OF_CATEGORY`,
-because POL-002-C02 bars a suspended supplier and POL-002-C03 bars an out-of-category
-quotation, and folding either into `BLACKLISTED` would tell an approver something untrue. This
-should be recorded as an amendment to Requirement 4 at the next version bump of the Requirements
-Document.
+**Requirement 4 was amended to match this tool. Resolved.** Requirement 4 named only
+`AVL_ABSENT`, `BLACKLISTED` and `EXPIRED`, which cannot express the suspension bar in
+POL-002-C02 or the category bar in POL-002-C03. Requirements Document **v1.2** (23 September
+2026) widens 4.1 to name all four checks, adds `SUSPENDED` and `OUT_OF_CATEGORY` to the 4.3
+vocabulary, and adds 4.6 for the POL-002-C04 name-resemblance rule this tool reports through
+`similar_registered_names`. See the Amendment History in
+[`user-stories.md`](../requirements/user-stories.md).
 
 **The datasets are not yet human-reviewed.** `DAT-001` to `DAT-003` are `pending_review`.
 Someone other than their author should check them before the Week 7 evaluation depends on them.

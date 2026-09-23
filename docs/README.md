@@ -13,6 +13,8 @@ ClickUp board: [Group Y](https://app.clickup.com/9012272120/v/s/90129079418)
 | [`docs/weekly-reports/`](weekly-reports/) | Week 1–8 progress reports and the final engineering report |
 | [`docs/evaluation/`](evaluation/) | Prompt, RAG, tool, agent and final evaluation evidence |
 | [`docs/AI-ENGINEERING-LOG.md`](AI-ENGINEERING-LOG.md) | Material AI-assisted decisions |
+| [`docs/week-04-change-log.md`](week-04-change-log.md) | Week 4: what changed under #15 and why — team baseline |
+| [`docs/week-04-team-brief.md`](week-04-team-brief.md) | Week 4: handover brief, what each owner needs |
 | [`prompts/`](../prompts/) | Versioned prompt specifications |
 | [`knowledge/`](../knowledge/) | Corpus metadata and provenance, and the operational [datasets](../knowledge/data/) the tools read — no restricted data |
 | [`evidence/`](../evidence/) | Traces, screenshots, demo recordings |

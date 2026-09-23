@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/GeorgeLukaanya/bse4104-procurement-agent/blob/main/docs/architecture/schemas/create_requisition_draft.output.json",
+  "title": "create_requisition_draft output",
+  "description": "The created draft. The low-risk simulated side effect of the catalogue: it writes a record to the local requisition store and nothing else. No supplier is contacted, no order is placed and no funds are committed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "tool",
+    "tool_version",
+    "status",
+    "data",
+    "errors",
+    "trace"
+  ],
+  "properties": {
+    "tool": {
+      "const": "create_requisition_draft"
+    },
+    "tool_version": {
+      "const": "1.0"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "no_result",
+        "invalid_input",
+        "unauthorized",
+        "unavailable",
+        "failed"
+      ],
+      "description": "ok — the call succeeded and `data` is populated. no_result — the call was valid and nothing matched, which is an answer, not a failure. invalid_input — the request did not conform to the input schema. unauthorized — the caller's role may not invoke this tool, or the tool was not on the orchestration allow-list. unavailable — a data source could not be read. failed — the tool ran and could not complete."
+    },
+    "data": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "requisition_id",
+            "status",
+            "created_at",
+            "created_by",
+            "review_date",
+            "items",
+            "human_confirmation_required",
+            "routed_to",
+            "approved_by",
+            "decision"
+          ],
+          "properties": {
+            "requisition_id": {
+              "type": "string",
+              "pattern": "^REQ-[0-9]{4}-[0-9]{3}$"
+            },
+            "status": {
+              "const": "DRAFT",
+              "description": "Always DRAFT. No other value can be produced by this tool."
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "created_by": {
+              "type": "string"
+            },
+            "review_date": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "policy_clauses": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "justification": {
+              "type": "string"
+            },
+            "unresolved_issues": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "human_confirmation_required": {
+              "const": true,
+              "description": "Always true. The draft advances only when a human submits it."
+            },
+            "routed_to": {
+              "type": "null",
+              "description": "Null on creation. Routing is a human action, Requirement 10.1."
+            },
+            "approved_by": {
+              "type": "null",
+              "description": "Null on creation and never set by any tool."
+            },
+            "decision": {
+              "type": "null",
+              "description": "Null on creation. Only the Procurement Manager records a decision, POL-004-C02."
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "errors": {
+      "type": "array",
+      "description": "Empty when status is ok or no_result. Every applicable error is reported, never only the first.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "detail"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "MISSING_PARAMETER",
+              "INVALID_PARAMETER",
+              "UNKNOWN_SKU",
+              "UNKNOWN_SUPPLIER",
+              "UNAUTHORIZED_ROLE",
+              "TOOL_NOT_ALLOWED",
+              "DATA_SOURCE_UNAVAILABLE",
+              "DATA_INTEGRITY_ERROR",
+              "INSUFFICIENT_QUOTATIONS",
+              "INCOMPARABLE_QUOTATION",
+              "EXCHANGE_RATE_REQUIRED",
+              "MISSING_COMPONENT",
+              "FORBIDDEN_TRANSITION"
+            ]
+          },
+          "field": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Request field the error attaches to, or null for a whole-call error."
+          },
+          "detail": {
+            "type": "string",
+            "description": "Human-readable statement of what was wrong. Never a repaired value."
+          }
+        }
+      }
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "called_at",
+        "caller_role",
+        "latency_ms",
+        "data_fingerprint"
+      ],
+      "description": "Appended verbatim to evidence/traces/tool-runs.jsonl. Never carries a secret.",
+      "properties": {
+        "called_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "caller_role": {
+          "type": "string",
+          "enum": [
+            "PROCUREMENT_OFFICER",
+            "PROCUREMENT_MANAGER",
+            "AGENT"
+          ],
+          "description": "Injected by the orchestration layer. Never supplied by the model."
+        },
+        "latency_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "data_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "SHA-256 of the data source as read, matching the checksum in knowledge/source-register.csv. Null for tools that read no file."
+        }
+      }
+    }
+  }
+}

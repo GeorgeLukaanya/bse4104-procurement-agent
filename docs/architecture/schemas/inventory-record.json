@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/GeorgeLukaanya/bse4104-procurement-agent/blob/main/docs/architecture/schemas/inventory-record.json",
+  "title": "Inventory record",
+  "description": "One row of knowledge/data/inventory.csv. CSV values are strings; types below are the parsed types.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sku",
+    "item_name",
+    "category",
+    "unit_of_measure",
+    "current_stock",
+    "reorder_point",
+    "target_stock_level",
+    "unit_cost_ugx",
+    "location",
+    "last_counted"
+  ],
+  "properties": {
+    "sku": {
+      "type": "string",
+      "pattern": "^AH-[A-Z]{2}-[0-9]{3}$"
+    },
+    "item_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "cement and masonry",
+        "hand tools and safety equipment",
+        "electrical and plumbing"
+      ]
+    },
+    "unit_of_measure": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The stocking unit. A quotation in any other unit needs a stated conversion factor."
+    },
+    "current_stock": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "reorder_point": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "target_stock_level": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Must be strictly greater than reorder_point. Requirement 1.3 rejects the snapshot otherwise."
+    },
+    "unit_cost_ugx": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Last recorded cost per stocking unit. Used for band selection, never as an offer price."
+    },
+    "location": {
+      "type": "string",
+      "enum": [
+        "Nakawa Main Store",
+        "Kireka Branch"
+      ]
+    },
+    "last_counted": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    }
+  }
+}

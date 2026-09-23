@@ -87,7 +87,34 @@ A uniformly clean corpus would not expose retrieval or extraction failures. The 
 
 ## 6. Limitations
 
-- Twenty-three documents are sufficient for current retrieval and extraction evaluation. They are not the later inventory (forty to sixty SKUs) or quotation (thirty to fifty) datasets.
+- Twenty-three documents are sufficient for current retrieval and extraction evaluation. They are not the operational datasets; those were added in Week 4 and are recorded in section 7.
 - Supplier-term files describe fictional vendors. They do not confer Approved Vendor List status.
 - An edit to a reviewed file requires a new checksum and a version bump in both the Markdown front matter and the CSV, or loading fails.
 - Restricted, personal or live commercial data must not be added to this folder.
+
+## 7. Operational datasets
+
+Week 4 added the structured records the tools read. They are registered in the same CSV, under
+the same permission basis and the same checksum rule, but they are **not** corpus documents:
+`src/procurement_agent/rag/corpus.py` walks only the three indexed folders, so these rows are
+inert to the RAG index.
+
+| ID | Title | Category | Path | Records | Version |
+|---|---|---|---|---|---|
+| DAT-001 | Atlantic Hardware Inventory Snapshot | dataset | `knowledge/data/inventory.csv` | 48 SKUs | 1.0 |
+| DAT-002 | Atlantic Hardware Supplier Register | dataset | `knowledge/data/suppliers.json` | 8 suppliers | 1.0 |
+| DAT-003 | Atlantic Hardware Quotation Records | dataset | `knowledge/data/quotations.json` | 36 quotations | 1.0 |
+
+This satisfies the charter section 7 figures of forty to sixty SKUs, six to ten suppliers and
+thirty to fifty quotations. Shapes, seeded edge cases and the reason the folder exists are
+documented in [`data/README.md`](data/README.md); the contracts that read them are in
+[`docs/architecture/tool-catalogue.md`](../docs/architecture/tool-catalogue.md).
+
+`review_status` for all three rows is `pending_review`. The corpus rows were human-reviewed on
+17 September 2026; these were authored on 23 September 2026 and that review has not yet
+happened. They are marked as pending rather than approved because no one has checked them yet.
+
+The supplier register is the Approved Vendor List in operational form. Section 3 records that
+supplier-term documents "do not confer Approved Vendor List status" and that supplier records
+are reached through a dedicated tool; `DAT-002` is that record, and
+`check_supplier_eligibility` is that tool.

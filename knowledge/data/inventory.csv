@@ -1,0 +1,49 @@
+sku,item_name,category,unit_of_measure,current_stock,reorder_point,target_stock_level,unit_cost_ugx,location,last_counted
+AH-CM-001,Portland cement 42.5N 50 kg bag,cement and masonry,bag,150,150,270,32000,Nakawa Main Store,2026-09-21
+AH-CM-002,Binding wire 1.6 mm,cement and masonry,kg,40,60,65,7800,Nakawa Main Store,2026-09-21
+AH-CM-003,Building sand washed,cement and masonry,tonne,18,10,40,85000,Kireka Branch,2026-09-21
+AH-CM-004,Hardcore aggregate 20 mm,cement and masonry,tonne,22,12,45,78000,Kireka Branch,2026-09-21
+AH-CM-005,Hollow block 150 mm,cement and masonry,piece,940,600,2000,4200,Kireka Branch,2026-09-21
+AH-CM-006,Hollow block 200 mm,cement and masonry,piece,610,500,1800,5100,Kireka Branch,2026-09-21
+AH-CM-007,Iron sheet gauge 30 corrugated,cement and masonry,piece,74,80,220,41000,Nakawa Main Store,2026-09-21
+AH-CM-008,Roofing nail 3 inch,cement and masonry,kg,128,90,300,9200,Nakawa Main Store,2026-09-21
+AH-CM-009,Masonry trowel 11 inch,cement and masonry,piece,46,25,90,18500,Nakawa Main Store,2026-09-21
+AH-CM-010,Waterproof cement additive 5 litre,cement and masonry,piece,31,20,70,46000,Nakawa Main Store,2026-09-21
+AH-CM-011,Vinyl matt paint 20 litre,cement and masonry,piece,17,20,60,168000,Nakawa Main Store,2026-09-21
+AH-CM-012,Wall putty 20 kg,cement and masonry,bag,58,40,140,54000,Kireka Branch,2026-09-21
+AH-CM-013,Ceramic floor tile 600x600,cement and masonry,carton,96,70,240,62000,Kireka Branch,2026-09-21
+AH-CM-014,Tile adhesive 20 kg,cement and masonry,bag,44,35,120,38000,Kireka Branch,2026-09-21
+AH-CM-015,Damp proof course 1 metre roll,cement and masonry,roll,27,15,60,29000,Nakawa Main Store,2026-09-21
+AH-CM-016,Reinforcement bar Y12,cement and masonry,piece,210,150,480,37500,Kireka Branch,2026-09-21
+AH-HT-001,Safety helmet white,hand tools and safety equipment,piece,12,20,52,23000,Nakawa Main Store,2026-09-21
+AH-HT-002,Safety boot steel toe size 42,hand tools and safety equipment,pair,0,15,45,78000,Nakawa Main Store,2026-09-21
+AH-HT-003,Safety boot steel toe size 44,hand tools and safety equipment,pair,19,15,45,78000,Nakawa Main Store,2026-09-21
+AH-HT-004,Industrial glove leather palm,hand tools and safety equipment,pair,64,50,180,9500,Nakawa Main Store,2026-09-21
+AH-HT-005,Safety goggle clear lens,hand tools and safety equipment,piece,88,40,150,12000,Nakawa Main Store,2026-09-21
+AH-HT-006,High visibility vest,hand tools and safety equipment,piece,35,40,120,16500,Nakawa Main Store,2026-09-21
+AH-HT-007,Claw hammer 16 oz,hand tools and safety equipment,piece,52,30,110,26000,Nakawa Main Store,2026-09-21
+AH-HT-008,Adjustable spanner 12 inch,hand tools and safety equipment,piece,41,25,95,31000,Nakawa Main Store,2026-09-21
+AH-HT-009,Screwdriver set 6 piece,hand tools and safety equipment,piece,29,25,90,34000,Nakawa Main Store,2026-09-21
+AH-HT-010,Hacksaw frame heavy duty,hand tools and safety equipment,piece,23,20,75,28500,Nakawa Main Store,2026-09-21
+AH-HT-011,Measuring tape 5 metre,hand tools and safety equipment,piece,71,45,160,11500,Nakawa Main Store,2026-09-21
+AH-HT-012,Spirit level 600 mm,hand tools and safety equipment,piece,18,20,65,42000,Nakawa Main Store,2026-09-21
+AH-HT-013,Wheelbarrow heavy duty,hand tools and safety equipment,piece,14,10,38,165000,Kireka Branch,2026-09-21
+AH-HT-014,Shovel square mouth,hand tools and safety equipment,piece,48,30,120,22000,Kireka Branch,2026-09-21
+AH-HT-015,Pick axe with handle,hand tools and safety equipment,piece,26,18,70,33000,Kireka Branch,2026-09-21
+AH-HT-016,Dust mask disposable,hand tools and safety equipment,piece,240,200,700,1800,Nakawa Main Store,2026-09-21
+AH-EP-001,Electrical cable 2.5 mm single core,electrical and plumbing,metre,320,400,1200,3600,Nakawa Main Store,2026-09-21
+AH-EP-002,Electrical cable 4.0 mm single core,electrical and plumbing,metre,680,400,1400,5400,Nakawa Main Store,2026-09-21
+AH-EP-003,LED lamp 9W B22,electrical and plumbing,piece,145,120,420,14500,Nakawa Main Store,2026-09-21
+AH-EP-004,LED lamp 12W E27,electrical and plumbing,piece,98,120,400,17500,Nakawa Main Store,2026-09-21
+AH-EP-005,Consumer unit 8 way,electrical and plumbing,piece,11,8,30,148000,Nakawa Main Store,2026-09-21
+AH-EP-006,Circuit breaker 16A single pole,electrical and plumbing,piece,76,60,220,19500,Nakawa Main Store,2026-09-21
+AH-EP-007,Socket outlet 13A twin switched,electrical and plumbing,piece,132,90,340,21000,Nakawa Main Store,2026-09-21
+AH-EP-008,Light switch one gang,electrical and plumbing,piece,187,120,420,8900,Nakawa Main Store,2026-09-21
+AH-EP-009,Conduit pipe 20 mm PVC,electrical and plumbing,piece,205,150,520,6700,Kireka Branch,2026-09-21
+AH-EP-010,PPR pipe 25 mm,electrical and plumbing,metre,412,300,1000,7400,Kireka Branch,2026-09-21
+AH-EP-011,PPR elbow 25 mm,electrical and plumbing,piece,96,100,350,3900,Kireka Branch,2026-09-21
+AH-EP-012,Gate valve 25 mm brass,electrical and plumbing,piece,34,25,95,38500,Kireka Branch,2026-09-21
+AH-EP-013,Pillar tap chrome,electrical and plumbing,piece,42,30,110,54000,Kireka Branch,2026-09-21
+AH-EP-014,Water tank connector 25 mm,electrical and plumbing,piece,58,40,150,12800,Kireka Branch,2026-09-21
+AH-EP-015,Silicone sealant cartridge,electrical and plumbing,piece,63,50,190,15600,Nakawa Main Store,2026-09-21
+AH-EP-016,PTFE thread seal tape,electrical and plumbing,piece,310,200,650,1500,Nakawa Main Store,2026-09-21

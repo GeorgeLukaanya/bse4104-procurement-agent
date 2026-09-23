@@ -1,0 +1,229 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/GeorgeLukaanya/bse4104-procurement-agent/blob/main/docs/architecture/schemas/check_supplier_eligibility.output.json",
+  "title": "check_supplier_eligibility output",
+  "description": "Per-supplier eligibility. Advisory to the officer and binding on compare_quotations, which must not rank an ineligible offer.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "tool",
+    "tool_version",
+    "status",
+    "data",
+    "errors",
+    "trace"
+  ],
+  "properties": {
+    "tool": {
+      "const": "check_supplier_eligibility"
+    },
+    "tool_version": {
+      "const": "1.0"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "no_result",
+        "invalid_input",
+        "unauthorized",
+        "unavailable",
+        "failed"
+      ],
+      "description": "ok — the call succeeded and `data` is populated. no_result — the call was valid and nothing matched, which is an answer, not a failure. invalid_input — the request did not conform to the input schema. unauthorized — the caller's role may not invoke this tool, or the tool was not on the orchestration allow-list. unavailable — a data source could not be read. failed — the tool ran and could not complete."
+    },
+    "data": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "category",
+            "as_of_date",
+            "results"
+          ],
+          "properties": {
+            "category": {
+              "type": "string"
+            },
+            "as_of_date": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "results": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "requested",
+                  "matched_by",
+                  "eligible",
+                  "exclusion_reasons"
+                ],
+                "properties": {
+                  "requested": {
+                    "type": "string",
+                    "description": "The identifier or name as supplied."
+                  },
+                  "matched_by": {
+                    "type": "string",
+                    "enum": [
+                      "supplier_id",
+                      "registered_name",
+                      "unmatched"
+                    ]
+                  },
+                  "supplier_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "registered_name": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "avl_status": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "ACTIVE",
+                      "SUSPENDED",
+                      "BLACKLISTED",
+                      null
+                    ]
+                  },
+                  "approved_categories": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "eligible": {
+                    "type": "boolean"
+                  },
+                  "exclusion_reasons": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "AVL_ABSENT",
+                        "BLACKLISTED",
+                        "SUSPENDED",
+                        "OUT_OF_CATEGORY",
+                        "EXPIRED"
+                      ]
+                    },
+                    "description": "Every applicable reason, not the first. Requirement 4."
+                  },
+                  "quotation_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "similar_registered_names": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Other registered names close enough to be confused with this one. POL-002-C04 requires the officer to resolve the discrepancy; the tool never merges two suppliers."
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "errors": {
+      "type": "array",
+      "description": "Empty when status is ok or no_result. Every applicable error is reported, never only the first.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "detail"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "MISSING_PARAMETER",
+              "INVALID_PARAMETER",
+              "UNKNOWN_SKU",
+              "UNKNOWN_SUPPLIER",
+              "UNAUTHORIZED_ROLE",
+              "TOOL_NOT_ALLOWED",
+              "DATA_SOURCE_UNAVAILABLE",
+              "DATA_INTEGRITY_ERROR",
+              "INSUFFICIENT_QUOTATIONS",
+              "INCOMPARABLE_QUOTATION",
+              "EXCHANGE_RATE_REQUIRED",
+              "MISSING_COMPONENT",
+              "FORBIDDEN_TRANSITION"
+            ]
+          },
+          "field": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Request field the error attaches to, or null for a whole-call error."
+          },
+          "detail": {
+            "type": "string",
+            "description": "Human-readable statement of what was wrong. Never a repaired value."
+          }
+        }
+      }
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "called_at",
+        "caller_role",
+        "latency_ms",
+        "data_fingerprint"
+      ],
+      "description": "Appended verbatim to evidence/traces/tool-runs.jsonl. Never carries a secret.",
+      "properties": {
+        "called_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "caller_role": {
+          "type": "string",
+          "enum": [
+            "PROCUREMENT_OFFICER",
+            "PROCUREMENT_MANAGER",
+            "AGENT"
+          ],
+          "description": "Injected by the orchestration layer. Never supplied by the model."
+        },
+        "latency_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "data_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "SHA-256 of the data source as read, matching the checksum in knowledge/source-register.csv. Null for tools that read no file."
+        }
+      }
+    }
+  }
+}

@@ -15,18 +15,30 @@ purchase order, contacts a supplier, commits funds or approves anything itself.
 
 ## Status
 
-**Week 2 of 8 — quotation field extraction baseline.**
+**Week 4 of 8 — tool contracts and operational data.**
 
-What exists and runs today is the `procurement_agent` package: it takes a
-Converted Quotation Document in Markdown and returns a validated eleven-field
-Normalised Quotation record. Nothing downstream of extraction is built yet — no
-eligibility checks, no landed-cost calculator, no policy retrieval, no
-requisition, no user interface.
+Two pipelines run today, as separate command-line tools:
+
+- **Quotation extraction** (Week 2) — takes a Converted Quotation Document in
+  Markdown and returns a validated eleven-field Normalised Quotation record.
+- **Policy retrieval** (Week 3) — retrieves applicable procurement policy clauses
+  from a controlled 12-document, 45-clause corpus and grounds an answer in them,
+  validating every citation against what was actually retrieved.
+
+Week 4 added the **tool catalogue** — four tools specified with input schema,
+output schema, authorization and failure behaviour
+([`docs/architecture/tool-catalogue.md`](docs/architecture/tool-catalogue.md),
+schemas in [`docs/architecture/schemas/`](docs/architecture/schemas/)) — and the
+**operational datasets** those tools read
+([`knowledge/data/`](knowledge/data/): 48 SKUs, 8 suppliers, 36 quotations).
+
+Not built yet: the tool implementations, the agent loop, persistent state, a
+requisition store, and any user interface. The two pipelines are not yet wired to
+each other.
 
 There is deliberately **no application framework**. Django, FastAPI and Flask are
-all absent, because the charter has not chosen one and Week 2 must not force that
-decision. The package is importable and will be consumed by whatever interface
-the team picks later.
+all absent, because the charter has not chosen one. The package is importable and
+will be consumed by whatever interface the team picks later.
 
 ## Quick start
 
@@ -53,17 +65,13 @@ pytest
 ```
 
 ```
-tests/test_cache.py ..........                  [  7%]
-tests/test_cli.py ................              [ 19%]
-tests/test_client.py .............              [ 29%]
-tests/test_config_and_prompts.py ........................  [ 47%]
-tests/test_extract.py .............             [ 57%]
-tests/test_guards.py ...........................  [ 78%]
-tests/test_landed_cost.py .......               [ 83%]
-tests/test_runlog.py .........                  [ 90%]
-tests/test_schema.py .............              [100%]
+223 passed, 6 skipped in 0.28s
+```
 
-132 passed
+The six skips are the optional extras — install them to run those too:
+
+```bash
+pip install -e ".[dev,rag,gemini]"   # then all 229 run
 ```
 
 ### See it run without a key
@@ -210,6 +218,40 @@ No request was made. Set the key and re-run:
     export GEMINI_API_KEY=...
 ```
 
+### Run policy retrieval
+
+The Week 3 pipeline. It needs the `rag` extra, and the index must be built once
+before the first query.
+
+```bash
+pip install -e ".[rag,gemini]"
+
+python -m procurement_agent.rag.ingest        # build the index, ~3s after first run
+```
+
+The first ingest downloads the embedding model (about 70 MB) into
+`.cache/fastembed/`. After that it is offline. The index lands in
+`.cache/policy-index/` and is rebuilt whenever a corpus document changes — a
+stale index is refused, not silently used.
+
+Then query it, one item or a whole requisition:
+
+```bash
+python -m procurement_agent.rag.cli \
+    --item "120 bags of cement" --category "building materials" --total 4140000
+
+python -m procurement_agent.rag.cli --requisition fixtures/requisitions/weekly-reorder.json
+```
+
+`procurement-policy` and `procurement-policy-ingest` are installed as equivalent
+console scripts. Exit code is `0` when every item was shown, `1` when any answer
+was withheld, `2` when the pipeline could not run.
+
+Every answer cites document name, version and clause identifier, and a citation
+that was not retrieved *for that item* is rejected even if the clause exists in
+the corpus. When no clause matches, the pipeline says so rather than inventing a
+rule.
+
 ### What a run produces
 
 | Path | Contents | Tracked? |
@@ -316,13 +358,17 @@ will consume this output. See the AI Boundary Matrix v1.1 and requirement 6.6.
 | `tools/offline_demo.py` | Drive the CLI with no key, no network, no quota |
 | `docs/README.md` | Week-by-week deliverable index, owners and ClickUp copy list |
 | `docs/requirements/` | Charter, user stories, AI boundary matrix |
-| `docs/architecture/` | Diagrams, model note, baseline write-up, integration handover, CI map |
+| `docs/architecture/` | Diagrams, model note, baseline and RAG write-ups, tool catalogue, integration handover, CI map |
+| `docs/architecture/schemas/` | JSON Schema contracts for the four tools and the data records |
 | `docs/weekly-reports/` | Weekly progress reports |
 | `docs/evaluation/` | Prompt and later-week evaluation tables |
 | `docs/AI-ENGINEERING-LOG.md` | Material AI-assisted decisions, per brief section 6 |
 | `prompts/` | Versioned prompt specifications |
 | `evidence/` | Traces, screenshots, demo recordings |
-| `knowledge/` | Corpus metadata and provenance — no restricted data |
+| `knowledge/corpus/` | The controlled 22-document synthetic corpus |
+| `knowledge/data/` | Operational records the tools read — inventory, suppliers, quotations |
+| `knowledge/source-register.csv` | Provenance and SHA-256 for every corpus document and dataset |
+| `evaluation-cases/` | Synthetic input documents for the prompt evaluation |
 
 | Module | Responsibility |
 |---|---|
@@ -334,7 +380,16 @@ will consume this output. See the AI Boundary Matrix v1.1 and requirement 6.6.
 | `guards.py` | Prohibited-pattern suppression |
 | `runlog.py` | Append-only JSONL evidence log |
 | `extract.py` | Pipeline orchestration |
-| `cli.py` | Command-line entry point |
+| `cli.py` | Command-line entry point for extraction |
+| `rag/corpus.py` | Load and verify the corpus against the register; split into citable clauses |
+| `rag/embedder.py` | FastEmbed local embeddings, asymmetric query/passage |
+| `rag/index.py` | Qdrant local-mode vector index over clauses |
+| `rag/ingest.py` | Offline index build, manifest, staleness refusal |
+| `rag/retriever.py` | Two-search retrieval with calibrated cutoffs |
+| `rag/grounding.py` | Grounded generation, one call per requisition |
+| `rag/citations.py` | Reject any citation not retrieved for that item |
+| `rag/pipeline.py` | Retrieve → generate → scan → validate → trace |
+| `rag/cli.py` | Command-line entry point for policy retrieval |
 
 ## Specification
 
@@ -346,6 +401,9 @@ they govern:
 - AI Boundary Matrix **v1.1** — `docs/requirements/ai-boundary-matrix.md`
 - Prompt Specification **v1.1** — `prompts/quotation-extraction-v1.md`
 - Model Selection Note — `docs/architecture/model-selection-note.md`
+- Corpus Source Register **v1.0** — `knowledge/source-register.md`
+- RAG architecture — `docs/architecture/rag-architecture.md`
+- Tool Catalogue **v1.0** — `docs/architecture/tool-catalogue.md`
 - Week-by-week index — `docs/README.md`
 
 The prompt actually sent lives in `prompts.py` (eleven fields, version 1.1). The ten-case
@@ -377,17 +435,32 @@ that forced the change, and re-run the evaluation set.
   the user message so the model has an explicit boundary between instruction and
   data, and output is scanned for prohibited patterns on the way back.
 
-## Not yet verified
+## Measured, and still unknown
 
-These need a live API call and none has been made. Nothing here is estimated:
+Live calls have been made. These figures are recorded, not estimated:
 
-- Extraction accuracy against the fixtures — unknown, no model has read them
-- Measured latency, median and worst case — unknown
-- Actual free-tier rate limits (RPM, TPM, RPD) for our project — unknown; read
-  them from the AI Studio rate limit view and record the date
-- Schema conformance rate — unknown; the run log format exists, no live rows yet
+| Measure | Result | Source |
+|---|---|---|
+| Prompt case pass rate | 9 of 10 — 90% | `docs/evaluation/prompt-evaluation.md` |
+| Schema conformance | 10 of 10 — 100% | same |
+| Extraction latency | median 3.413s, worst 8.5526s | same |
+| RAG case pass rate | 13 of 15 | `docs/evaluation/rag-evaluation.md` |
+| RAG requisition latency | 42.01s on one Gemini call | `evidence/traces/rag-weekly-reorder-run.txt` |
 
-See the Week 2 entry in `docs/AI-ENGINEERING-LOG.md`.
+Two known failures carry forward. **TC-07**: the model resolved the ambiguous date
+`10/11/2026` to `2026-11-10` instead of returning `null` with a reason — this
+should drive the next prompt revision. **Latency**: Requirement 7.1 allows 30
+seconds and the recorded requisition took 42.01s; an earlier run of the same file
+took 6.29s, so this is provider variance rather than retrieval cost, and needs more
+samples before it means anything.
+
+Still unknown:
+
+- Actual free-tier rate limits (RPM, TPM, RPD) for our project — read them from the
+  AI Studio rate limit view and record the date
+- Whether the tool contracts hold in implementation — no tool is built yet
+
+See `docs/AI-ENGINEERING-LOG.md`.
 
 ## Team
 

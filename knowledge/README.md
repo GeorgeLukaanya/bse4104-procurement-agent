@@ -8,6 +8,7 @@ send that data to an external model.
 | File | Purpose |
 |---|---|
 | [`source-register.md`](source-register.md) | Human-readable corpus provenance register |
+| [`data/`](data/) | Operational records read by the Week 4 tools — inventory, suppliers, quotations |
 
 ## Controlled corpus
 

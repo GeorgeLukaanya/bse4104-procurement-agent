@@ -1,0 +1,88 @@
+{
+  "_note": "Synthetic supplier register for the fictional Atlantic Hardware. Membership of this file is the Approved Vendor List of POL-002-C01: a supplier absent from it yields AVL_ABSENT. Status values follow POL-002-C02, where suspension takes precedence over any older approved status. This file authorizes nothing; it is reference data read by check_supplier_eligibility.",
+  "register_version": "1.0",
+  "effective_date": "2026-09-25",
+  "reference_business": "Atlantic Hardware",
+  "suppliers": [
+    {
+      "supplier_id": "SUP-001",
+      "registered_name": "Kampala TradeWorks",
+      "categories": ["hand tools and safety equipment"],
+      "avl_status": "ACTIVE",
+      "approval_date": "2025-03-14",
+      "status_effective_date": "2025-03-14",
+      "terms_document": "knowledge/corpus/supplier-terms/SUP-001.md",
+      "notes": "Standard quoted lead time 3-5 working days. Delivery charges are stated per quotation and are not assumed from this profile."
+    },
+    {
+      "supplier_id": "SUP-002",
+      "registered_name": "Lakeview Building Materials",
+      "categories": ["cement and masonry"],
+      "avl_status": "ACTIVE",
+      "approval_date": "2024-11-02",
+      "status_effective_date": "2024-11-02",
+      "terms_document": "knowledge/corpus/supplier-terms/SUP-002.md",
+      "notes": "Typical delivery 4-7 working days within Kampala. Distinct legal entity from Lakeview Building Supplies (SUP-007); see POL-002-C04."
+    },
+    {
+      "supplier_id": "SUP-003",
+      "registered_name": "Nakasero Electrical and Plumbing",
+      "categories": ["electrical and plumbing"],
+      "avl_status": "ACTIVE",
+      "approval_date": "2025-01-20",
+      "status_effective_date": "2025-01-20",
+      "terms_document": "knowledge/corpus/supplier-terms/SUP-003.md",
+      "notes": "Standard lead time 2-6 working days. Warranty applies only when stated in the current quotation."
+    },
+    {
+      "supplier_id": "SUP-004",
+      "registered_name": "Bugolobi Hardware Supplies",
+      "categories": ["cement and masonry", "hand tools and safety equipment"],
+      "avl_status": "ACTIVE",
+      "approval_date": "2025-06-09",
+      "status_effective_date": "2025-06-09",
+      "terms_document": null,
+      "notes": "Dual-category supplier. No terms document is held, so quotation terms must be read from each offer."
+    },
+    {
+      "supplier_id": "SUP-005",
+      "registered_name": "Ntinda Industrial Traders",
+      "categories": ["electrical and plumbing"],
+      "avl_status": "SUSPENDED",
+      "approval_date": "2024-08-15",
+      "status_effective_date": "2026-07-30",
+      "terms_document": null,
+      "notes": "Suspended pending a documentation review. POL-002-C02: suspension takes precedence over the earlier approved status until management records reinstatement."
+    },
+    {
+      "supplier_id": "SUP-006",
+      "registered_name": "Kireka Steel and Cement Ltd",
+      "categories": ["cement and masonry"],
+      "avl_status": "BLACKLISTED",
+      "approval_date": "2024-02-11",
+      "status_effective_date": "2026-05-18",
+      "terms_document": null,
+      "notes": "Blacklisted. Must not receive new business under POL-002-C02."
+    },
+    {
+      "supplier_id": "SUP-007",
+      "registered_name": "Lakeview Building Supplies",
+      "categories": ["cement and masonry"],
+      "avl_status": "ACTIVE",
+      "approval_date": "2026-02-27",
+      "status_effective_date": "2026-02-27",
+      "terms_document": null,
+      "notes": "Name is deliberately similar to Lakeview Building Materials (SUP-002) and the two must not be treated as the same supplier. POL-002-C04 requires the Procurement Officer to resolve the discrepancy before comparison."
+    },
+    {
+      "supplier_id": "SUP-008",
+      "registered_name": "Mukono Tools and Fittings",
+      "categories": ["hand tools and safety equipment"],
+      "avl_status": "ACTIVE",
+      "approval_date": "2025-09-30",
+      "status_effective_date": "2025-09-30",
+      "terms_document": null,
+      "notes": "Quotes only within its approved category. An out-of-category offer requires Procurement Manager review under POL-002-C03."
+    }
+  ]
+}

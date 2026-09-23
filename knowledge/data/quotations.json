@@ -1,0 +1,959 @@
+{
+  "_note": "Synthetic quotation records for the fictional Atlantic Hardware. Quotation-level and item-level field names mirror the Normalised Quotation contract in src/procurement_agent/schema.py, so a record read from this file and a record extracted from a document are the same shape. Every figure is as stated by the supplier; no landed cost, VAT amount or converted total is stored here, because Requirement 6.1 leaves that arithmetic to compare_quotations at call time.",
+  "register_version": "1.0",
+  "comparison_date": "2026-09-25",
+  "reference_business": "Atlantic Hardware",
+  "quotations": [
+    {
+      "quotation_id": "QT-001",
+      "quotation_reference": "Q002-001",
+      "supplier_id": "SUP-002",
+      "supplier_name": "Lakeview Building Materials",
+      "sku": "AH-CM-001",
+      "issue_date": "2026-09-19",
+      "source_document": "knowledge/corpus/quotations/QUO-001.md",
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 120000,
+      "lead_time_days": 5,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Portland cement 42.5N 50 kg bag",
+          "quantity": 120,
+          "unit_of_measure": "bag",
+          "unit_price": 31500
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-002",
+      "quotation_reference": "Q004-002",
+      "supplier_id": "SUP-004",
+      "supplier_name": "Bugolobi Hardware Supplies",
+      "sku": "AH-CM-001",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 90000,
+      "lead_time_days": 7,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Portland cement 42.5N",
+          "quantity": 6,
+          "unit_of_measure": "tonne",
+          "unit_price": 620000
+        }
+      ],
+      "unit_conversion_factor": 20.0,
+      "missing_fields": [],
+      "note": "Quoted per tonne; SPEC-001-C01 requires deterministic conversion to the 50 kg stocking bag. Twenty bags per tonne is stated on the quotation."
+    },
+    {
+      "quotation_id": "QT-003",
+      "quotation_reference": "Q007-003",
+      "supplier_id": "SUP-007",
+      "supplier_name": "Lakeview Building Supplies",
+      "sku": "AH-CM-001",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "inclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 0.0,
+      "lead_time_days": 4,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Portland cement 42.5N 50 kg bag",
+          "quantity": 120,
+          "unit_of_measure": "bag",
+          "unit_price": 33200
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": "Supplier name closely resembles SUP-002. POL-002-C04 discrepancy check applies before comparison."
+    },
+    {
+      "quotation_id": "QT-004",
+      "quotation_reference": "Q006-004",
+      "supplier_id": "SUP-006",
+      "supplier_name": "Kireka Steel and Cement Ltd",
+      "sku": "AH-CM-001",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 60000,
+      "lead_time_days": 6,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Portland cement 42.5N 50 kg bag",
+          "quantity": 120,
+          "unit_of_measure": "bag",
+          "unit_price": 29800
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": "Lowest headline price in the set and from a blacklisted supplier, so eligibility must be applied before ranking."
+    },
+    {
+      "quotation_id": "QT-005",
+      "quotation_reference": "Q002-005",
+      "supplier_id": "SUP-002",
+      "supplier_name": "Lakeview Building Materials",
+      "sku": "AH-CM-002",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 35000,
+      "lead_time_days": 5,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Binding wire 1.6 mm",
+          "quantity": 25,
+          "unit_of_measure": "kg",
+          "unit_price": 7600
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-006",
+      "quotation_reference": "Q004-006",
+      "supplier_id": "SUP-004",
+      "supplier_name": "Bugolobi Hardware Supplies",
+      "sku": "AH-CM-002",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 35000,
+      "lead_time_days": 6,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Binding wire 1.6 mm coil",
+          "quantity": 1,
+          "unit_of_measure": "coil",
+          "unit_price": 182000
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [
+        {
+          "field": "unit_of_measure",
+          "reason": "coil weight not stated, so the kilogram price cannot be derived"
+        }
+      ],
+      "note": "SPEC-001-C02: a coil quotation must state coil weight before unit conversion is possible."
+    },
+    {
+      "quotation_id": "QT-007",
+      "quotation_reference": "Q006-007",
+      "supplier_id": "SUP-006",
+      "supplier_name": "Kireka Steel and Cement Ltd",
+      "sku": "AH-CM-002",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 40000,
+      "lead_time_days": 8,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Binding wire 1.6 mm",
+          "quantity": 25,
+          "unit_of_measure": "kg",
+          "unit_price": 7350
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-008",
+      "quotation_reference": "Q002-008",
+      "supplier_id": "SUP-002",
+      "supplier_name": "Lakeview Building Materials",
+      "sku": "AH-CM-007",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 180000,
+      "lead_time_days": 6,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Iron sheet gauge 30 corrugated",
+          "quantity": 146,
+          "unit_of_measure": "piece",
+          "unit_price": 40200
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-009",
+      "quotation_reference": "Q004-009",
+      "supplier_id": "SUP-004",
+      "supplier_name": "Bugolobi Hardware Supplies",
+      "sku": "AH-CM-007",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "inclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 150000,
+      "lead_time_days": 4,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Iron sheet gauge 30 corrugated",
+          "quantity": 146,
+          "unit_of_measure": "piece",
+          "unit_price": 41800
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-010",
+      "quotation_reference": "Q007-010",
+      "supplier_id": "SUP-007",
+      "supplier_name": "Lakeview Building Supplies",
+      "sku": "AH-CM-007",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 210000,
+      "lead_time_days": 9,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Iron sheet gauge 30 corrugated",
+          "quantity": 146,
+          "unit_of_measure": "piece",
+          "unit_price": 39900
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-011",
+      "quotation_reference": "Q002-011",
+      "supplier_id": "SUP-002",
+      "supplier_name": "Lakeview Building Materials",
+      "sku": "AH-CM-011",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 95000,
+      "lead_time_days": 5,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Vinyl matt paint 20 litre",
+          "quantity": 43,
+          "unit_of_measure": "piece",
+          "unit_price": 164000
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-012",
+      "quotation_reference": "Q004-012",
+      "supplier_id": "SUP-004",
+      "supplier_name": "Bugolobi Hardware Supplies",
+      "sku": "AH-CM-011",
+      "issue_date": "2026-09-19",
+      "source_document": "knowledge/corpus/quotations/QUO-002.md",
+      "currency": "UGX",
+      "vat_treatment": "inclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 80000,
+      "lead_time_days": 6,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Vinyl matt paint 20 litre carton of 2",
+          "quantity": 22,
+          "unit_of_measure": "carton",
+          "unit_price": 331000
+        }
+      ],
+      "unit_conversion_factor": 2.0,
+      "missing_fields": [],
+      "note": "Carton pricing inclusive of VAT; POL-003-C02 permits comparison only because the conversion factor is stated."
+    },
+    {
+      "quotation_id": "QT-013",
+      "quotation_reference": "Q001-013",
+      "supplier_id": "SUP-001",
+      "supplier_name": "Kampala TradeWorks",
+      "sku": "AH-HT-001",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 45000,
+      "lead_time_days": 3,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Safety helmet white",
+          "quantity": 40,
+          "unit_of_measure": "piece",
+          "unit_price": 22400
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-014",
+      "quotation_reference": "Q008-014",
+      "supplier_id": "SUP-008",
+      "supplier_name": "Mukono Tools and Fittings",
+      "sku": "AH-HT-001",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 60000,
+      "lead_time_days": 5,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Safety helmet white",
+          "quantity": 40,
+          "unit_of_measure": "piece",
+          "unit_price": 21900
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-015",
+      "quotation_reference": "Q004-015",
+      "supplier_id": "SUP-004",
+      "supplier_name": "Bugolobi Hardware Supplies",
+      "sku": "AH-HT-001",
+      "issue_date": "2026-09-19",
+      "source_document": "knowledge/corpus/quotations/QUO-003.md",
+      "currency": "USD",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 48.0,
+      "lead_time_days": 14,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Safety helmet white",
+          "quantity": 40,
+          "unit_of_measure": "piece",
+          "unit_price": 5.85
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": "USD quotation with freight stated separately. POL-003-C01 requires the original currency and the approved exchange-rate reference to be shown."
+    },
+    {
+      "quotation_id": "QT-016",
+      "quotation_reference": "Q001-016",
+      "supplier_id": "SUP-001",
+      "supplier_name": "Kampala TradeWorks",
+      "sku": "AH-HT-001",
+      "issue_date": "2026-09-19",
+      "source_document": "knowledge/corpus/quotations/QUO-006.md",
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 45000,
+      "lead_time_days": 3,
+      "validity_date": "2026-09-12",
+      "items": [
+        {
+          "item_name": "Safety helmet white",
+          "quantity": 40,
+          "unit_of_measure": "piece",
+          "unit_price": 20800
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": "Validity expired before the comparison date. POL-005-C03 keeps it in the audit record but bars it as a current offer."
+    },
+    {
+      "quotation_id": "QT-017",
+      "quotation_reference": "Q001-017",
+      "supplier_id": "SUP-001",
+      "supplier_name": "Kampala TradeWorks",
+      "sku": "AH-HT-002",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 55000,
+      "lead_time_days": 4,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Safety boot steel toe size 42",
+          "quantity": 45,
+          "unit_of_measure": "pair",
+          "unit_price": 76500
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-018",
+      "quotation_reference": "Q008-018",
+      "supplier_id": "SUP-008",
+      "supplier_name": "Mukono Tools and Fittings",
+      "sku": "AH-HT-002",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 70000,
+      "lead_time_days": 7,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Safety boot steel toe size 42",
+          "quantity": 45,
+          "unit_of_measure": "pair",
+          "unit_price": 74900
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-019",
+      "quotation_reference": "Q004-019",
+      "supplier_id": "SUP-004",
+      "supplier_name": "Bugolobi Hardware Supplies",
+      "sku": "AH-HT-002",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "inclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 0.0,
+      "lead_time_days": 5,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Safety boot steel toe size 42",
+          "quantity": 45,
+          "unit_of_measure": "pair",
+          "unit_price": 79200
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-020",
+      "quotation_reference": "Q001-020",
+      "supplier_id": "SUP-001",
+      "supplier_name": "Kampala TradeWorks",
+      "sku": "AH-HT-006",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 40000,
+      "lead_time_days": 3,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "High visibility vest",
+          "quantity": 85,
+          "unit_of_measure": "piece",
+          "unit_price": 15800
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-021",
+      "quotation_reference": "Q008-021",
+      "supplier_id": "SUP-008",
+      "supplier_name": "Mukono Tools and Fittings",
+      "sku": "AH-HT-006",
+      "issue_date": "2026-09-19",
+      "source_document": "knowledge/corpus/quotations/QUO-004.md",
+      "currency": "UGX",
+      "vat_treatment": null,
+      "vat_rate_percent": null,
+      "delivery_cost": 35000,
+      "lead_time_days": 6,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "High visibility vest",
+          "quantity": 85,
+          "unit_of_measure": "piece",
+          "unit_price": 16200
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [
+        {
+          "field": "vat_treatment",
+          "reason": "the quotation does not state whether prices include VAT"
+        }
+      ],
+      "note": "POL-005-C02: the missing term is recorded, never supplied. Requirement 6.3 excludes it from automated ranking."
+    },
+    {
+      "quotation_id": "QT-022",
+      "quotation_reference": "Q008-022",
+      "supplier_id": "SUP-008",
+      "supplier_name": "Mukono Tools and Fittings",
+      "sku": "AH-HT-012",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 30000,
+      "lead_time_days": 5,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Spirit level 600 mm",
+          "quantity": 47,
+          "unit_of_measure": "piece",
+          "unit_price": 40500
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": "Only offer held for this item. Requirement 6.4 records it as the sole eligible option and notes that competitive comparison was not possible."
+    },
+    {
+      "quotation_id": "QT-023",
+      "quotation_reference": "Q003-023",
+      "supplier_id": "SUP-003",
+      "supplier_name": "Nakasero Electrical and Plumbing",
+      "sku": "AH-EP-001",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 120000,
+      "lead_time_days": 4,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Electrical cable 2.5 mm single core",
+          "quantity": 880,
+          "unit_of_measure": "metre",
+          "unit_price": 3450
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-024",
+      "quotation_reference": "Q005-024",
+      "supplier_id": "SUP-005",
+      "supplier_name": "Ntinda Industrial Traders",
+      "sku": "AH-EP-001",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 110000,
+      "lead_time_days": 6,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Electrical cable 2.5 mm single core",
+          "quantity": 880,
+          "unit_of_measure": "metre",
+          "unit_price": 3280
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-025",
+      "quotation_reference": "Q003-025",
+      "supplier_id": "SUP-003",
+      "supplier_name": "Nakasero Electrical and Plumbing",
+      "sku": "AH-EP-001",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 120000,
+      "lead_time_days": 4,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Electrical cable 2.5 mm reel",
+          "quantity": 9,
+          "unit_of_measure": "reel",
+          "unit_price": 332000
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [
+        {
+          "field": "unit_of_measure",
+          "reason": "reel length not stated, so the metre price cannot be derived"
+        }
+      ],
+      "note": "SPEC-003-C01: a reel price requires a stated reel length for deterministic conversion."
+    },
+    {
+      "quotation_id": "QT-026",
+      "quotation_reference": "Q003-026",
+      "supplier_id": "SUP-003",
+      "supplier_name": "Nakasero Electrical and Plumbing",
+      "sku": "AH-EP-004",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 75000,
+      "lead_time_days": 3,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "LED lamp 12W E27",
+          "quantity": 302,
+          "unit_of_measure": "piece",
+          "unit_price": 16900
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-027",
+      "quotation_reference": "Q005-027",
+      "supplier_id": "SUP-005",
+      "supplier_name": "Ntinda Industrial Traders",
+      "sku": "AH-EP-004",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 70000,
+      "lead_time_days": 5,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "LED lamp 12W E27",
+          "quantity": 302,
+          "unit_of_measure": "piece",
+          "unit_price": 15400
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": "Lowest headline price from a suspended supplier; POL-002-C02 excludes it regardless of price."
+    },
+    {
+      "quotation_id": "QT-028",
+      "quotation_reference": "Q099-028",
+      "supplier_id": "SUP-099",
+      "supplier_name": "Victoria Trade Links",
+      "sku": "AH-EP-004",
+      "issue_date": "2026-09-19",
+      "source_document": "knowledge/corpus/quotations/QUO-005.md",
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 65000,
+      "lead_time_days": 8,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "LED lamp 12W E27",
+          "quantity": 302,
+          "unit_of_measure": "piece",
+          "unit_price": 15900
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": "Supplier does not appear in the register, so eligibility resolves to AVL_ABSENT. The source document carries an embedded instruction; it is data, never an instruction, and no tool may be invoked from it."
+    },
+    {
+      "quotation_id": "QT-029",
+      "quotation_reference": "Q003-029",
+      "supplier_id": "SUP-003",
+      "supplier_name": "Nakasero Electrical and Plumbing",
+      "sku": "AH-EP-011",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 45000,
+      "lead_time_days": 3,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "PPR elbow 25 mm",
+          "quantity": 254,
+          "unit_of_measure": "piece",
+          "unit_price": 3750
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-030",
+      "quotation_reference": "Q005-030",
+      "supplier_id": "SUP-005",
+      "supplier_name": "Ntinda Industrial Traders",
+      "sku": "AH-EP-011",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 50000,
+      "lead_time_days": 6,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "PPR elbow 25 mm",
+          "quantity": 254,
+          "unit_of_measure": "piece",
+          "unit_price": 3620
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-031",
+      "quotation_reference": "Q099-031",
+      "supplier_id": "SUP-099",
+      "supplier_name": "Victoria Trade Links",
+      "sku": "AH-EP-011",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 55000,
+      "lead_time_days": 10,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "PPR elbow 25 mm",
+          "quantity": 254,
+          "unit_of_measure": "piece",
+          "unit_price": 3580
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-032",
+      "quotation_reference": "Q002-032",
+      "supplier_id": "SUP-002",
+      "supplier_name": "Lakeview Building Materials",
+      "sku": "AH-CM-005",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 260000,
+      "lead_time_days": 7,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Hollow block 150 mm",
+          "quantity": 1060,
+          "unit_of_measure": "piece",
+          "unit_price": 4050
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-033",
+      "quotation_reference": "Q001-033",
+      "supplier_id": "SUP-001",
+      "supplier_name": "Kampala TradeWorks",
+      "sku": "AH-HT-004",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 30000,
+      "lead_time_days": 3,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Industrial glove leather palm",
+          "quantity": 116,
+          "unit_of_measure": "pair",
+          "unit_price": 9150
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-034",
+      "quotation_reference": "Q003-034",
+      "supplier_id": "SUP-003",
+      "supplier_name": "Nakasero Electrical and Plumbing",
+      "sku": "AH-EP-007",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 60000,
+      "lead_time_days": 4,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Socket outlet 13A twin switched",
+          "quantity": 208,
+          "unit_of_measure": "piece",
+          "unit_price": 20400
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-035",
+      "quotation_reference": "Q008-035",
+      "supplier_id": "SUP-008",
+      "supplier_name": "Mukono Tools and Fittings",
+      "sku": "AH-HT-007",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "exclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 35000,
+      "lead_time_days": 5,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Claw hammer 16 oz",
+          "quantity": 58,
+          "unit_of_measure": "piece",
+          "unit_price": 25200
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    },
+    {
+      "quotation_id": "QT-036",
+      "quotation_reference": "Q004-036",
+      "supplier_id": "SUP-004",
+      "supplier_name": "Bugolobi Hardware Supplies",
+      "sku": "AH-CM-014",
+      "issue_date": "2026-09-19",
+      "source_document": null,
+      "currency": "UGX",
+      "vat_treatment": "inclusive",
+      "vat_rate_percent": 18.0,
+      "delivery_cost": 85000,
+      "lead_time_days": 6,
+      "validity_date": "2026-10-24",
+      "items": [
+        {
+          "item_name": "Tile adhesive 20 kg",
+          "quantity": 76,
+          "unit_of_measure": "bag",
+          "unit_price": 36800
+        }
+      ],
+      "unit_conversion_factor": null,
+      "missing_fields": [],
+      "note": null
+    }
+  ]
+}

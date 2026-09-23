@@ -199,3 +199,81 @@ a measurement.
 - **Schema conformance rate.** Unknown. The Note promises "n extraction calls,
   n schema-conformant, n rejected" from a retained run log. The run log format
   exists and is written on every call; no live rows exist yet.
+
+### 2026-09-23 — Week 4 tool catalogue, schemas and operational datasets
+
+- **Context:** Week 4 requires at least two tools defined with purpose, input schema, output
+  schema, authorization and failure behaviour, with at least one retrieving current application
+  data or creating a low-risk simulated side effect (issue #15). Two constraints shaped the
+  work before any writing began. Project Charter section 1 had already named the six tools the
+  agent may use and section 7 caps the build at four, so the catalogue had to draw from that
+  list rather than invent one. And the operational data those tools read did not exist:
+  `.env.example` had declared `INVENTORY_DATA_PATH`, `QUOTATIONS_DATA_PATH` and
+  `SUPPLIERS_DATA_PATH` since Week 2, but `knowledge/data/` was empty, no code read those
+  variables, and no weekly row or issue assigned the dataset to anyone.
+
+- **AI contribution:** Claude Opus 5, run through Claude Code, produced
+  `docs/architecture/tool-catalogue.md`, the eleven JSON Schema files and README under
+  `docs/architecture/schemas/`, the three synthetic datasets and README under `knowledge/data/`,
+  the `DAT-001` to `DAT-003` register rows, and this entry. It also carried out the discovery
+  pass that found the charter tool list, the unowned dataset and the ownership divergence
+  recorded below.
+
+- **Human review:** Pending. Owner review has not happened, and the three datasets are
+  registered as `pending_review` rather than `approved` for that reason — the corpus documents
+  were human-reviewed on 17 September 2026 and these were not. Every figure in the worked
+  examples was computed and checked rather than written by hand, and every schema and example
+  was validated mechanically (see below), but no one has yet read the data for plausibility as
+  procurement records.
+
+- **Outcome:** Accepted into the repository as the Week 4 tool contract, subject to owner
+  review. Issues #16 (working demonstration) and #17 (failure and authorization evidence) were
+  blocked on the missing dataset and are now unblocked.
+
+#### Decisions taken
+
+- **Four tools, not six.** `check_reorder_need`, `check_supplier_eligibility`,
+  `compare_quotations` and `create_requisition_draft`, all named in charter section 1. Document
+  conversion is deferred because charter section 9 excludes scans and OCR; quotation retrieval
+  is folded into `compare_quotations` rather than spending one of four slots on a lookup.
+- **Policy retrieval is not a tool.** Charter section 1 does not name it, and Week 3 delivered
+  it as a pipeline the officer invokes. It stays outside the allow-list until Week 6 decides.
+- **One side effect only, and it writes `DRAFT`.** `create_requisition_draft` accepts `status`
+  solely as the constant `DRAFT`, so that an attempt to set anything else fails with
+  `FORBIDDEN_TRANSITION` citing Requirement 14.3 rather than a generic schema error.
+- **`caller_role` is in no input schema.** Authorization is injected by the orchestration layer
+  from the authenticated session. Requirement 14.5 treats document content as untrusted, and a
+  role that were model-facing could be requested by text inside a quotation.
+- **The datasets were created because nobody owned them.** Charter section 7 puts them in
+  scope; no deliverable row or issue claimed them. They are consistent with the existing corpus
+  — same fictional business, same three categories, the three suppliers named in SUP-001 to
+  SUP-003 — and the three fixture items in `fixtures/requisitions/weekly-reorder.json` resolve
+  to exactly 120 bags, 25 kg and 40 helmets against the new inventory.
+
+#### Verification performed
+
+| Check | Result |
+|---|---|
+| All 11 schema files are valid JSON Schema draft 2020-12 | Pass |
+| 48 inventory, 8 supplier and 36 quotation records validate against the record schemas | Pass, 0 errors |
+| 4 tool input examples and 4 output examples validate against their schemas | Pass, 0 errors |
+| 2 failure-response examples validate against their output schemas | Pass, 0 errors |
+| All 14 JSON blocks in the catalogue parse | Pass |
+| Embedded input-schema snippets match the schema files on properties and `required` | Pass |
+| Landed-cost figures in the worked example recomputed in decimal arithmetic | Pass |
+| Existing test suite after the `source-register.csv` additions | Pass |
+
+`jsonschema` was used for validation inside a throwaway environment and is deliberately **not**
+a project dependency; the charter's zero-runtime-dependency rule stands, and the implementation
+is expected to validate by hand as `schema.validate` already does.
+
+#### Raised for the team
+
+- **Two exclusion reasons extend Requirement 4.** It names `AVL_ABSENT`, `BLACKLISTED` and
+  `EXPIRED`. `check_supplier_eligibility` also returns `SUSPENDED` and `OUT_OF_CATEGORY`,
+  because POL-002-C02 and POL-002-C03 bar both and folding either into `BLACKLISTED` would tell
+  an approver something untrue. Needs a Requirements Document amendment.
+- **`docs/README.md` disagreed with the issue tracker.** Its Week 4 table named different
+  owners from GitHub issues #15 to #19. The Week 4 rows were corrected to match the tracker;
+  Weeks 5 to 8 diverge the same way and were left for the group.
+- **A fifth tool needs a charter amendment.** Four is the section 7 ceiling.

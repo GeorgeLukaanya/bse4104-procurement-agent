@@ -9,12 +9,12 @@ ClickUp board: [Group Y](https://app.clickup.com/9012272120/v/s/90129079418)
 | Path | What belongs here |
 |---|---|
 | [`docs/requirements/`](requirements/) | Charter, user stories, AI boundary matrix, agent task contract |
-| [`docs/architecture/`](architecture/) | Diagrams, model note, baseline/RAG/tools/agent/memory write-ups, [CI map](architecture/ci.md) |
+| [`docs/architecture/`](architecture/) | Diagrams, model note, baseline/RAG/tools/agent/memory write-ups, [CI map](architecture/ci.md), [tool schemas](architecture/schemas/) |
 | [`docs/weekly-reports/`](weekly-reports/) | Week 1–8 progress reports and the final engineering report |
 | [`docs/evaluation/`](evaluation/) | Prompt, RAG, tool, agent and final evaluation evidence |
 | [`docs/AI-ENGINEERING-LOG.md`](AI-ENGINEERING-LOG.md) | Material AI-assisted decisions |
 | [`prompts/`](../prompts/) | Versioned prompt specifications |
-| [`knowledge/`](../knowledge/) | Corpus metadata and provenance — no restricted data |
+| [`knowledge/`](../knowledge/) | Corpus metadata and provenance, and the operational [datasets](../knowledge/data/) the tools read — no restricted data |
 | [`evidence/`](../evidence/) | Traces, screenshots, demo recordings |
 
 Working code stays in `src/` and `tests/`. The markdown file for a “working …” deliverable is the write-up, not a second implementation.
@@ -30,6 +30,8 @@ Working code stays in `src/` and `tests/`. The markdown file for a “working �
 | DevOps / Documentation Lead | Lukaanya George | [GeorgeLukaanya](https://github.com/GeorgeLukaanya) |
 
 Due dates are the Friday of each teaching week.
+
+> **Owners follow the GitHub issues.** The Week 4 rows below were reconciled against issues [#15](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/15)–[#19](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/19) on 23 September 2026. Weeks 5–8 still disagree with the tracker and need the same reconciliation.
 
 ## Week 1 — 4 September 2026 — done
 
@@ -65,11 +67,11 @@ Due dates are the Friday of each teaching week.
 
 | Deliverable | Path | Owner | Status |
 |---|---|---|---|
-| Tool catalogue and schemas | [`docs/architecture/tool-catalogue.md`](architecture/tool-catalogue.md) | Nannyombi Shakiran | Not started |
-| Working demonstration of two tools | [`docs/architecture/working-tools.md`](architecture/working-tools.md) | Ainamani Jim Isaac | Not started |
-| Failure / authorization test evidence | [`docs/evaluation/tool-failure-tests.md`](evaluation/tool-failure-tests.md) | Sekyeza Elroy Nunda | Not started |
-| Updated architecture diagram | [`docs/architecture/architecture.md`](architecture/architecture.md) | Beingana Jim Junior | Not started |
-| Week 4 progress report | [`docs/weekly-reports/week-04.md`](weekly-reports/week-04.md) | Lukaanya George | Not started |
+| Tool catalogue and schemas | [`docs/architecture/tool-catalogue.md`](architecture/tool-catalogue.md) + [`schemas/`](architecture/schemas/) | Lukaanya George | Complete, awaiting team review |
+| Working demonstration of two tools | [`docs/architecture/working-tools.md`](architecture/working-tools.md) | Nannyombi Shakiran | Not started |
+| Failure / authorization test evidence | [`docs/evaluation/tool-failure-tests.md`](evaluation/tool-failure-tests.md) | Beingana Jim Junior | Not started |
+| Updated architecture diagram | [`docs/architecture/architecture.md`](architecture/architecture.md) | Ainamani Jim Isaac | Not started |
+| Week 4 progress report | [`docs/weekly-reports/week-04.md`](weekly-reports/week-04.md) | Sekyeza Elroy Nunda | Not started |
 
 ## Week 5 — 2 October 2026
 
@@ -132,11 +134,11 @@ Issues: [https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues](htt
 
 ### Week 4 — due 25 Sep 2026
 
-- Tool catalogue and schemas — Nannyombi Shakiran — `docs/architecture/tool-catalogue.md` — [#15](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/15)
-- Working demonstration of two tools — Ainamani Jim Isaac — `docs/architecture/working-tools.md` — [#16](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/16)
-- Failure / authorization test evidence — Sekyeza Elroy Nunda — `docs/evaluation/tool-failure-tests.md` — [#17](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/17)
-- Updated architecture diagram — Beingana Jim Junior — `docs/architecture/architecture.md` — [#18](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/18)
-- Week 4 progress report — Lukaanya George — `docs/weekly-reports/week-04.md` — [#19](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/19)
+- Tool catalogue and schemas — Lukaanya George — `docs/architecture/tool-catalogue.md` — [#15](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/15)
+- Working demonstration of two tools — Nannyombi Shakiran — `docs/architecture/working-tools.md` — [#16](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/16)
+- Failure / authorization test evidence — Beingana Jim Junior — `docs/evaluation/tool-failure-tests.md` — [#17](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/17)
+- Updated architecture diagram — Ainamani Jim Isaac — `docs/architecture/architecture.md` — [#18](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/18)
+- Week 4 progress report — Sekyeza Elroy Nunda — `docs/weekly-reports/week-04.md` — [#19](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/19)
 
 ### Week 5 — due 2 Oct 2026
 

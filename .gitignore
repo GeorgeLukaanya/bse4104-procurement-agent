@@ -228,3 +228,6 @@ evidence/**/*.tmp
 knowledge/data/*.restricted.*
 BSE4104 AI Agentic Capstone Assignment (1).docx*
 .kiro/*
+# Local-only reference notes — not deliverables, deliberately uncommitted
+docs/Capstone_details.md
+docs/system-workflow.md

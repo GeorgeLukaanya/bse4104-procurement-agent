@@ -70,7 +70,7 @@ Due dates are the Friday of each teaching week.
 | Deliverable | Path | Owner | Status |
 |---|---|---|---|
 | Tool catalogue and schemas | [`docs/architecture/tool-catalogue.md`](architecture/tool-catalogue.md) + [`schemas/`](architecture/schemas/) | Lukaanya George | Complete, awaiting team review |
-| Working demonstration of two tools | [`docs/architecture/working-tools.md`](architecture/working-tools.md) | Nannyombi Shakiran | Not started |
+| Working demonstration of two tools | [`docs/architecture/working-tools.md`](architecture/working-tools.md) | Nannyombi Shakiran | Done (write-up) |
 | Failure / authorization test evidence | [`docs/evaluation/tool-failure-tests.md`](evaluation/tool-failure-tests.md) | Beingana Jim Junior | Not started |
 | Updated architecture diagram | [`docs/architecture/architecture.md`](architecture/architecture.md) | Ainamani Jim Isaac | Not started |
 | Week 4 progress report | [`docs/weekly-reports/week-04.md`](weekly-reports/week-04.md) | Sekyeza Elroy Nunda | Not started |

@@ -15,26 +15,23 @@ purchase order, contacts a supplier, commits funds or approves anything itself.
 
 ## Status
 
-**Week 4 of 8 — tool contracts and operational data.**
+**Week 4 of 8 — tools implemented against the catalogue.**
 
-Two pipelines run today, as separate command-line tools:
+Three command-line tools run today, still as separate entry points:
 
 - **Quotation extraction** (Week 2) — takes a Converted Quotation Document in
   Markdown and returns a validated eleven-field Normalised Quotation record.
 - **Policy retrieval** (Week 3) — retrieves applicable procurement policy clauses
   from a controlled 12-document, 45-clause corpus and grounds an answer in them,
   validating every citation against what was actually retrieved.
+- **Procurement tools** (Week 4) — four deterministic functions
+  (`check_reorder_need`, `check_supplier_eligibility`, `compare_quotations`,
+  `create_requisition_draft`) called through `dispatch.invoke`. No model is
+  involved. Write-up: [`docs/architecture/working-tools.md`](docs/architecture/working-tools.md).
 
-Week 4 added the **tool catalogue** — four tools specified with input schema,
-output schema, authorization and failure behaviour
-([`docs/architecture/tool-catalogue.md`](docs/architecture/tool-catalogue.md),
-schemas in [`docs/architecture/schemas/`](docs/architecture/schemas/)) — and the
-**operational datasets** those tools read
-([`knowledge/data/`](knowledge/data/): 48 SKUs, 8 suppliers, 36 quotations).
-
-Not built yet: the tool implementations, the agent loop, persistent state, a
-requisition store, and any user interface. The two pipelines are not yet wired to
-each other.
+Not built yet: the agent loop, Week 5 persistent workflow state, document
+conversion, and any user interface. The three CLIs are not yet wired to each
+other.
 
 There is deliberately **no application framework**. Django, FastAPI and Flask are
 all absent, because the charter has not chosen one. The package is importable and
@@ -252,12 +249,36 @@ that was not retrieved *for that item* is rejected even if the clause exists in
 the corpus. When no clause matches, the pipeline says so rather than inventing a
 rule.
 
+## Run the tools (Week 4)
+
+No API key. The role is injected by the CLI (`--role`, default
+`PROCUREMENT_OFFICER`) and is never taken from the JSON payload.
+
+```bash
+python -m procurement_agent.tools.cli check_reorder_need \
+    --review-date 2026-09-25 --sku AH-CM-001 --sku AH-HT-012 --json
+
+python -m procurement_agent.tools.cli compare_quotations \
+    --sku AH-CM-001 --quantity 120 --date 2026-09-25 --json
+
+python -m procurement_agent.tools.cli create_requisition_draft \
+    --file fixtures/tools/cement-draft.json --json
+```
+
+`procurement-tools` is the installed console script. Every call appends one line
+to `evidence/traces/tool-runs.jsonl`. Drafts land in `var/requisitions.jsonl`
+(git-ignored) with status `DRAFT` only. Write-up:
+[`docs/architecture/working-tools.md`](docs/architecture/working-tools.md).
+
 ### What a run produces
 
 | Path | Contents | Tracked? |
 |---|---|---|
 | `.cache/extractions/*.json` | One entry per document+configuration pair | No, git-ignored |
-| `evidence/traces/extraction-runs.jsonl` | Append-only run log, one JSON object per call | Yes — this is the evidence |
+| `evidence/traces/extraction-runs.jsonl` | Append-only extraction log, one JSON object per call | Yes — this is the evidence |
+| `evidence/traces/tool-runs.jsonl` | Append-only tool log, one JSON object per call | Yes — this is the evidence |
+| `evidence/traces/tools/*.json` | Indented copies of the recorded tool run | Yes — easier to read |
+| `var/requisitions.jsonl` | Local DRAFT store | No, git-ignored |
 
 Clear the cache to force live calls: `rm -rf .cache` (or pass `--no-cache`).
 Do not hand-edit the run log; an evidence log that can be edited is not evidence.
@@ -345,20 +366,21 @@ For one quotation:
 ### The package performs no arithmetic
 
 No totalling, no VAT application, no unit conversion, no currency conversion, no
-landed cost, no ranking. All of that belongs to the deterministic calculator that
-will consume this output. See the AI Boundary Matrix v1.1 and requirement 6.6.
+landed cost, no ranking. All of that belongs to the deterministic calculator.
+That calculator is now `src/procurement_agent/tools/compare.py` (Requirement 6.6).
+The extraction package still does none of this arithmetic.
 
 ## Repository layout
 
 | Path | Contents |
 |---|---|
-| `src/procurement_agent/` | The extraction package (see module table below) |
+| `src/procurement_agent/` | Extraction, RAG and tools packages |
 | `tests/` | Test suite — runs with no key, no network, no quota |
 | `fixtures/` | Synthetic quotation fixtures in Markdown |
 | `tools/offline_demo.py` | Drive the CLI with no key, no network, no quota |
 | `docs/README.md` | Week-by-week deliverable index, owners and ClickUp copy list |
 | `docs/requirements/` | Charter, user stories, AI boundary matrix |
-| `docs/architecture/` | Diagrams, model note, baseline and RAG write-ups, tool catalogue, integration handover, CI map |
+| `docs/architecture/` | Diagrams, model note, baseline, RAG and tools write-ups, tool catalogue, integration handover, CI map |
 | `docs/architecture/schemas/` | JSON Schema contracts for the four tools and the data records |
 | `docs/weekly-reports/` | Weekly progress reports |
 | `docs/evaluation/` | Prompt and later-week evaluation tables |
@@ -390,6 +412,12 @@ will consume this output. See the AI Boundary Matrix v1.1 and requirement 6.6.
 | `rag/citations.py` | Reject any citation not retrieved for that item |
 | `rag/pipeline.py` | Retrieve → generate → scan → validate → trace |
 | `rag/cli.py` | Command-line entry point for policy retrieval |
+| `tools/dispatch.py` | Orchestration: injected role, allow-list, confirmation gate |
+| `tools/reorder.py` | `check_reorder_need` |
+| `tools/eligibility.py` | `check_supplier_eligibility` |
+| `tools/compare.py` | `compare_quotations` — the landed-cost calculator |
+| `tools/draft.py` | `create_requisition_draft` — DRAFT write only |
+| `tools/cli.py` | Command-line entry point for the four tools |
 
 ## Specification
 

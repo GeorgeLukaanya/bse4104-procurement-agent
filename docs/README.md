@@ -33,7 +33,7 @@ Working code stays in `src/` and `tests/`. The markdown file for a “working �
 
 Due dates are the Friday of each teaching week.
 
-> **Owners follow the GitHub issues.** Every week below was reconciled against issues [#15](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/15)–[#40](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/40) on 23 September 2026. Weeks 4 to 7 had owners that did not match the tracker; Week 8 already agreed. If a row and its issue ever disagree again, **the issue wins** — change the assignee there, then update this file.
+> **Owners follow the GitHub issues.** Every week below was reconciled against issues [#15](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/15)–[#40](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/40) on 23 September 2026. Weeks 4 to 7 had owners that did not match the tracker, plus one Week 3 row; Week 8 already agreed. If a row and its issue ever disagree again, **the issue wins** — change the assignee there, then update this file.
 
 ## Week 1 — 4 September 2026 — done
 

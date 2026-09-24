@@ -336,7 +336,7 @@ than accumulated is not evidence.
 
 ## 10. Reference
 
-- Requirements Document **v1.1** — `docs/requirements/user-stories.md`
+- Requirements Document **v1.2** — `docs/requirements/user-stories.md`
   (glossary "Normalised Quotation"; requirements 2, 3, 6, 14)
 - AI Boundary Matrix **v1.1** — `docs/requirements/ai-boundary-matrix.md`
 - Project Charter **v1.1** — `docs/requirements/project-charter.md`

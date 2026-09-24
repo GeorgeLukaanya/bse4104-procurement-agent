@@ -218,6 +218,7 @@
                         "SUSPENDED",
                         "OUT_OF_CATEGORY",
                         "EXPIRED",
+                        "NAME_DISCREPANCY",
                         "INCOMPARABLE_QUOTATION"
                       ]
                     }

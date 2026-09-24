@@ -301,7 +301,8 @@ the register, and it cannot change a status.
 ```
 
 `supplier_names` exists because a quotation carries a printed name, not an identifier. Names are
-matched **exactly**. A close match is reported in `similar_registered_names` and never resolved:
+matched **exactly**. A close match is reported in `similar_registered_names`, marked
+`NAME_DISCREPANCY`, and excluded from comparison until officer clearance is recorded:
 POL-002-C04 puts that judgement with the officer, and the register deliberately holds Lakeview
 Building Materials and Lakeview Building Supplies as separate entities to exercise it.
 
@@ -316,6 +317,7 @@ array drawn from:
 | `SUSPENDED` | `avl_status` is `SUSPENDED` on `as_of_date`. POL-002-C02. |
 | `OUT_OF_CATEGORY` | Category not among the supplier's approved categories. POL-002-C03. |
 | `EXPIRED` | A supplied quotation's validity date precedes `as_of_date`. POL-005-C03. |
+| `NAME_DISCREPANCY` | The supplier name closely resembles another AVL supplier and clearance is not yet recorded. POL-002-C04. |
 
 All applicable reasons are returned. A supplier that is both suspended and out of category
 reports both, because an officer who fixes one and retries should not discover the second on the
@@ -336,7 +338,7 @@ The fourth row is the one that matters. A tool that failed open here would let a
 supplier through whenever a file was missing, which is precisely the case POL-002-C01 exists to
 prevent.
 
-**Example.** One active supplier, one blacklisted, and the lookalike name.
+**Example.** One blacklisted supplier and two lookalike names awaiting clearance.
 
 ```json
 { "category": "cement and masonry", "as_of_date": "2026-09-25", "supplier_ids": ["SUP-002", "SUP-006", "SUP-007"] }
@@ -358,8 +360,8 @@ prevent.
         "registered_name": "Lakeview Building Materials",
         "avl_status": "ACTIVE",
         "approved_categories": ["cement and masonry"],
-        "eligible": true,
-        "exclusion_reasons": [],
+        "eligible": false,
+        "exclusion_reasons": ["NAME_DISCREPANCY"],
         "similar_registered_names": ["Lakeview Building Supplies"]
       },
       {
@@ -380,8 +382,8 @@ prevent.
         "registered_name": "Lakeview Building Supplies",
         "avl_status": "ACTIVE",
         "approved_categories": ["cement and masonry"],
-        "eligible": true,
-        "exclusion_reasons": [],
+        "eligible": false,
+        "exclusion_reasons": ["NAME_DISCREPANCY"],
         "similar_registered_names": ["Lakeview Building Materials"]
       }
     ]
@@ -396,7 +398,7 @@ prevent.
 }
 ```
 
-**Traceability.** Requirement 4.1–4.4 · POL-002-C01 to C04, POL-005-C03 · success criteria S6, S7.
+**Traceability.** Requirement 4.1–4.6 · POL-002-C01 to C04, POL-005-C03 · success criteria S6, S7.
 
 ### 6. `compare_quotations`
 
@@ -474,7 +476,8 @@ VAT treatment on `QT-021` is named, never assumed, per POL-005-C02. And an insuf
 is reported rather than enforced: blocking the workflow would make the POL-001-C04 exception
 path unreachable.
 
-**Example.** Cement, 120 bags. One blacklisted offer drops out, and the per-tonne offer is
+**Example.** Cement, 120 bags. One blacklisted offer and one unresolved name-discrepancy offer
+drop out, and the per-tonne offer is
 comparable only because its conversion factor is stated.
 
 ```json
@@ -495,23 +498,6 @@ comparable only because its conversion factor is stated.
     "ranked": [
       {
         "rank": 1,
-        "quotation_id": "QT-003",
-        "supplier_id": "SUP-007",
-        "supplier_name": "Lakeview Building Supplies",
-        "original_currency": "UGX",
-        "original_unit_price": 33200,
-        "unit_conversion_factor": null,
-        "normalised_unit_cost_ugx": 28135.59,
-        "extended_cost_ugx": 3376271.19,
-        "vat_amount_ugx": 607728.81,
-        "delivery_cost_ugx": 0,
-        "landed_cost_ugx": 3984000.00,
-        "lead_time_days": 4,
-        "validity_date": "2026-10-24",
-        "tie_broken_on_supplier_name": false
-      },
-      {
-        "rank": 2,
         "quotation_id": "QT-002",
         "supplier_id": "SUP-004",
         "supplier_name": "Bugolobi Hardware Supplies",
@@ -528,7 +514,7 @@ comparable only because its conversion factor is stated.
         "tie_broken_on_supplier_name": false
       },
       {
-        "rank": 3,
+        "rank": 2,
         "quotation_id": "QT-001",
         "supplier_id": "SUP-002",
         "supplier_name": "Lakeview Building Materials",
@@ -547,6 +533,13 @@ comparable only because its conversion factor is stated.
     ],
     "excluded": [
       {
+        "quotation_id": "QT-003",
+        "supplier_id": "SUP-007",
+        "supplier_name": "Lakeview Building Supplies",
+        "reasons": ["NAME_DISCREPANCY"],
+        "missing_fields": []
+      },
+      {
         "quotation_id": "QT-004",
         "supplier_id": "SUP-006",
         "supplier_name": "Kireka Steel and Cement Ltd",
@@ -558,13 +551,18 @@ comparable only because its conversion factor is stated.
       "value_band": "500k_to_under_5m",
       "clause": "POL-001-C02",
       "required_count": 3,
-      "eligible_count": 3,
-      "satisfied": true,
-      "exception_required": false
+      "eligible_count": 2,
+      "satisfied": false,
+      "exception_required": true
     },
     "sole_eligible_option": false
   },
-  "errors": [],
+  "errors": [
+   {
+      "code": "INSUFFICIENT_QUOTATIONS",
+      "detail": "POL-001-C02 requires 3 eligible quotations for this value band; 2 remain after exclusions."
+   }
+  ],
   "trace": {
     "called_at": "2026-09-25T08:15:31Z",
     "caller_role": "PROCUREMENT_OFFICER",
@@ -574,9 +572,9 @@ comparable only because its conversion factor is stated.
 }
 ```
 
-The excluded offer had the lowest headline price in the set at UGX 29,800 per bag. It is out on
-status alone, which is what POL-002-C02 requires and what a spreadsheet comparison sorted by
-price would have missed.
+Two offers are excluded for different policy reasons: one for `BLACKLISTED`, one for
+`NAME_DISCREPANCY`. The blacklisted one had the lowest headline price in the set at UGX 29,800
+per bag, which is exactly the kind of false winner a spreadsheet sorted by price would miss.
 
 **Traceability.** Requirement 5, Requirement 6.1–6.6 · POL-001-C01 to C04, POL-003-C01 to C04,
 SPEC-001-C01, SPEC-001-C02, SPEC-003-C01 · success criteria S1, S2.
@@ -884,12 +882,14 @@ dependency.
 7. Adding a fifth — a policy-retrieval tool, or the deferred document-conversion tool — needs a
 charter amendment, not just a new file here.
 
-**Two exclusion reasons extend Requirement 4.** Requirement 4 names `AVL_ABSENT`, `BLACKLISTED`
-and `EXPIRED`. `check_supplier_eligibility` also returns `SUSPENDED` and `OUT_OF_CATEGORY`,
-because POL-002-C02 bars a suspended supplier and POL-002-C03 bars an out-of-category
-quotation, and folding either into `BLACKLISTED` would tell an approver something untrue. This
-should be recorded as an amendment to Requirement 4 at the next version bump of the Requirements
-Document.
+**Requirement 4 was amended to match this tool. Resolved.** Requirement 4 named only
+`AVL_ABSENT`, `BLACKLISTED` and `EXPIRED`, which cannot express the suspension bar in
+POL-002-C02 or the category bar in POL-002-C03. Requirements Document **v1.2** (23 September
+2026) widens 4.1 to name all four checks, adds `SUSPENDED` and `OUT_OF_CATEGORY` to the 4.3
+vocabulary, and adds 4.6 for the POL-002-C04 name-resemblance rule this tool reports through
+`similar_registered_names` and enforces through `NAME_DISCREPANCY` exclusion until officer
+clearance is recorded. See the Amendment History in
+[`user-stories.md`](../requirements/user-stories.md).
 
 **The datasets are not yet human-reviewed.** `DAT-001` to `DAT-003` are `pending_review`.
 Someone other than their author should check them before the Week 7 evaluation depends on them.

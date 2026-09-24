@@ -6,7 +6,7 @@
 
 **Group:** Y 
 
-**Version:** 1.1 
+**Version:** 1.2 
 
 ## **Introduction**
 
@@ -112,11 +112,12 @@ The system combines an AI layer (quotation field extraction, policy retrieval, j
 
 **Acceptance Criteria**
 
-1. WHEN the Procurement Officer confirms the Normalised Quotation records, THE Deterministic Layer SHALL verify that each supplier is present on the AVL and absent from the Blacklist before including that supplier's quotation in comparison.  
+1. WHEN the Procurement Officer confirms the Normalised Quotation records, THE Deterministic Layer SHALL verify that each supplier is present on the AVL, is neither suspended nor blacklisted on the assessment date, and is approved for the product category of the reorder item, before including that supplier's quotation in comparison.  
 2. WHEN the Procurement Officer confirms the Normalised Quotation records, THE Deterministic Layer SHALL verify that each quotation's validity date is on or after the current date.  
-3. IF a supplier fails any eligibility check, THEN THE Deterministic Layer SHALL mark that quotation ineligible and exclude it from comparison, recording every applicable reason from: AVL\_ABSENT, BLACKLISTED, EXPIRED.  
+3. IF a supplier fails any eligibility check, THEN THE Deterministic Layer SHALL mark that quotation ineligible and exclude it from comparison, recording every applicable reason from: AVL\_ABSENT, BLACKLISTED, SUSPENDED, OUT\_OF\_CATEGORY, EXPIRED, NAME\_DISCREPANCY.  
 4. IF all submitted quotations fail eligibility checks, THEN THE System SHALL notify the Procurement Officer, retain all Normalised Quotation data in the session, and halt the workflow until at least one new quotation passes.  
-5. WHEN eligibility checks complete, THE System SHALL present a per-supplier summary showing eligibility status and, for ineligible suppliers, every recorded exclusion reason.
+5. WHEN eligibility checks complete, THE System SHALL present a per-supplier summary showing eligibility status and, for ineligible suppliers, every recorded exclusion reason.  
+6. WHERE a quoted supplier's registered name closely resembles that of another supplier on the AVL, THE Deterministic Layer SHALL report the resemblance to the Procurement Officer, mark that quotation ineligible with reason `NAME_DISCREPANCY`, and SHALL NOT include it in comparison until the Procurement Officer records the discrepancy as resolved.
 
 ### **5\. Currency Normalisation**
 
@@ -252,3 +253,41 @@ The system combines an AI layer (quotation field extraction, policy retrieval, j
 | S8 Zero prohibited actions under adversarial prompts | 3.7, 14 |
 | S9 Extraction field accuracy | 3 |
 
+## **Amendment History**
+
+| Version | Date | Change | Reason |
+| ----- | ----- | ----- | ----- |
+| 1.0 | 4 September 2026 | Initial requirements set | Week 1 deliverable |
+| 1.1 | 4 September 2026 | Normalised Quotation raised from six fields to eleven | The six-field set cannot produce the inputs for Landed Cost, which requirement 6 makes the basis for supplier ranking |
+| 1.2 | 23 September 2026 | Requirement 4 amended — see below | Week 4 tool catalogue found the requirement narrower than the policy it enforces |
+
+### **Version 1.2 — Requirement 4**
+
+Three changes, all confined to Requirement 4. Requirements 1 to 3 and 5 to 14, the
+Glossary and the Traceability table are unchanged, so existing citations to v1.1 for
+the Normalised Quotation glossary entry and for requirement 6.6 remain accurate.
+
+**4.1 now names all four supplier checks.** It previously required only AVL presence
+and Blacklist absence. POL-002-C02 also bars a *suspended* supplier, and POL-002-C03
+bars a quotation outside the supplier's approved categories. The deterministic layer
+was always going to perform those checks; the requirement did not say so.
+
+**4.3 gains `SUSPENDED`, `OUT_OF_CATEGORY` and `NAME_DISCREPANCY`.** The reason vocabulary was
+`AVL_ABSENT`, `BLACKLISTED`, `EXPIRED`. Those three cannot express the two additional
+bars in 4.1 or the POL-002-C04 clearance stop in 4.6. Folding a suspension into `BLACKLISTED` would tell an approver something
+untrue — POL-002-C02 treats suspension as reversible on management record, and a
+blacklisting as not — and folding an out-of-category offer into either would hide that
+POL-002-C03 allows it to proceed after Procurement Manager review.
+
+**4.6 is new.** POL-002-C04 requires the Procurement Officer to resolve a discrepancy
+when a supplier name differs between a quotation and the supplier register, and states
+that staff must not assume similarly named businesses are the same supplier. No
+requirement carried that rule. The new criterion makes the system report a resemblance,
+block the affected quotation from comparison with `NAME_DISCREPANCY` until officer
+clearance is recorded, and stop automatic resolution.
+
+Implemented by the `check_supplier_eligibility` contract in
+[`docs/architecture/tool-catalogue.md`](../architecture/tool-catalogue.md) section 5,
+schema at
+[`docs/architecture/schemas/check_supplier_eligibility.output.json`](../architecture/schemas/check_supplier_eligibility.output.json).
+The supplier register at `knowledge/data/suppliers.json` seeds a case for each reason.

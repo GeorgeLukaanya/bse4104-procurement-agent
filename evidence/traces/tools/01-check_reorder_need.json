@@ -1,0 +1,49 @@
+{
+  "component": "TOOL",
+  "tool": "check_reorder_need",
+  "tool_version": "1.0",
+  "status": "ok",
+  "errors": [],
+  "trace": {
+    "called_at": "2026-09-24T06:29:05Z",
+    "caller_role": "PROCUREMENT_OFFICER",
+    "latency_ms": 6,
+    "data_fingerprint": "6ab934ebb697380b"
+  },
+  "data": {
+    "review_date": "2026-09-25",
+    "evaluated_count": 2,
+    "flagged_count": 2,
+    "no_reorder_required": false,
+    "items": [
+      {
+        "sku": "AH-CM-001",
+        "item_name": "Portland cement 42.5N 50 kg bag",
+        "category": "cement and masonry",
+        "unit_of_measure": "bag",
+        "current_stock": 150,
+        "reorder_point": 150,
+        "target_stock_level": 270,
+        "reorder_quantity": 120,
+        "estimated_unit_cost_ugx": 32000.0,
+        "estimated_total_ugx": 3840000.0,
+        "location": "Nakawa Main Store",
+        "at_or_below_reorder_point": true
+      },
+      {
+        "sku": "AH-HT-012",
+        "item_name": "Spirit level 600 mm",
+        "category": "hand tools and safety equipment",
+        "unit_of_measure": "piece",
+        "current_stock": 18,
+        "reorder_point": 20,
+        "target_stock_level": 65,
+        "reorder_quantity": 47,
+        "estimated_unit_cost_ugx": 42000.0,
+        "estimated_total_ugx": 1974000.0,
+        "location": "Nakawa Main Store",
+        "at_or_below_reorder_point": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "component": "TOOL",
+  "tool": "check_supplier_eligibility",
+  "tool_version": "1.0",
+  "status": "ok",
+  "errors": [],
+  "trace": {
+    "called_at": "2026-09-24T06:29:05Z",
+    "caller_role": "PROCUREMENT_OFFICER",
+    "latency_ms": 7,
+    "data_fingerprint": "7ec4874dfd26415e"
+  },
+  "data": {
+    "category": "cement and masonry",
+    "as_of_date": "2026-09-25",
+    "results": [
+      {
+        "requested": "SUP-002",
+        "matched_by": "supplier_id",
+        "supplier_id": "SUP-002",
+        "registered_name": "Lakeview Building Materials",
+        "avl_status": "ACTIVE",
+        "approved_categories": [
+          "cement and masonry"
+        ],
+        "eligible": false,
+        "exclusion_reasons": [
+          "NAME_DISCREPANCY"
+        ],
+        "similar_registered_names": [
+          "Lakeview Building Supplies"
+        ]
+      },
+      {
+        "requested": "SUP-006",
+        "matched_by": "supplier_id",
+        "supplier_id": "SUP-006",
+        "registered_name": "Kireka Steel and Cement Ltd",
+        "avl_status": "BLACKLISTED",
+        "approved_categories": [
+          "cement and masonry"
+        ],
+        "eligible": false,
+        "exclusion_reasons": [
+          "BLACKLISTED"
+        ],
+        "similar_registered_names": []
+      },
+      {
+        "requested": "SUP-007",
+        "matched_by": "supplier_id",
+        "supplier_id": "SUP-007",
+        "registered_name": "Lakeview Building Supplies",
+        "avl_status": "ACTIVE",
+        "approved_categories": [
+          "cement and masonry"
+        ],
+        "eligible": false,
+        "exclusion_reasons": [
+          "NAME_DISCREPANCY"
+        ],
+        "similar_registered_names": [
+          "Lakeview Building Materials"
+        ]
+      }
+    ]
+  }
+}

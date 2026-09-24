@@ -1,0 +1,82 @@
+{
+  "component": "TOOL",
+  "tool": "compare_quotations",
+  "tool_version": "1.0",
+  "status": "ok",
+  "errors": [
+    {
+      "code": "INSUFFICIENT_QUOTATIONS",
+      "detail": "POL-001-C02 requires 3 eligible quotations for this value band; 1 remains after exclusions."
+    }
+  ],
+  "trace": {
+    "called_at": "2026-09-24T06:29:05Z",
+    "caller_role": "PROCUREMENT_OFFICER",
+    "latency_ms": 6,
+    "data_fingerprint": "7ffed0c12482d5a7"
+  },
+  "data": {
+    "sku": "AH-CM-001",
+    "reorder_quantity": 120,
+    "comparison_date": "2026-09-25",
+    "currency": "UGX",
+    "exchange_rate": null,
+    "ranked": [
+      {
+        "rank": 1,
+        "quotation_id": "QT-002",
+        "supplier_id": "SUP-004",
+        "supplier_name": "Bugolobi Hardware Supplies",
+        "original_currency": "UGX",
+        "original_unit_price": 620000,
+        "unit_conversion_factor": 20.0,
+        "normalised_unit_cost_ugx": 31000.0,
+        "extended_cost_ugx": 3720000.0,
+        "vat_amount_ugx": 669600.0,
+        "delivery_cost_ugx": 90000.0,
+        "landed_cost_ugx": 4479600.0,
+        "lead_time_days": 7,
+        "validity_date": "2026-10-24",
+        "tie_broken_on_supplier_name": false
+      }
+    ],
+    "excluded": [
+      {
+        "quotation_id": "QT-001",
+        "supplier_id": "SUP-002",
+        "supplier_name": "Lakeview Building Materials",
+        "reasons": [
+          "NAME_DISCREPANCY"
+        ],
+        "missing_fields": []
+      },
+      {
+        "quotation_id": "QT-003",
+        "supplier_id": "SUP-007",
+        "supplier_name": "Lakeview Building Supplies",
+        "reasons": [
+          "NAME_DISCREPANCY"
+        ],
+        "missing_fields": []
+      },
+      {
+        "quotation_id": "QT-004",
+        "supplier_id": "SUP-006",
+        "supplier_name": "Kireka Steel and Cement Ltd",
+        "reasons": [
+          "BLACKLISTED"
+        ],
+        "missing_fields": []
+      }
+    ],
+    "quotation_requirement": {
+      "value_band": "500k_to_under_5m",
+      "clause": "POL-001-C02",
+      "required_count": 3,
+      "eligible_count": 1,
+      "satisfied": false,
+      "exception_required": true
+    },
+    "sole_eligible_option": true
+  }
+}

@@ -34,6 +34,7 @@ ci = [
 procurement-extract = "procurement_agent.cli:main"
 procurement-policy = "procurement_agent.rag.cli:main"
 procurement-policy-ingest = "procurement_agent.rag.ingest:main"
+procurement-tools = "procurement_agent.tools.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

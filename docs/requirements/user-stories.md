@@ -263,7 +263,7 @@ The system combines an AI layer (quotation field extraction, policy retrieval, j
 
 ### **Version 1.2 — Requirement 4**
 
-Four changes, all confined to Requirement 4. Requirements 1 to 3 and 5 to 14, the
+Three changes, all confined to Requirement 4. Requirements 1 to 3 and 5 to 14, the
 Glossary and the Traceability table are unchanged, so existing citations to v1.1 for
 the Normalised Quotation glossary entry and for requirement 6.6 remain accurate.
 

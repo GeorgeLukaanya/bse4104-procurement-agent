@@ -1,0 +1,243 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="1100" viewBox="0 0 1700 1100" role="img" aria-labelledby="title description">
+  <title id="title">SME Procurement-Preparation Agent updated architecture</title>
+  <desc id="description">Project-grounded architecture showing the Procurement Officer, Procurement Manager, Gemini API, bounded orchestrator, four specified tools, project data stores, and the five explicit human confirmation or decision points.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#34495e"/>
+    </marker>
+    <style>
+      text { font-family: Inter, Arial, sans-serif; fill: #172b3a; }
+      .background { fill: #ffffff; }
+      .system { fill: #fbfcfd; stroke: #34495e; stroke-width: 2.5; }
+      .zone { stroke-width: 1.5; }
+      .ui-zone { fill: #eef6fc; stroke: #3975a6; }
+      .control-zone { fill: #f2effa; stroke: #665191; }
+      .ai-zone { fill: #f7f1fb; stroke: #8755a1; }
+      .tool-zone { fill: #eff8f1; stroke: #39774a; }
+      .data-zone { fill: #f5f6f7; stroke: #667085; }
+      .node { fill: #ffffff; stroke-width: 1.4; rx: 8; }
+      .ui-node { stroke: #3975a6; }
+      .control-node { stroke: #665191; }
+      .ai-node { stroke: #8755a1; }
+      .tool-node { stroke: #39774a; }
+      .data-node { stroke: #667085; }
+      .actor { fill: #e8f1fb; stroke: #356a9a; stroke-width: 1.8; rx: 10; }
+      .external { fill: #f3f4f6; stroke: #667085; stroke-width: 1.8; rx: 10; }
+      .gate { fill: #fff2cc; stroke: #a57c00; stroke-width: 1.8; }
+      .prohibited { fill: #fdecec; stroke: #9f3a38; stroke-width: 1.5; rx: 8; }
+      .flow { fill: none; stroke: #34495e; stroke-width: 1.6; marker-end: url(#arrow); }
+      .return { fill: none; stroke: #667085; stroke-width: 1.4; stroke-dasharray: 6 5; marker-end: url(#arrow); }
+      .title { font-size: 28px; font-weight: 700; text-anchor: middle; }
+      .subtitle { font-size: 14px; fill: #526875; text-anchor: middle; }
+      .system-title { font-size: 18px; font-weight: 700; }
+      .zone-title { font-size: 15px; font-weight: 700; }
+      .node-title { font-size: 13px; font-weight: 700; text-anchor: middle; }
+      .detail { font-size: 11px; fill: #526875; text-anchor: middle; }
+      .edge { font-size: 10.5px; fill: #34495e; text-anchor: middle; }
+      .gate-title { font-size: 11px; font-weight: 700; fill: #4a3900; text-anchor: middle; }
+      .gate-detail { font-size: 9.5px; fill: #695400; text-anchor: middle; }
+      .note { font-size: 11px; fill: #526875; }
+    </style>
+  </defs>
+
+  <rect class="background" width="1700" height="1100"/>
+  <text class="title" x="850" y="38">SME Procurement-Preparation Agent</text>
+  <text class="subtitle" x="850" y="62">Updated architecture - tools, orchestration, authorization and human control</text>
+
+  <!-- External project actors and dependency -->
+  <rect class="actor" x="25" y="150" width="190" height="78"/>
+  <text class="node-title" x="120" y="181">Procurement Officer</text>
+  <text class="detail" x="120" y="202">Initiates and prepares</text>
+
+  <rect class="actor" x="25" y="838" width="190" height="78"/>
+  <text class="node-title" x="120" y="869">Procurement Manager</text>
+  <text class="detail" x="120" y="890">Reviews and decides</text>
+
+  <rect class="external" x="1490" y="150" width="185" height="78"/>
+  <text class="node-title" x="1582" y="181">Gemini API</text>
+  <text class="detail" x="1582" y="202">Only external dependency</text>
+
+  <!-- System boundary -->
+  <rect class="system" x="240" y="90" width="1220" height="900" rx="18"/>
+  <text class="system-title" x="265" y="121">System boundary</text>
+
+  <!-- Presentation and authentication -->
+  <rect class="zone ui-zone" x="270" y="145" width="230" height="800" rx="14"/>
+  <text class="zone-title" x="292" y="174">Authenticated screens</text>
+  <rect class="node ui-node" x="295" y="200" width="180" height="78"/>
+  <text class="node-title" x="385" y="228">Officer workspace</text>
+  <text class="detail" x="385" y="247">Review, correct, confirm</text>
+  <text class="detail" x="385" y="263">and submit</text>
+  <rect class="node ui-node" x="295" y="700" width="180" height="78"/>
+  <text class="node-title" x="385" y="728">Manager review screen</text>
+  <text class="detail" x="385" y="747">Read-and-decide only</text>
+  <text class="detail" x="385" y="763">No content editing</text>
+  <rect class="node ui-node" x="295" y="895" width="180" height="34"/>
+  <text class="node-title" x="385" y="917">Two seeded roles</text>
+
+  <!-- Orchestration -->
+  <rect class="zone control-zone" x="530" y="145" width="335" height="800" rx="14"/>
+  <text class="zone-title" x="552" y="174">Bounded orchestration</text>
+  <rect class="node control-node" x="555" y="200" width="285" height="74"/>
+  <text class="node-title" x="697" y="226">Workflow orchestrator</text>
+  <text class="detail" x="697" y="245">Sense - plan - act - observe</text>
+  <text class="detail" x="697" y="260">Maximum iterations and stop reason</text>
+
+  <rect class="node control-node" x="555" y="302" width="132" height="74"/>
+  <text class="node-title" x="621" y="327">Tool allow-list</text>
+  <text class="detail" x="621" y="346">Current workflow</text>
+  <text class="detail" x="621" y="361">step only</text>
+  <rect class="node control-node" x="708" y="302" width="132" height="74"/>
+  <text class="node-title" x="774" y="327">Role check</text>
+  <text class="detail" x="774" y="346">Role injected from</text>
+  <text class="detail" x="774" y="361">authenticated user</text>
+
+  <rect class="node control-node" x="555" y="404" width="132" height="74"/>
+  <text class="node-title" x="621" y="429">Schema checks</text>
+  <text class="detail" x="621" y="448">Tool request and</text>
+  <text class="detail" x="621" y="463">response envelopes</text>
+  <rect class="node control-node" x="708" y="404" width="132" height="74"/>
+  <text class="node-title" x="774" y="429">Output guards</text>
+  <text class="detail" x="774" y="448">Suppress prohibited</text>
+  <text class="detail" x="774" y="463">claims before display</text>
+
+  <rect class="node control-node" x="555" y="506" width="285" height="64"/>
+  <text class="node-title" x="697" y="531">Workflow state and audit trace</text>
+  <text class="detail" x="697" y="550">Calls, decisions, iteration count and stop reason</text>
+
+  <rect class="prohibited" x="555" y="850" width="285" height="72"/>
+  <text class="node-title" x="697" y="874" fill="#6b2423">No callable capability for</text>
+  <text class="detail" x="697" y="893" fill="#7d302e">approval, purchase orders, supplier contact,</text>
+  <text class="detail" x="697" y="909" fill="#7d302e">financial commitment or master-record edits</text>
+
+  <!-- AI and retrieval -->
+  <rect class="zone ai-zone" x="895" y="145" width="250" height="385" rx="14"/>
+  <text class="zone-title" x="917" y="174">AI and retrieval</text>
+  <rect class="node ai-node" x="920" y="200" width="200" height="62"/>
+  <text class="node-title" x="1020" y="225">Quotation extraction</text>
+  <text class="detail" x="1020" y="244">From converted Markdown</text>
+  <rect class="node ai-node" x="920" y="286" width="200" height="62"/>
+  <text class="node-title" x="1020" y="311">Policy RAG pipeline</text>
+  <text class="detail" x="1020" y="330">Controlled Policy Corpus only</text>
+  <rect class="node ai-node" x="920" y="372" width="200" height="62"/>
+  <text class="node-title" x="1020" y="397">Justification drafting</text>
+  <text class="detail" x="1020" y="416">Confirmed comparison and clauses</text>
+  <rect class="node ai-node" x="920" y="458" width="200" height="48"/>
+  <text class="node-title" x="1020" y="479">Citation validation</text>
+  <text class="detail" x="1020" y="496">Unsupported item withheld</text>
+
+  <!-- Deterministic tools: exactly the Week 4 catalogue -->
+  <rect class="zone tool-zone" x="895" y="555" width="250" height="390" rx="14"/>
+  <text class="zone-title" x="917" y="584">Four deterministic tools</text>
+  <rect class="node tool-node" x="920" y="610" width="200" height="58"/>
+  <text class="node-title" x="1020" y="634">check_reorder_need</text>
+  <text class="detail" x="1020" y="652">Read-only</text>
+  <rect class="node tool-node" x="920" y="690" width="200" height="58"/>
+  <text class="node-title" x="1020" y="714">check_supplier_eligibility</text>
+  <text class="detail" x="1020" y="732">Read-only</text>
+  <rect class="node tool-node" x="920" y="770" width="200" height="58"/>
+  <text class="node-title" x="1020" y="794">compare_quotations</text>
+  <text class="detail" x="1020" y="812">Read-only calculation</text>
+  <rect class="node tool-node" x="920" y="850" width="200" height="70"/>
+  <text class="node-title" x="1020" y="875">create_requisition_draft</text>
+  <text class="detail" x="1020" y="894">Officer executes</text>
+  <text class="detail" x="1020" y="909">Writes DRAFT only</text>
+
+  <!-- Project data -->
+  <rect class="zone data-zone" x="1175" y="270" width="255" height="675" rx="14"/>
+  <text class="zone-title" x="1197" y="299">Project data stores</text>
+  <rect class="node data-node" x="1200" y="325" width="205" height="58"/>
+  <text class="node-title" x="1302" y="349">Inventory and SKU records</text>
+  <text class="detail" x="1302" y="367">Reorder and target levels</text>
+  <rect class="node data-node" x="1200" y="405" width="205" height="58"/>
+  <text class="node-title" x="1302" y="429">Supplier profiles</text>
+  <text class="detail" x="1302" y="447">AVL and Blacklist</text>
+  <rect class="node data-node" x="1200" y="485" width="205" height="70"/>
+  <text class="node-title" x="1302" y="509">Quotation records</text>
+  <text class="detail" x="1302" y="528">Source, converted Markdown,</text>
+  <text class="detail" x="1302" y="544">normalised and corrected</text>
+  <rect class="node data-node" x="1200" y="577" width="205" height="58"/>
+  <text class="node-title" x="1302" y="601">Policy Corpus</text>
+  <text class="detail" x="1302" y="619">Versioned clauses and index</text>
+  <rect class="node data-node" x="1200" y="657" width="205" height="70"/>
+  <text class="node-title" x="1302" y="681">Purchase Requisitions</text>
+  <text class="detail" x="1302" y="700">DRAFT, PENDING_ROUTING,</text>
+  <text class="detail" x="1302" y="716">PENDING_APPROVAL and final status</text>
+  <rect class="node data-node" x="1200" y="749" width="205" height="58"/>
+  <text class="node-title" x="1302" y="773">Approval Records</text>
+  <text class="detail" x="1302" y="791">Immutable manager decision</text>
+  <rect class="node data-node" x="1200" y="829" width="205" height="70"/>
+  <text class="node-title" x="1302" y="853">Audit log and traces</text>
+  <text class="detail" x="1302" y="872">Authenticated action history</text>
+  <text class="detail" x="1302" y="888">and model/tool evidence</text>
+
+  <!-- Main connections: each arrow terminates on the component it invokes or updates -->
+  <path class="flow" d="M215 189H295"/>
+  <text class="edge" x="255" y="178">starts run</text>
+  <path class="flow" d="M475 239H555"/>
+  <text class="edge" x="515" y="228">authenticated action</text>
+  <path class="flow" d="M840 237H920"/>
+  <text class="edge" x="880" y="226">extraction</text>
+  <path class="flow" d="M850 237H875V317H920"/>
+  <path class="flow" d="M850 237H860V403H920"/>
+  <path class="flow" d="M1120 231H1490"/>
+  <text class="edge" x="1305" y="220">structured-output request</text>
+  <path class="return" d="M1490 250H1140V262H1120"/>
+  <text class="edge" x="1315" y="267">structured response</text>
+
+  <path class="flow" d="M697 274V302"/>
+  <path class="flow" d="M687 339H708"/>
+  <path class="flow" d="M774 376V404"/>
+  <path class="flow" d="M840 441H875V639H920"/>
+  <path class="flow" d="M875 639V719H920"/>
+  <path class="flow" d="M875 719V799H920"/>
+  <text class="edge" x="878" y="607">validated calls</text>
+
+  <!-- Each deterministic tool reads or writes only its documented store -->
+  <path class="flow" d="M1120 639H1170V354H1200"/>
+  <path class="flow" d="M1120 719H1175V434H1200"/>
+  <path class="flow" d="M1120 799H1178V520H1200"/>
+  <path class="flow" d="M1120 885H1165V692H1200"/>
+  <path class="flow" d="M1120 317H1160V606H1200"/>
+  <path class="flow" d="M840 538H1185V864H1200"/>
+
+  <!-- AI policy and drafting flows use only the documented project inputs -->
+  <path class="flow" d="M1120 317H1465V189H1490"/>
+  <path class="return" d="M1490 270H1140V403H1120"/>
+  <path class="flow" d="M1020 348V458"/>
+
+  <!-- Human gates: associations stay in the user/control lanes to avoid implying tool execution -->
+  <polygon class="gate" points="385,315 443,350 385,385 327,350"/>
+  <text class="gate-title" x="385" y="345">Gate 1</text>
+  <text class="gate-detail" x="385" y="359">Confirm extracted data</text>
+  <path class="return" d="M385 278V315"/>
+
+  <polygon class="gate" points="385,430 443,465 385,500 327,465"/>
+  <text class="gate-title" x="385" y="460">Gate 2</text>
+  <text class="gate-detail" x="385" y="474">Confirm comparison</text>
+  <path class="return" d="M385 385V430"/>
+
+  <polygon class="gate" points="697,610 755,645 697,680 639,645"/>
+  <text class="gate-title" x="697" y="640">Gate 3</text>
+  <text class="gate-detail" x="697" y="654">Confirm justification</text>
+  <path class="return" d="M697 570V610"/>
+  <path class="flow" d="M755 645H890V885H920"/>
+
+  <polygon class="gate" points="385,600 443,635 385,670 327,635"/>
+  <text class="gate-title" x="385" y="630">Gate 4</text>
+  <text class="gate-detail" x="385" y="644">Submit requisition</text>
+  <path class="return" d="M385 500V600"/>
+  <path class="flow" d="M385 670V700"/>
+
+  <polygon class="gate" points="385,805 443,840 385,875 327,840"/>
+  <text class="gate-title" x="385" y="835">Gate 5</text>
+  <text class="gate-detail" x="385" y="849">Approve or reject</text>
+  <path class="flow" d="M215 877H260V739H295"/>
+  <path class="flow" d="M385 778V805"/>
+  <path class="flow" d="M443 840H1155V778H1200"/>
+  <path class="flow" d="M443 840H1145V692H1200"/>
+
+  <rect x="270" y="1015" width="1160" height="55" rx="9" fill="#fff8df" stroke="#a57c00"/>
+  <text class="gate-title" x="850" y="1038">Human authority remains outside the model and tool layer</text>
+  <text class="gate-detail" x="850" y="1056">The officer confirms data, comparison, justification and submission; only the manager records approval or rejection.</text>
+</svg>

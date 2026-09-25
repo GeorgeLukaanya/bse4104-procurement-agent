@@ -1,0 +1,169 @@
+{
+  "generated_from": "/mnt/data/bse4104_repo/bse4104-procurement-agent-main",
+  "cases": [
+    {
+      "id": "FA-01",
+      "title": "Missing required parameter",
+      "expected": "invalid_input / MISSING_PARAMETER",
+      "actual": {
+        "status": "invalid_input",
+        "errors": [
+          {
+            "code": "MISSING_PARAMETER",
+            "detail": "review_date is required.",
+            "field": "review_date"
+          }
+        ]
+      },
+      "passed": true,
+      "notes": ""
+    },
+    {
+      "id": "FA-02",
+      "title": "Unavailable inventory source",
+      "expected": "unavailable / DATA_SOURCE_UNAVAILABLE; no data returned",
+      "actual": {
+        "status": "unavailable",
+        "data": null,
+        "errors": [
+          {
+            "code": "DATA_SOURCE_UNAVAILABLE",
+            "detail": "/tmp/tmp9c79x0cg/missing-inventory.csv could not be read"
+          }
+        ]
+      },
+      "passed": true,
+      "notes": ""
+    },
+    {
+      "id": "FA-03",
+      "title": "Manager attempts requisition creation",
+      "expected": "unauthorized / UNAUTHORIZED_ROLE; nothing written",
+      "actual": {
+        "status": "unauthorized",
+        "errors": [
+          {
+            "code": "UNAUTHORIZED_ROLE",
+            "detail": "PROCUREMENT_MANAGER may not create a requisition. POL-004-C03 separates preparation from approval. Nothing was written."
+          }
+        ],
+        "store_created": false
+      },
+      "passed": true,
+      "notes": ""
+    },
+    {
+      "id": "FA-04",
+      "title": "Agent attempts side effect without officer confirmation",
+      "expected": "unauthorized / UNAUTHORIZED_ROLE; nothing written",
+      "actual": {
+        "status": "unauthorized",
+        "errors": [
+          {
+            "code": "UNAUTHORIZED_ROLE",
+            "detail": "AGENT may propose create_requisition_draft but the call executes only after the officer confirms it. Requirement 9.1. Nothing was written."
+          }
+        ],
+        "store_created": false
+      },
+      "passed": true,
+      "notes": ""
+    },
+    {
+      "id": "FA-05",
+      "title": "Officer confirmation gate permits draft creation only",
+      "expected": "ok; executes as PROCUREMENT_OFFICER; status remains DRAFT",
+      "actual": {
+        "status": "ok",
+        "caller_role": "PROCUREMENT_OFFICER",
+        "draft_status": "DRAFT",
+        "store_created": true,
+        "errors": []
+      },
+      "passed": true,
+      "notes": ""
+    },
+    {
+      "id": "FA-06",
+      "title": "Tool outside orchestration allow-list",
+      "expected": "unauthorized / TOOL_NOT_ALLOWED",
+      "actual": {
+        "status": "unauthorized",
+        "errors": [
+          {
+            "code": "TOOL_NOT_ALLOWED",
+            "detail": "check_reorder_need is not on the orchestration allow-list for this step."
+          }
+        ]
+      },
+      "passed": true,
+      "notes": ""
+    },
+    {
+      "id": "FA-07",
+      "title": "Attempt to invoke non-existent approval tool",
+      "expected": "unauthorized / TOOL_NOT_ALLOWED",
+      "actual": {
+        "status": "unauthorized",
+        "errors": [
+          {
+            "code": "TOOL_NOT_ALLOWED",
+            "detail": "approve_requisition is not on the tool allow-list."
+          }
+        ]
+      },
+      "passed": true,
+      "notes": ""
+    },
+    {
+      "id": "FA-08",
+      "title": "Programmatic transition beyond DRAFT",
+      "expected": "invalid_input / FORBIDDEN_TRANSITION; nothing written",
+      "actual": {
+        "status": "invalid_input",
+        "errors": [
+          {
+            "code": "FORBIDDEN_TRANSITION",
+            "detail": "status must be DRAFT; 'APPROVED' was requested. Requirement 14.3 permits no programmatic transition beyond DRAFT. Nothing was written.",
+            "field": "status"
+          }
+        ],
+        "store_created": false
+      },
+      "passed": true,
+      "notes": ""
+    },
+    {
+      "id": "FA-09",
+      "title": "Role spoof attempt inside payload",
+      "expected": "payload role rejected; authenticated role remains PROCUREMENT_OFFICER",
+      "actual": {
+        "status": "invalid_input",
+        "errors": [
+          {
+            "code": "INVALID_PARAMETER",
+            "detail": "'caller_role' is not an accepted field; additional properties are refused.",
+            "field": "caller_role"
+          }
+        ],
+        "trace_role": "PROCUREMENT_OFFICER"
+      },
+      "passed": true,
+      "notes": ""
+    },
+    {
+      "id": "FA-10",
+      "title": "Unexpected malformed tool response",
+      "expected": "response rejected before downstream use",
+      "actual": {
+        "status": "ok",
+        "data": {
+          "unexpected": "shape"
+        },
+        "errors": []
+      },
+      "passed": false,
+      "notes": "Current dispatcher wraps and returns malformed tool data without validating it against the declared output schema."
+    }
+  ]
+}

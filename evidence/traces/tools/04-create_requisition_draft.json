@@ -1,0 +1,41 @@
+{
+  "component": "TOOL",
+  "tool": "create_requisition_draft",
+  "tool_version": "1.0",
+  "status": "ok",
+  "errors": [],
+  "trace": {
+    "called_at": "2026-09-24T06:29:05Z",
+    "caller_role": "PROCUREMENT_OFFICER",
+    "latency_ms": 4,
+    "data_fingerprint": null
+  },
+  "data": {
+    "requisition_id": "REQ-2026-001",
+    "status": "DRAFT",
+    "created_at": "2026-09-24T06:29:05Z",
+    "created_by": "a.nakato",
+    "review_date": "2026-09-25",
+    "items": [
+      {
+        "sku": "AH-CM-001",
+        "reorder_quantity": 120,
+        "comparison_reference": "CMP-2026-0925-001",
+        "recommended_quotation_id": "QT-002"
+      }
+    ],
+    "policy_clauses": [
+      "POL-001-C02",
+      "POL-002-C04",
+      "POL-003-C03"
+    ],
+    "justification": "Cement is at its reorder point at the Nakawa Main Store. After eligibility exclusions, one comparable offer remains (Bugolobi Hardware Supplies, QT-002). POL-001-C02 is not satisfied, so an exception would be required before the requisition proceeds.",
+    "unresolved_issues": [
+      "QT-003 is from Lakeview Building Supplies, a different entity from Lakeview Building Materials. POL-002-C04 discrepancy not yet resolved."
+    ],
+    "human_confirmation_required": true,
+    "routed_to": null,
+    "approved_by": null,
+    "decision": null
+  }
+}

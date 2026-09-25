@@ -1,0 +1,21 @@
+{
+  "review_date": "2026-09-25",
+  "officer_username": "a.nakato",
+  "items": [
+    {
+      "sku": "AH-CM-001",
+      "reorder_quantity": 120,
+      "comparison_reference": "CMP-2026-0925-001",
+      "recommended_quotation_id": "QT-002",
+      "unresolved_issues": [
+        "QT-003 is from Lakeview Building Supplies, a different entity from Lakeview Building Materials. POL-002-C04 discrepancy not yet resolved."
+      ]
+    }
+  ],
+  "policy_clauses": [
+    "POL-001-C02",
+    "POL-002-C04",
+    "POL-003-C03"
+  ],
+  "justification": "Cement is at its reorder point at the Nakawa Main Store. After eligibility exclusions, one comparable offer remains (Bugolobi Hardware Supplies, QT-002). POL-001-C02 is not satisfied, so an exception would be required before the requisition proceeds."
+}

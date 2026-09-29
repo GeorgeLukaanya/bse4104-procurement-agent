@@ -79,7 +79,7 @@ Due dates are the Friday of each teaching week.
 
 | Deliverable | Path | Owner | Status |
 |---|---|---|---|
-| Agent architecture diagram | [`docs/architecture/agent-architecture.md`](architecture/agent-architecture.md) | Lukaanya George | Not started |
+| Agent architecture diagram | [`docs/architecture/agent-architecture.md`](architecture/agent-architecture.md) | Lukaanya George | Complete, awaiting team review |
 | Agent task contract | [`docs/requirements/agent-task-contract.md`](requirements/agent-task-contract.md) | Sekyeza Elroy Nunda | Not started |
 | Working bounded agent workflow | [`docs/architecture/working-agent.md`](architecture/working-agent.md) | Nannyombi Shakiran | Not started |
 | Three execution traces | [`docs/evaluation/execution-traces.md`](evaluation/execution-traces.md) | Ainamani Jim Isaac | Not started |

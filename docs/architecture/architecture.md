@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Week | 4 |
-| Owner | Beingana Jim Junior |
+| Owner | Ainamani Jim Isaac |
 | Due | 25 September 2026 |
 | Status | Done |
 | Path | `docs/architecture/architecture.md` |
@@ -92,9 +92,16 @@ integration.
 
 ## Implementation boundary
 
-Quotation extraction and the Policy RAG pipeline are working components. The tool catalogue and
-schemas define the four function contracts and authorization behaviour. The bounded orchestration
-and tools not yet implemented remain integration work, as recorded in the project documentation.
+Quotation extraction, the Policy RAG pipeline and the four deterministic tools are working
+components. The tools run behind `dispatch.invoke`, which injects the caller's role, enforces the
+allow-list, validates requests and records a trace
+([`working-tools.md`](working-tools.md)); the officer confirmation before
+`create_requisition_draft` is enforced and tested.
+
+Not yet implemented: the bounded agent loop and its state machine (Week 5), so the allow-list is
+currently the full catalogue rather than per step; model-proposed tool calls; output-schema
+validation at the dispatcher (failure FA-10 in [`tool-failure-tests.md`](../evaluation/tool-failure-tests.md));
+and Gates 1, 2, 4 and 5, which are specified but have no screens yet.
 
 Related specifications:
 

@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Week | 7 |
-| Owner | Ainamani Jim Isaac |
+| Owner | Beingana Jim Junior |
 | Due | 16 October 2026 |
 | Status | Not started |
 | Path | `docs/evaluation/observability.md` |

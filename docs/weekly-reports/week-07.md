@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Week | 7 |
-| Owner | Lukaanya George |
+| Owner | Nannyombi Shakiran |
 | Due | 16 October 2026 |
 | Status | Not started |
 | Path | `docs/weekly-reports/week-07.md` |

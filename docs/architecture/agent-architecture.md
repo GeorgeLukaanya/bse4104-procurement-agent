@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Week | 5 |
-| Owner | Ainamani Jim Isaac |
+| Owner | Lukaanya George |
 | Due | 2 October 2026 |
 | Status | Not started |
 | Path | `docs/architecture/agent-architecture.md` |

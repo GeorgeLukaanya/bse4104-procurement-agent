@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Week | 5 |
-| Owner | Nannyombi Shakiran |
+| Owner | Sekyeza Elroy Nunda |
 | Due | 2 October 2026 |
 | Status | Not started |
 | Path | `docs/requirements/agent-task-contract.md` |

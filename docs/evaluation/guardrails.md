@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Week | 7 |
-| Owner | Beingana Jim Junior |
+| Owner | Sekyeza Elroy Nunda |
 | Due | 16 October 2026 |
 | Status | Not started |
 | Path | `docs/evaluation/guardrails.md` |

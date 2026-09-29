@@ -87,7 +87,9 @@ landed-cost readiness, the run log — and spends no quota.
 
 **It is a demonstration of the pipeline, not of the model.** The records are
 hand-written and the latency is a `sleep`. Nothing it prints is evidence about
-`gemini-3.1-flash-lite`. It prints a banner saying so.
+`gemini-3.1-flash-lite`. It prints a banner saying so. Its cache and run log live
+under `var/offline-demo/` (git-ignored), so it can never feed a live run or add
+rows to `evidence/traces/`.
 
 ### What you should see
 

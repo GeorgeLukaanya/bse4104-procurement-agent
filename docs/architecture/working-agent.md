@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Week | 5 |
-| Owner | Beingana Jim Junior |
+| Owner | Nannyombi Shakiran |
 | Due | 2 October 2026 |
 | Status | Not started |
 | Path | `docs/architecture/working-agent.md` |

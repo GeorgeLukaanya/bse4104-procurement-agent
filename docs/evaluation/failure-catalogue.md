@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Week | 7 |
-| Owner | Sekyeza Elroy Nunda |
+| Owner | Lukaanya George |
 | Due | 16 October 2026 |
 | Status | Not started |
 | Path | `docs/evaluation/failure-catalogue.md` |

@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Week | 6 |
-| Owner | Sekyeza Elroy Nunda |
+| Owner | Nannyombi Shakiran |
 | Due | 9 October 2026 |
 | Status | Not started |
 | Path | `docs/architecture/mcp-interface.md` |

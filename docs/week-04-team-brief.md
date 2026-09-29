@@ -87,7 +87,8 @@ Requirement 4:
 - **4.1** now names all four eligibility checks. It previously required only AVL
   presence and Blacklist absence, but POL-002-C02 also bars a suspended supplier and
   POL-002-C03 bars an out-of-category quotation.
-- **4.3** gains `SUSPENDED` and `OUT_OF_CATEGORY`. Folding a suspension into
+- **4.3** gains `SUSPENDED`, `OUT_OF_CATEGORY` and `NAME_DISCREPANCY` (the last added in
+  PR #53 review, 24 September). Folding a suspension into
   `BLACKLISTED` would misstate it — POL-002-C02 treats suspension as reversible and
   blacklisting as not.
 - **4.6** is new, covering POL-002-C04: similarly named businesses must not be assumed

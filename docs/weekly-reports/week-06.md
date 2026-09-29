@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Week | 6 |
-| Owner | Lukaanya George |
+| Owner | Ainamani Jim Isaac |
 | Due | 9 October 2026 |
 | Status | Not started |
 | Path | `docs/weekly-reports/week-06.md` |

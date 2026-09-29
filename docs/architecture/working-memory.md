@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Week | 6 |
-| Owner | Beingana Jim Junior |
+| Owner | Lukaanya George |
 | Due | 9 October 2026 |
 | Status | Not started |
 | Path | `docs/architecture/working-memory.md` |

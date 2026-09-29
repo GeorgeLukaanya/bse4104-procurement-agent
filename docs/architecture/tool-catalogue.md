@@ -14,7 +14,13 @@ Define at least two tools/functions with purpose, input schema, output schema, a
 
 ## Write-up
 
-Version 1.0 | 23 September 2026 | Machine-readable companion: [`schemas/`](schemas/)
+Version 1.1 | 29 September 2026 | Machine-readable companion: [`schemas/`](schemas/)
+
+> **v1.1 (29 September 2026).** Worked examples in sections 6 and 7 corrected to match
+> Requirement 4.6 and section 5: both Lakeview offers (QT-001 and QT-003) are excluded with
+> `NAME_DISCREPANCY`, leaving one eligible cement offer. The v1.0 examples still ranked QT-001,
+> and the draft justification still claimed three eligible quotations. No schema, rule or tool
+> contract changed; `tool_version` stays `1.0`.
 
 ### 1. Scope
 
@@ -476,9 +482,10 @@ VAT treatment on `QT-021` is named, never assumed, per POL-005-C02. And an insuf
 is reported rather than enforced: blocking the workflow would make the POL-001-C04 exception
 path unreachable.
 
-**Example.** Cement, 120 bags. One blacklisted offer and one unresolved name-discrepancy offer
-drop out, and the per-tonne offer is
-comparable only because its conversion factor is stated.
+**Example.** Cement, 120 bags. The blacklisted offer and both unresolved name-discrepancy offers
+drop out, and the per-tonne offer is comparable only because its conversion factor is stated.
+This matches the recorded run in
+[`03-compare_quotations.json`](../../evidence/traces/tools/03-compare_quotations.json).
 
 ```json
 { "sku": "AH-CM-001", "reorder_quantity": 120, "comparison_date": "2026-09-25" }
@@ -512,26 +519,16 @@ comparable only because its conversion factor is stated.
         "lead_time_days": 7,
         "validity_date": "2026-10-24",
         "tie_broken_on_supplier_name": false
-      },
-      {
-        "rank": 2,
-        "quotation_id": "QT-001",
-        "supplier_id": "SUP-002",
-        "supplier_name": "Lakeview Building Materials",
-        "original_currency": "UGX",
-        "original_unit_price": 31500,
-        "unit_conversion_factor": null,
-        "normalised_unit_cost_ugx": 31500.00,
-        "extended_cost_ugx": 3780000.00,
-        "vat_amount_ugx": 680400.00,
-        "delivery_cost_ugx": 120000,
-        "landed_cost_ugx": 4580400.00,
-        "lead_time_days": 5,
-        "validity_date": "2026-10-24",
-        "tie_broken_on_supplier_name": false
       }
     ],
     "excluded": [
+      {
+        "quotation_id": "QT-001",
+        "supplier_id": "SUP-002",
+        "supplier_name": "Lakeview Building Materials",
+        "reasons": ["NAME_DISCREPANCY"],
+        "missing_fields": []
+      },
       {
         "quotation_id": "QT-003",
         "supplier_id": "SUP-007",
@@ -551,16 +548,16 @@ comparable only because its conversion factor is stated.
       "value_band": "500k_to_under_5m",
       "clause": "POL-001-C02",
       "required_count": 3,
-      "eligible_count": 2,
+      "eligible_count": 1,
       "satisfied": false,
       "exception_required": true
     },
-    "sole_eligible_option": false
+    "sole_eligible_option": true
   },
   "errors": [
    {
       "code": "INSUFFICIENT_QUOTATIONS",
-      "detail": "POL-001-C02 requires 3 eligible quotations for this value band; 2 remain after exclusions."
+      "detail": "POL-001-C02 requires 3 eligible quotations for this value band; 1 remains after exclusions."
    }
   ],
   "trace": {
@@ -572,8 +569,11 @@ comparable only because its conversion factor is stated.
 }
 ```
 
-Two offers are excluded for different policy reasons: one for `BLACKLISTED`, one for
-`NAME_DISCREPANCY`. The blacklisted one had the lowest headline price in the set at UGX 29,800
+Three offers are excluded for two different policy reasons: one for `BLACKLISTED`, and both
+Lakeview offers for `NAME_DISCREPANCY`, because Requirement 4.6 bars *each* side of a
+resemblance until the officer records clearance — neither is presumed to be the "real" one.
+Only one offer remains, so the tool reports `INSUFFICIENT_QUOTATIONS` and
+`sole_eligible_option: true` without blocking. The blacklisted one had the lowest headline price in the set at UGX 29,800
 per bag, which is exactly the kind of false winner a spreadsheet sorted by price would miss.
 
 **Traceability.** Requirement 5, Requirement 6.1–6.6 · POL-001-C01 to C04, POL-003-C01 to C04,
@@ -679,7 +679,7 @@ discrepancy carried on the record rather than quietly dropped.
     }
   ],
   "policy_clauses": ["POL-001-C02", "POL-002-C04", "POL-003-C03"],
-  "justification": "Cement is at its reorder point at the Nakawa Main Store. Three eligible quotations were obtained, satisfying POL-001-C02. The lowest landed cost is from Lakeview Building Supplies, but that supplier's name closely resembles Lakeview Building Materials and the discrepancy is unresolved, so the second-ranked offer is put forward pending the officer's check."
+  "justification": "Cement is at its reorder point at the Nakawa Main Store. After eligibility exclusions, one comparable offer remains (Bugolobi Hardware Supplies, QT-002). POL-001-C02 is not satisfied, so an exception would be required before the requisition proceeds."
 }
 ```
 
@@ -703,7 +703,7 @@ discrepancy carried on the record rather than quietly dropped.
       }
     ],
     "policy_clauses": ["POL-001-C02", "POL-002-C04", "POL-003-C03"],
-    "justification": "Cement is at its reorder point at the Nakawa Main Store. Three eligible quotations were obtained, satisfying POL-001-C02. The lowest landed cost is from Lakeview Building Supplies, but that supplier's name closely resembles Lakeview Building Materials and the discrepancy is unresolved, so the second-ranked offer is put forward pending the officer's check.",
+    "justification": "Cement is at its reorder point at the Nakawa Main Store. After eligibility exclusions, one comparable offer remains (Bugolobi Hardware Supplies, QT-002). POL-001-C02 is not satisfied, so an exception would be required before the requisition proceeds.",
     "unresolved_issues": ["QT-003 is from Lakeview Building Supplies, a different entity from Lakeview Building Materials. POL-002-C04 discrepancy not yet resolved."],
     "human_confirmation_required": true,
     "routed_to": null,
@@ -896,7 +896,9 @@ Someone other than their author should check them before the Week 7 evaluation d
 
 **`docs/README.md` disagreed with the issue tracker.** The Week 4 table named different owners
 from GitHub issues #15 to #19. The Week 4 rows are corrected in this branch to match the tracker.
-Weeks 5 to 8 diverge the same way and are left alone for the group to settle.
+**Resolved (29 September 2026).** The index rows for Weeks 5 to 8 were reconciled in commit
+`e93a8af`, and the per-file Owner headers of the Week 5 to 7 stubs now match the index and issues
+#20 to #35.
 
 **Three tools have no implementation yet.** This document is a contract, not a demonstration.
 The working demonstration is issue #16 and the failure and authorization evidence is issue #17;

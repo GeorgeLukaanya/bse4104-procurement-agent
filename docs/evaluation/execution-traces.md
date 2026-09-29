@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Week | 5 |
-| Owner | Sekyeza Elroy Nunda |
+| Owner | Ainamani Jim Isaac |
 | Due | 2 October 2026 |
 | Status | Not started |
 | Path | `docs/evaluation/execution-traces.md` |

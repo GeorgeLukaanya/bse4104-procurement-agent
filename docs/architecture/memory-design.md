@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Week | 6 |
-| Owner | Nannyombi Shakiran |
+| Owner | Beingana Jim Junior |
 | Due | 9 October 2026 |
 | Status | Not started |
 | Path | `docs/architecture/memory-design.md` |

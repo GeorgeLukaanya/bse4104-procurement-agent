@@ -32,8 +32,9 @@ Four command-line tools run today, still as separate entry points:
   review, with a six-iteration cap and officer confirmation before a DRAFT is
   written. Write-up: [`docs/architecture/working-agent.md`](docs/architecture/working-agent.md).
 
-Not built yet: Week 5 agent-task contract and architecture diagram (other
-owners), Week 6 persistent state, document conversion, and any user interface.
+Not built yet: Week 5 agent-task contract (other owner), Week 6 persistent
+state, document conversion, and any user interface. The Sense/Plan/Act
+diagram is on main (`docs/architecture/agent-architecture.md`).
 
 There is deliberately **no application framework**. Django, FastAPI and Flask are
 all absent, because the charter has not chosen one. The package is importable and

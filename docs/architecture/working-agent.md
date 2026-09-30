@@ -124,7 +124,7 @@ On the completed run the comparison still has one eligible offer (QT-002) after 
 
 ### Not this week
 
-The agent task contract and the Sense/Plan/Act diagram are issues #21 and #20. Persistent state so a retry skips completed steps is Week 6. Gemini proposing the next tool inside the cap is possible at the planner seam (`Planner.propose`) and is not the default, because the Model Selection Note makes request throughput the binding constraint.
+The Sense/Plan/Act diagram (#20) is now on main. This loop implements the four catalogue tools, the six-iteration cap already in `.env.example`, and the officer gates. The diagram's Gemini proposer, `retrieve_policy` / `draft_justification` phases, eight-iteration cap, and checkpointed resume wait on the agent task contract (#21) and Week 6 state. Gemini proposing the next tool is possible at the planner seam (`Planner.propose`) and is not the default, because the Model Selection Note makes request throughput the binding constraint.
 
 ### Code
 

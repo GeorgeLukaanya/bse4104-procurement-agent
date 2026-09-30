@@ -5,7 +5,7 @@
 | Week | 5 |
 | Owner | Nannyombi Shakiran |
 | Due | 2 October 2026 |
-| Status | Not started |
+| Status | Complete, awaiting team review |
 | Path | `docs/architecture/working-agent.md` |
 
 ## Brief requirement
@@ -14,4 +14,124 @@ Write-up of the implemented bounded agent workflow (direct orchestration or a fr
 
 ## Write-up
 
-_Replace this section with the deliverable. Working code belongs in `src/` and `tests/`. Traces, screenshots and demo recordings belong in `evidence/`._
+### What it does
+
+One goal-directed workflow: take a weekly reorder review to a purchase requisition in `DRAFT`, then stop. Direct orchestration — no LangGraph, no FastAPI, no application framework. The charter has not chosen one.
+
+A **planner proposes** the next catalogue tool. **`dispatch.invoke` executes it.** Gemini never calls a tool. The default planner is deterministic so a run spends no API quota and the test suite cannot hit the free-tier limit. The agent task contract (issue #21) is a separate Week 5 document; this implementation follows Charter §6 steps that already have catalogue tools.
+
+| Step | Allow-list | Human gate |
+|---|---|---|
+| `scan` | `check_reorder_need` | none (read-only) |
+| `eligibility` | `check_supplier_eligibility` | none (read-only) |
+| `compare` | `compare_quotations` | none (read-only); the table is then held for the officer |
+| `draft` | `create_requisition_draft` | officer confirmation required |
+
+Conversion, extraction and policy retrieval stay on their own CLIs. Policy is not a catalogue tool ([`tool-catalogue.md`](tool-catalogue.md) §1). Justification text is compiled from tool results, not drafted by Gemini.
+
+### How to start and halt a run
+
+```bash
+pip install -e ".[dev]"
+
+# Start. Stops after the comparison for the officer to review (exit 1).
+python -m procurement_agent.agent.cli \
+    --review-date 2026-09-25 --sku AH-CM-001
+
+# Continue after the officer confirms the table and the draft (exit 0).
+python -m procurement_agent.agent.cli \
+    --review-date 2026-09-25 --sku AH-CM-001 \
+    --confirm-comparison --confirm-draft
+```
+
+What that prints (no `--json`):
+
+```
+stop:       awaiting_human
+detail:     Landed-cost comparison is on the table. The officer must confirm it before a requisition is compiled (Requirement 7.1 / gate 2).
+iterations: 3 / 6
+step:       draft
+role:       PROCUREMENT_OFFICER
+calls:
+  - check_reorder_need → ok
+  - check_supplier_eligibility → ok
+  - compare_quotations → ok
+Re-run with --confirm-comparison and/or --confirm-draft after the officer reviews.
+```
+
+After both confirms:
+
+```
+stop:       completed
+detail:     Requisition compiled in DRAFT. Further status changes are human actions.
+iterations: 4 / 6
+step:       draft
+role:       PROCUREMENT_OFFICER
+calls:
+  - check_reorder_need → ok
+  - check_supplier_eligibility → ok
+  - compare_quotations → ok
+  - create_requisition_draft → ok
+```
+
+`procurement-agent` is the same command once the package is installed. `--role` injects the session role; it is never read from a payload. `PROCUREMENT_MANAGER` cannot start the loop.
+
+| Exit | Meaning |
+|---|---|
+| 0 | `completed` (DRAFT written) or `no_reorder_required` |
+| 1 | `awaiting_human` — re-run with the matching `--confirm-*` flag |
+| 2 | `max_iterations`, `timeout`, `failed`, `unauthorized`, `refused`, or usage error |
+
+Halt is always explicit. The loop does not run until an exception. Every stop reason is written on the result and on `evidence/traces/agent-runs.jsonl`.
+
+### Stop limits
+
+| Limit | Default | Source |
+|---|---|---|
+| Maximum iterations | 6 | `.env.example` `AGENT_MAX_ITERATIONS`; override `--max-iterations` |
+| Wall-clock timeout | 120s | `AGENT_TIMEOUT_SECONDS`; override `--timeout` |
+| Step allow-list | one tool per step | [`steps.py`](../../src/procurement_agent/agent/steps.py) |
+| Write gate | `create_requisition_draft` | Officer `--confirm-draft`; AGENT still needs that confirmation |
+
+Each successful or refused tool call consumes one iteration. A stop proposal from the planner does not. Hitting the cap writes nothing beyond `DRAFT` that was already written on an earlier confirmed run; a cap in the first steps writes nothing.
+
+### Recorded runs — 29 September 2026
+
+Three starts of the same cement review, officer role, no model.
+
+| File | Stop | Iterations | What happened |
+|---|---|---|---|
+| [`01-awaiting-human.json`](../../evidence/traces/agent/01-awaiting-human.json) | `awaiting_human` | 3 | Scan, eligibility, compare. Draft not compiled. |
+| [`02-completed-draft.json`](../../evidence/traces/agent/02-completed-draft.json) | `completed` | 4 | Both confirms set. `REQ-2026-001` in `DRAFT`. |
+| [`03-max-iterations.json`](../../evidence/traces/agent/03-max-iterations.json) | `max_iterations` | 1 | Cap 1: reorder ran, then halt. Nothing written. |
+
+Machine log: [`evidence/traces/agent-runs.jsonl`](../../evidence/traces/agent-runs.jsonl) (one object per line, same idiom as extraction and tools).
+
+On the completed run the comparison still has one eligible offer (QT-002) after `NAME_DISCREPANCY` and `BLACKLISTED` exclusions. The draft carries those unresolved issues. Status is `DRAFT`; `routed_to`, `approved_by` and `decision` are null.
+
+### Tests
+
+`tests/test_agent_workflow.py` and `tests/test_agent_cli.py`. No API key.
+
+| Case | Expected |
+|---|---|
+| Default cement run | `awaiting_human`, 3 calls, no requisition file |
+| Both confirms | `completed`, status `DRAFT` only |
+| SKU above reorder point | `no_reorder_required` after one call |
+| `--max-iterations 1` | `max_iterations`, nothing written |
+| Manager role | `unauthorized`, zero calls |
+| Planner proposes `create_requisition_draft` on the scan step | `TOOL_NOT_ALLOWED`, nothing written |
+
+### Not this week
+
+The Sense/Plan/Act diagram (#20) is now on main. This loop implements the four catalogue tools, the six-iteration cap already in `.env.example`, and the officer gates. The diagram's Gemini proposer, `retrieve_policy` / `draft_justification` phases, eight-iteration cap, and checkpointed resume wait on the agent task contract (#21) and Week 6 state. Gemini proposing the next tool is possible at the planner seam (`Planner.propose`) and is not the default, because the Model Selection Note makes request throughput the binding constraint.
+
+### Code
+
+| Path | Role |
+|---|---|
+| [`src/procurement_agent/agent/workflow.py`](../../src/procurement_agent/agent/workflow.py) | Loop, caps, stop reasons |
+| [`src/procurement_agent/agent/planner.py`](../../src/procurement_agent/agent/planner.py) | Next-tool proposal |
+| [`src/procurement_agent/agent/steps.py`](../../src/procurement_agent/agent/steps.py) | Allow-lists |
+| [`src/procurement_agent/agent/cli.py`](../../src/procurement_agent/agent/cli.py) | Start / halt |
+| [`src/procurement_agent/tools/dispatch.py`](../../src/procurement_agent/tools/dispatch.py) | Executes every proposed call |

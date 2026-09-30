@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Week | 6 |
-| Owner | Ainamani Jim Isaac |
+| Owner | Sekyeza Elroy Nunda |
 | Due | 9 October 2026 |
 | Status | Not started |
 | Path | `docs/architecture/state-model.md` |

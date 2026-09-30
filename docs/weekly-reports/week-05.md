@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Week | 5 |
-| Owner | Lukaanya George |
+| Owner | Beingana Jim Junior |
 | Due | 2 October 2026 |
 | Status | Not started |
 | Path | `docs/weekly-reports/week-05.md` |

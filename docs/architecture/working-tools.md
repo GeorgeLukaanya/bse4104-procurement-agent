@@ -115,7 +115,7 @@ POL-001-C02 needs three eligible quotations in this band. One remains, so the to
 
 ### Where this differs from the catalogue example
 
-The catalogue's `compare_quotations` example ranks QT-001 (Lakeview Building Materials) and excludes only QT-003. Requirement 4.6 and section 5 of the same catalogue mark **both** lookalike names `NAME_DISCREPANCY` until the officer records clearance. The implementation follows 4.6 and the eligibility example: QT-001 is excluded too. The tonne conversion and the blacklist exclusion match the catalogue numbers exactly.
+Catalogue v1.0's `compare_quotations` example ranked QT-001 (Lakeview Building Materials) and excluded only QT-003. Requirement 4.6 and section 5 of the same catalogue mark **both** lookalike names `NAME_DISCREPANCY` until the officer records clearance. The implementation follows 4.6 and the eligibility example: QT-001 is excluded too. **Resolved in catalogue v1.1 (29 September 2026):** the comparison and draft examples now match this recorded run.
 
 No recommendation field is emitted. Ranking is not awarding (POL-004-C04).
 

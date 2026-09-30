@@ -10,7 +10,8 @@ WHAT THIS IS
     scripted backend that returns a hand-written record for each fixture,
     exactly as the test suite does, so the full path runs: cache lookup,
     schema validation, prohibited-pattern scan, landed-cost readiness and
-    the run log.
+    the run log. The cache and run log are its own, under var/offline-demo/,
+    so nothing it writes can reach a live run or the evidence folder.
 
 WHAT THIS IS NOT
     Evidence of anything about the model. No model reads the fixtures here.
@@ -168,6 +169,15 @@ SCRIPTED_RECORDS: dict[str, dict] = {
 # sleep, not a measurement, and the banner says so.
 SIMULATED_LATENCY_S = 0.05
 
+# The demo never shares the real cache or run log. The cache key covers the
+# document and the configuration but not the backend, so a scripted record in
+# .cache/extractions would be served to the next live run as if Gemini had
+# produced it, and a demo row in evidence/traces/ would read as evidence.
+# var/ is git-ignored.
+DEMO_DIR = ROOT / "var" / "offline-demo"
+DEMO_CACHE_DIR = DEMO_DIR / "cache"
+DEMO_RUN_LOG = DEMO_DIR / "runs.jsonl"
+
 
 class ScriptedBackend:
     """Returns a hand-written record per fixture. Never touches the network."""
@@ -227,6 +237,10 @@ def main(argv: list[str]) -> int:
     # different model in the fingerprint than the one printed in the handover.
     if "--no-env-file" not in args:
         args.append("--no-env-file")
+    if not any(a == "--cache-dir" or a.startswith("--cache-dir=") for a in args):
+        args += ["--cache-dir", str(DEMO_CACHE_DIR)]
+    if not any(a == "--run-log" or a.startswith("--run-log=") for a in args):
+        args += ["--run-log", str(DEMO_RUN_LOG)]
 
     as_json = "--json" in args
     if not as_json:

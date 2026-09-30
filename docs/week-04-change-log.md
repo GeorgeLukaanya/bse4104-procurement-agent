@@ -130,8 +130,10 @@ Requirement 4.
 categories. The deterministic layer was always going to perform those checks; the
 requirement did not say so. It now names all four.
 
-**4.3** gained `SUSPENDED` and `OUT_OF_CATEGORY`. The former vocabulary of
-`AVL_ABSENT`, `BLACKLISTED` and `EXPIRED` cannot express the two additional bars.
+**4.3** gained `SUSPENDED`, `OUT_OF_CATEGORY` and `NAME_DISCREPANCY`. The former
+vocabulary of `AVL_ABSENT`, `BLACKLISTED` and `EXPIRED` cannot express the two additional
+bars or the 4.6 clearance stop. (`NAME_DISCREPANCY` was added in PR #53 review, commit
+`1c09848`, on 24 September — after this log was first written.)
 Folding a suspension into `BLACKLISTED` would tell an approver something untrue:
 POL-002-C02 treats a suspension as reversible on management record and a blacklisting
 as not. Folding an out-of-category offer into either would hide that POL-002-C03 allows

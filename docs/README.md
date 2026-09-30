@@ -69,17 +69,17 @@ Due dates are the Friday of each teaching week.
 
 | Deliverable | Path | Owner | Status |
 |---|---|---|---|
-| Tool catalogue and schemas | [`docs/architecture/tool-catalogue.md`](architecture/tool-catalogue.md) + [`schemas/`](architecture/schemas/) | Lukaanya George | Complete, awaiting team review |
-| Working demonstration of two tools | [`docs/architecture/working-tools.md`](architecture/working-tools.md) | Nannyombi Shakiran | Done (write-up) |
-| Failure / authorization test evidence | [`docs/evaluation/tool-failure-tests.md`](evaluation/tool-failure-tests.md) | Beingana Jim Junior | Not started |
-| Updated architecture diagram | [`docs/architecture/architecture.md`](architecture/architecture.md) | Ainamani Jim Isaac | Not started |
-| Week 4 progress report | [`docs/weekly-reports/week-04.md`](weekly-reports/week-04.md) | Sekyeza Elroy Nunda | Not started |
+| Tool catalogue and schemas | [`docs/architecture/tool-catalogue.md`](architecture/tool-catalogue.md) + [`schemas/`](architecture/schemas/) | Lukaanya George | Done (v1.1) |
+| Working demonstration of two tools | [`docs/architecture/working-tools.md`](architecture/working-tools.md) | Nannyombi Shakiran | Done |
+| Failure / authorization test evidence | [`docs/evaluation/tool-failure-tests.md`](evaluation/tool-failure-tests.md) | Beingana Jim Junior | Done (FA-10 open) |
+| Updated architecture diagram | [`docs/architecture/architecture.md`](architecture/architecture.md) | Ainamani Jim Isaac | Done |
+| Week 4 progress report | [`docs/weekly-reports/week-04.md`](weekly-reports/week-04.md) | Sekyeza Elroy Nunda | Done |
 
 ## Week 5 — 2 October 2026
 
 | Deliverable | Path | Owner | Status |
 |---|---|---|---|
-| Agent architecture diagram | [`docs/architecture/agent-architecture.md`](architecture/agent-architecture.md) | Lukaanya George | Not started |
+| Agent architecture diagram | [`docs/architecture/agent-architecture.md`](architecture/agent-architecture.md) | Lukaanya George | Complete, awaiting team review |
 | Agent task contract | [`docs/requirements/agent-task-contract.md`](requirements/agent-task-contract.md) | Sekyeza Elroy Nunda | Not started |
 | Working bounded agent workflow | [`docs/architecture/working-agent.md`](architecture/working-agent.md) | Nannyombi Shakiran | Done (write-up) |
 | Three execution traces | [`docs/evaluation/execution-traces.md`](evaluation/execution-traces.md) | Ainamani Jim Isaac | Not started |

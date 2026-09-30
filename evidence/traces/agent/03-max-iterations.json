@@ -1,0 +1,42 @@
+{
+  "component": "AGENT",
+  "stop_reason": "max_iterations",
+  "stop_detail": "Reached the iteration cap (1). No further tool call was made.",
+  "iterations": 1,
+  "step": "eligibility",
+  "review_date": "2026-09-25",
+  "sku": "AH-CM-001",
+  "caller_role": "PROCUREMENT_OFFICER",
+  "reorder": {
+    "review_date": "2026-09-25",
+    "evaluated_count": 1,
+    "flagged_count": 1,
+    "no_reorder_required": false,
+    "items": [
+      {
+        "sku": "AH-CM-001",
+        "item_name": "Portland cement 42.5N 50 kg bag",
+        "category": "cement and masonry",
+        "unit_of_measure": "bag",
+        "current_stock": 150,
+        "reorder_point": 150,
+        "target_stock_level": 270,
+        "reorder_quantity": 120,
+        "estimated_unit_cost_ugx": 32000.0,
+        "estimated_total_ugx": 3840000.0,
+        "location": "Nakawa Main Store",
+        "at_or_below_reorder_point": true
+      }
+    ]
+  },
+  "eligibility": null,
+  "comparison": null,
+  "draft": null,
+  "calls": [
+    {
+      "tool": "check_reorder_need",
+      "status": "ok",
+      "errors": []
+    }
+  ]
+}

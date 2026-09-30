@@ -15,9 +15,9 @@ purchase order, contacts a supplier, commits funds or approves anything itself.
 
 ## Status
 
-**Week 4 of 8 — tools implemented against the catalogue.**
+**Week 5 of 8 — bounded agent workflow.**
 
-Three command-line tools run today, still as separate entry points:
+Four command-line tools run today, still as separate entry points:
 
 - **Quotation extraction** (Week 2) — takes a Converted Quotation Document in
   Markdown and returns a validated eleven-field Normalised Quotation record.
@@ -28,10 +28,12 @@ Three command-line tools run today, still as separate entry points:
   (`check_reorder_need`, `check_supplier_eligibility`, `compare_quotations`,
   `create_requisition_draft`) called through `dispatch.invoke`. No model is
   involved. Write-up: [`docs/architecture/working-tools.md`](docs/architecture/working-tools.md).
+- **Bounded agent** (Week 5) — sequences those tools for one weekly reorder
+  review, with a six-iteration cap and officer confirmation before a DRAFT is
+  written. Write-up: [`docs/architecture/working-agent.md`](docs/architecture/working-agent.md).
 
-Not built yet: the agent loop, Week 5 persistent workflow state, document
-conversion, and any user interface. The three CLIs are not yet wired to each
-other.
+Not built yet: Week 5 agent-task contract and architecture diagram (other
+owners), Week 6 persistent state, document conversion, and any user interface.
 
 There is deliberately **no application framework**. Django, FastAPI and Flask are
 all absent, because the charter has not chosen one. The package is importable and
@@ -270,6 +272,25 @@ to `evidence/traces/tool-runs.jsonl`. Drafts land in `var/requisitions.jsonl`
 (git-ignored) with status `DRAFT` only. Write-up:
 [`docs/architecture/working-tools.md`](docs/architecture/working-tools.md).
 
+## Run the bounded agent (Week 5)
+
+No API key. Direct orchestration over the four catalogue tools. The officer
+starts the run; the loop stops on a named reason rather than running forever.
+
+```bash
+python -m procurement_agent.agent.cli \
+    --review-date 2026-09-25 --sku AH-CM-001
+
+python -m procurement_agent.agent.cli \
+    --review-date 2026-09-25 --sku AH-CM-001 \
+    --confirm-comparison --confirm-draft
+```
+
+`procurement-agent` is the installed console script. Exit `0` when a DRAFT is
+written or nothing needs reordering, `1` when the officer must confirm, `2` on
+a cap, failure or unauthorized start. Write-up:
+[`docs/architecture/working-agent.md`](docs/architecture/working-agent.md).
+
 ### What a run produces
 
 | Path | Contents | Tracked? |
@@ -278,6 +299,8 @@ to `evidence/traces/tool-runs.jsonl`. Drafts land in `var/requisitions.jsonl`
 | `evidence/traces/extraction-runs.jsonl` | Append-only extraction log, one JSON object per call | Yes — this is the evidence |
 | `evidence/traces/tool-runs.jsonl` | Append-only tool log, one JSON object per call | Yes — this is the evidence |
 | `evidence/traces/tools/*.json` | Indented copies of the recorded tool run | Yes — easier to read |
+| `evidence/traces/agent-runs.jsonl` | Append-only agent log, one JSON object per run | Yes — this is the evidence |
+| `evidence/traces/agent/*.json` | Indented copies of the recorded agent runs | Yes — easier to read |
 | `var/requisitions.jsonl` | Local DRAFT store | No, git-ignored |
 
 Clear the cache to force live calls: `rm -rf .cache` (or pass `--no-cache`).
@@ -418,6 +441,9 @@ The extraction package still does none of this arithmetic.
 | `tools/compare.py` | `compare_quotations` — the landed-cost calculator |
 | `tools/draft.py` | `create_requisition_draft` — DRAFT write only |
 | `tools/cli.py` | Command-line entry point for the four tools |
+| `agent/workflow.py` | Bounded reorder-to-DRAFT loop, iteration and timeout caps |
+| `agent/planner.py` | Next-tool proposal (deterministic by default) |
+| `agent/cli.py` | Command-line entry point for the agent |
 
 ## Specification
 

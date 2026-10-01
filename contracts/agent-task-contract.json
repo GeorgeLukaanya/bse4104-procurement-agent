@@ -2,45 +2,99 @@
   "contract_version": "1.0",
   "_source": "docs/requirements/agent-task-contract.md",
   "_note": "Canonical. The loop loads this file at startup; the write-up explains it. Change a value here, not in code.",
-
   "goal": {
     "statement": "For one flagged reorder item, prepare a Purchase Requisition in DRAFT that a Procurement Officer can submit.",
     "scope": "Charter section 6, steps 3 to 8, for a single item",
     "caller_role": "AGENT",
     "one_run_per": "flagged_item"
   },
-
   "planner": {
     "decides": "model",
     "enforced_by": "deterministic_policy_gate",
     "offline_default": "deterministic",
     "built": false
   },
-
   "phases": [
-    {"phase": "FRAMED", "forward_action": "check_supplier_eligibility", "next": "ELIGIBILITY_CHECKED", "built": true},
-    {"phase": "ELIGIBILITY_CHECKED", "forward_action": "compare_quotations", "next": "COMPARED", "built": true},
-    {"phase": "COMPARED", "forward_action": "hand_off", "next": "COMPARISON_CONFIRMED", "built": true},
-    {"phase": "COMPARISON_CONFIRMED", "forward_action": "retrieve_policy", "next": "POLICY_RETRIEVED", "built": false},
-    {"phase": "POLICY_RETRIEVED", "forward_action": "draft_justification", "next": "DRAFTED", "built": false},
-    {"phase": "DRAFTED", "forward_action": "hand_off", "next": "JUSTIFICATION_CONFIRMED", "built": false},
-    {"phase": "JUSTIFICATION_CONFIRMED", "forward_action": "create_requisition_draft", "next": "DRAFT_CREATED", "built": true}
+    {
+      "phase": "FRAMED",
+      "forward_action": "check_supplier_eligibility",
+      "next": "ELIGIBILITY_CHECKED",
+      "built": true
+    },
+    {
+      "phase": "ELIGIBILITY_CHECKED",
+      "forward_action": "compare_quotations",
+      "next": "COMPARED",
+      "built": true
+    },
+    {
+      "phase": "COMPARED",
+      "forward_action": "hand_off",
+      "next": "COMPARISON_CONFIRMED",
+      "built": true
+    },
+    {
+      "phase": "COMPARISON_CONFIRMED",
+      "forward_action": "retrieve_policy",
+      "next": "POLICY_RETRIEVED",
+      "built": false
+    },
+    {
+      "phase": "POLICY_RETRIEVED",
+      "forward_action": "draft_justification",
+      "next": "DRAFTED",
+      "built": false
+    },
+    {
+      "phase": "DRAFTED",
+      "forward_action": "hand_off",
+      "next": "JUSTIFICATION_CONFIRMED",
+      "built": false
+    },
+    {
+      "phase": "JUSTIFICATION_CONFIRMED",
+      "forward_action": "create_requisition_draft",
+      "next": "DRAFT_CREATED",
+      "built": true
+    }
   ],
-
   "approved_actions": {
     "tools": [
-      {"name": "check_supplier_eligibility", "permission": "read_only", "requires_human_confirmation": false},
-      {"name": "compare_quotations", "permission": "read_only", "requires_human_confirmation": false},
-      {"name": "create_requisition_draft", "permission": "write", "requires_human_confirmation": true, "max_status": "DRAFT"}
+      {
+        "name": "check_supplier_eligibility",
+        "permission": "read_only",
+        "requires_human_confirmation": false
+      },
+      {
+        "name": "compare_quotations",
+        "permission": "read_only",
+        "requires_human_confirmation": false
+      },
+      {
+        "name": "create_requisition_draft",
+        "permission": "write",
+        "requires_human_confirmation": true,
+        "max_status": "DRAFT"
+      }
     ],
     "ai_layer_steps": [
-      {"name": "retrieve_policy", "built": true, "wired_into_loop": false},
-      {"name": "draft_justification", "built": false, "wired_into_loop": false}
+      {
+        "name": "retrieve_policy",
+        "built": true,
+        "wired_into_loop": false
+      },
+      {
+        "name": "draft_justification",
+        "built": false,
+        "wired_into_loop": false
+      }
     ],
-    "control_actions": ["hand_off", "stop"],
+    "control_actions": [
+      "hand_off",
+      "stop"
+    ],
     "closed": true
   },
-
   "limits": {
     "iterations_per_item": 8,
     "wall_clock_seconds": 120,
@@ -48,15 +102,41 @@
     "repeated_identical_action": 0,
     "model_calls_per_iteration": 1,
     "model_calls_per_run_max": 10,
-    "decoding": {"temperature": 0, "max_output_tokens": 2048}
+    "decoding": {
+      "temperature": 0,
+      "max_output_tokens": 2048
+    },
+    "handoff_wait_counted": false,
+    "model_retries_consume_iteration": false,
+    "action_set": "4 tools + 2 AI-layer steps + hand_off + stop; closed",
+    "_iterations_reason": "happy path 5, officer-clearance path 7, one spare re-plan; supersedes AGENT_MAX_ITERATIONS=6 in .env.example"
   },
-
   "stop_conditions": {
-    "success": ["DRAFT_CREATED", "NO_REORDER_NEEDED"],
-    "human": ["AWAITING_HUMAN", "OFFICER_DECLINED"],
-    "limit": ["ITERATION_LIMIT", "TIMEOUT", "NO_PROGRESS"],
-    "blocked": ["TOOL_NOT_ALLOWED", "UNAUTHORIZED_ROLE", "FORBIDDEN_TRANSITION", "GUARD_SUPPRESSED"],
-    "failed": ["DATA_SOURCE_UNAVAILABLE", "DATA_INTEGRITY_ERROR", "SERVICE_UNAVAILABLE", "OUTPUT_SCHEMA_INVALID"],
+    "success": [
+      "DRAFT_CREATED",
+      "NO_REORDER_NEEDED"
+    ],
+    "human": [
+      "AWAITING_HUMAN",
+      "OFFICER_DECLINED"
+    ],
+    "limit": [
+      "ITERATION_LIMIT",
+      "TIMEOUT",
+      "NO_PROGRESS"
+    ],
+    "blocked": [
+      "TOOL_NOT_ALLOWED",
+      "UNAUTHORIZED_ROLE",
+      "FORBIDDEN_TRANSITION",
+      "GUARD_SUPPRESSED"
+    ],
+    "failed": [
+      "DATA_SOURCE_UNAVAILABLE",
+      "DATA_INTEGRITY_ERROR",
+      "SERVICE_UNAVAILABLE",
+      "OUTPUT_SCHEMA_INVALID"
+    ],
     "implemented_as": {
       "DRAFT_CREATED": "completed",
       "NO_REORDER_NEEDED": "no_reorder_required",
@@ -72,24 +152,162 @@
       "SERVICE_UNAVAILABLE": "failed",
       "OUTPUT_SCHEMA_INVALID": "failed"
     },
-    "not_implemented": ["OFFICER_DECLINED", "NO_PROGRESS"]
+    "not_implemented": [
+      "OFFICER_DECLINED",
+      "NO_PROGRESS"
+    ],
+    "_no_reorder_needed": "decided before any loop starts, by check_reorder_need"
   },
-
   "human_handoff": {
     "gates": [
-      {"gate": 2, "name": "comparison", "who": "PROCUREMENT_OFFICER", "built": true},
-      {"gate": 3, "name": "justification", "who": "PROCUREMENT_OFFICER", "built": false},
-      {"gate": 0, "name": "draft_confirmation", "who": "PROCUREMENT_OFFICER", "built": true}
+      {
+        "gate": 2,
+        "name": "comparison",
+        "who": "PROCUREMENT_OFFICER",
+        "built": true,
+        "triggers": [
+          "NAME_DISCREPANCY",
+          "INSUFFICIENT_QUOTATIONS",
+          "sole_eligible_option",
+          "EXCHANGE_RATE_REQUIRED"
+        ],
+        "batched": "read-only findings are raised together here, so the officer is interrupted once"
+      },
+      {
+        "gate": 3,
+        "name": "justification",
+        "who": "PROCUREMENT_OFFICER",
+        "built": false,
+        "phase": "DRAFTED"
+      },
+      {
+        "gate": 0,
+        "name": "draft_confirmation",
+        "who": "PROCUREMENT_OFFICER",
+        "built": true
+      }
     ],
     "never_in_the_loop": [
-      "approve", "reject", "submit", "route",
-      "issue a purchase order", "contact a supplier", "commit funds"
-    ]
+      "approve",
+      "reject",
+      "submit",
+      "route",
+      "issue a purchase order",
+      "contact a supplier",
+      "commit funds"
+    ],
+    "immediate_handoff": {
+      "when": "no eligible offer to compare",
+      "why": "there is nothing to confirm, so it does not wait for Gate 2"
+    },
+    "on_resume": "state is preserved; the officer resolves and the loop resumes",
+    "on_decline": "the run stops with OFFICER_DECLINED"
   },
-
   "trace": {
     "path": "evidence/traces/agent-runs.jsonl",
     "append_only": true,
-    "never": ["api keys", "suppressed text"]
+    "never": [
+      "api keys",
+      "suppressed text"
+    ]
+  },
+  "rules": {
+    "hand_off_and_stop_allowed_in_every_phase": true,
+    "gates_are_handoffs_not_actions": "the loop cannot confirm on the officer's behalf",
+    "classification_is_deterministic": "the model never classifies its own result",
+    "recheck_after_clearance": [
+      "check_supplier_eligibility",
+      "compare_quotations"
+    ],
+    "recheck_trigger": [
+      "NAME_DISCREPANCY cleared",
+      "exchange rate supplied"
+    ]
+  },
+  "outcome_classes": {
+    "PROGRESS": {
+      "triggers": [
+        "ok or no_result that satisfies the phase"
+      ],
+      "behaviour": "advance the phase, save the checkpoint, next iteration"
+    },
+    "RECOVERABLE": {
+      "triggers": [
+        "invalid_input from model-proposed arguments",
+        "first guard suppression in a draft",
+        "model still rate-limited after the client's bounded retries"
+      ],
+      "behaviour": "re-plan once within budget; a second failure of the same kind is TERMINAL"
+    },
+    "NEEDS_HUMAN": {
+      "triggers": [
+        "NAME_DISCREPANCY",
+        "INSUFFICIENT_QUOTATIONS",
+        "sole_eligible_option",
+        "EXCHANGE_RATE_REQUIRED",
+        "no eligible offer",
+        "citation withheld or no clause found",
+        "Gate 2",
+        "Gate 3",
+        "confirmation before create_requisition_draft"
+      ],
+      "behaviour": "pause with the reason and options; state preserved; the officer resolves and the loop resumes, or declines and the run stops with OFFICER_DECLINED"
+    },
+    "TERMINAL_STATE_KEPT": {
+      "triggers": [
+        "DATA_SOURCE_UNAVAILABLE",
+        "DATA_INTEGRITY_ERROR",
+        "model or Policy Corpus unavailable",
+        "output fails its schema"
+      ],
+      "behaviour": "stop; a retry resumes from the checkpoint without repeating earlier steps",
+      "requirements": [
+        "7.5",
+        "8.5",
+        "9.4"
+      ]
+    },
+    "TERMINAL_BOUNDARY": {
+      "triggers": [
+        "TOOL_NOT_ALLOWED",
+        "UNAUTHORIZED_ROLE",
+        "FORBIDDEN_TRANSITION",
+        "second guard suppression"
+      ],
+      "behaviour": "stop, show a blocked-action error, write an audit entry; never retried",
+      "requirements": [
+        "14.4"
+      ]
+    },
+    "TERMINAL_LIMIT": {
+      "triggers": [
+        "ITERATION_LIMIT",
+        "TIMEOUT",
+        "NO_PROGRESS"
+      ],
+      "behaviour": "stop and record the limit reached"
+    }
+  },
+  "run_state": {
+    "written_after": "every Observe step",
+    "storage_week_5": "var/agent-state/<run_id>.json (git-ignored)",
+    "persisted": false,
+    "fields": [
+      "run_id",
+      "sku",
+      "review_date",
+      "officer_username",
+      "phase",
+      "results",
+      "confirmations",
+      "iterations",
+      "elapsed_s",
+      "replans",
+      "pending_handoff",
+      "stop_reason"
+    ],
+    "results": "each completed step's envelope keyed by phase, with a data_fingerprint",
+    "confirmations": "Gate 2 and Gate 3 decisions, clearances and exception reasons, with who and when",
+    "stop_reason": "set once, on the final iteration"
   }
 }

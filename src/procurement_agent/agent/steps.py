@@ -28,5 +28,8 @@ STOP_UNAUTHORIZED = "unauthorized"
 STOP_FAILED = "failed"
 STOP_REFUSED = "refused"
 
-DEFAULT_MAX_ITERATIONS = 6
+# Fixed by the Agent Task Contract section 6: the happy path uses 5 and officer
+# clearance of a NAME_DISCREPANCY costs 2 re-checks, so 6 would stop with
+# ITERATION_LIMIT on the exact case Requirement 4.6 exists for.
+DEFAULT_MAX_ITERATIONS = 8
 DEFAULT_TIMEOUT_S = 120.0

@@ -88,7 +88,7 @@ Halt is always explicit. The loop does not run until an exception. Every stop re
 
 | Limit | Default | Source |
 |---|---|---|
-| Maximum iterations | 6 | `.env.example` `AGENT_MAX_ITERATIONS`; override `--max-iterations` |
+| Maximum iterations | 8 | Fixed by the [Agent Task Contract](../requirements/agent-task-contract.md) section 6; `.env.example` `AGENT_MAX_ITERATIONS`; override `--max-iterations` |
 | Wall-clock timeout | 120s | `AGENT_TIMEOUT_SECONDS`; override `--timeout` |
 | Step allow-list | one tool per step | [`steps.py`](../../src/procurement_agent/agent/steps.py) |
 | Write gate | `create_requisition_draft` | Officer `--confirm-draft`; AGENT still needs that confirmation |

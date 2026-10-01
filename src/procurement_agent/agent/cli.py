@@ -22,6 +22,7 @@ from typing import Sequence
 
 from ..dotenv import DEFAULT_ENV_FILE, load_env_file
 from ..tools.contract import ROLE_OFFICER, ROLES
+from .contract import ContractError
 from .steps import (
     DEFAULT_MAX_ITERATIONS,
     STOP_AWAITING_HUMAN,
@@ -48,25 +49,32 @@ def main(argv: Sequence[str] | None = None) -> int:
         if os.path.exists(env_path):
             load_env_file(env_path)
 
-    result = run_workflow(
-        review_date=args.review_date,
-        sku=args.sku,
-        officer_username=args.officer,
-        caller_role=args.role,
-        confirm_comparison=args.confirm_comparison,
-        confirm_draft=args.confirm_draft,
-        max_iterations=args.max_iterations,
-        timeout_s=args.timeout,
-        officer_confirmed=args.confirm_draft,
-        inventory_path=args.inventory,
-        suppliers_path=args.suppliers,
-        quotations_path=args.quotations,
-        register_path=args.register,
-        requisition_store=args.store,
-        tool_log=args.tool_log,
-        run_log=args.run_log,
-        record_trace=not args.no_trace,
-    )
+    try:
+        result = run_workflow(
+            review_date=args.review_date,
+            sku=args.sku,
+            officer_username=args.officer,
+            caller_role=args.role,
+            confirm_comparison=args.confirm_comparison,
+            confirm_draft=args.confirm_draft,
+            contract_path=args.contract,
+            max_iterations=args.max_iterations,
+            timeout_s=args.timeout,
+            officer_confirmed=args.confirm_draft,
+            inventory_path=args.inventory,
+            suppliers_path=args.suppliers,
+            quotations_path=args.quotations,
+            register_path=args.register,
+            requisition_store=args.store,
+            tool_log=args.tool_log,
+            run_log=args.run_log,
+            record_trace=not args.no_trace,
+        )
+    except ContractError as exc:
+        # No limits, no run. Reported like any other usage error rather than as
+        # a traceback, because the fix is to point at a contract file.
+        print(f"error: {exc}", file=sys.stderr)
+        return EXIT_STOP
 
     if args.json:
         print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
@@ -101,6 +109,11 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--max-iterations", type=int, default=None)
     parser.add_argument("--timeout", type=float, default=None)
+    parser.add_argument(
+        "--contract",
+        default=None,
+        help="agent task contract JSON (default: contracts/agent-task-contract.json)",
+    )
     parser.add_argument("--inventory")
     parser.add_argument("--suppliers")
     parser.add_argument("--quotations")
@@ -115,11 +128,29 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _cap(result) -> str:
+    """The iteration cap this run actually ran under, not a module default."""
+    override = os.environ.get("AGENT_MAX_ITERATIONS")
+    if override:
+        return override
+    contract = result.state.contract
+    return str(contract.iterations_per_item if contract else DEFAULT_MAX_ITERATIONS)
+
+
+def _contract_line(result) -> str:
+    contract = result.state.contract
+    if contract is None:
+        return "(none loaded)"
+    named = contract.stop_reason_for(result.stop_reason) or "unmapped"
+    return f"{contract.path} v{contract.version}, stop {named}"
+
+
 def _report(result) -> str:
     lines = [
         f"stop:       {result.stop_reason}",
         f"detail:     {result.stop_detail}",
-        f"iterations: {result.iterations} / {os.environ.get('AGENT_MAX_ITERATIONS', DEFAULT_MAX_ITERATIONS)}",
+        f"iterations: {result.iterations} / {_cap(result)}",
+        f"contract:   {_contract_line(result)}",
         f"step:       {result.state.step}",
         f"role:       {result.state.caller_role}",
     ]

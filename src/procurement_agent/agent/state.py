@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from .contract import AgentContract
 from .steps import STEP_SCAN, STEP_ORDER
 
 
@@ -30,6 +31,8 @@ class AgentState:
     comparison: dict[str, Any] | None = None
     draft: dict[str, Any] | None = None
     calls: list[dict[str, Any]] = field(default_factory=list)
+    # The contract this run was bound by, carried so the trace can name it.
+    contract: AgentContract | None = None
 
     def current_allow_list(self) -> tuple[str, ...]:
         from .steps import ALLOW_LIST

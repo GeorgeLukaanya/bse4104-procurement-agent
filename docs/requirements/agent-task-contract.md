@@ -35,106 +35,33 @@ implemented yet", which PR #60 has overtaken, and `.env.example` carries
 
 ### 2. The contract
 
-```yaml
-contract_version: "1.0"
-goal:
-  statement: >
-    For one flagged reorder item, prepare a Purchase Requisition in DRAFT that a
-    Procurement Officer can submit.
-  scope: Charter section 6, steps 3 to 8, for a single item
-  out_of_scope:
-    - flagging items below reorder point      # runs once, before the loop
-    - confirming extracted quotation data     # Gate 1, before the loop
-    - submitting, routing, approving          # after the loop; unreachable from it
-  caller_role: AGENT
-  one_run_per: flagged_item
+The contract is a file the loop loads, not a block of text in this page:
+**[`contracts/agent-task-contract.json`](../../contracts/agent-task-contract.json)**. It is
+canonical. `agent/contract.py` reads it at startup and takes the iteration cap, the time budget
+and the approved action set from it, so a limit changes in the contract rather than in code.
+This page explains the same values; if the two ever disagree, the file is what actually runs.
 
-planner:
-  decides: model                  # Gemini, through function calling
-  enforced_by: deterministic_policy_gate
-  offered_each_turn: current_phase_allow_list + [hand_off, stop]
-  may_not: [name an action it was not offered, execute anything itself]
-  offline_default: deterministic  # used by tests, CI and any run with no API key
+A missing or malformed contract stops the run with exit code 2. An unbounded loop is the thing
+the contract exists to prevent, so there is no silent fallback to a default.
 
-approved_actions:
-  tools:                          # Week 4 catalogue; caller_role is injected, never supplied
-    - name: check_supplier_eligibility
-      permission: read_only
-      phase: FRAMED
-    - name: compare_quotations
-      permission: read_only
-      phase: ELIGIBILITY_CHECKED
-    - name: create_requisition_draft
-      permission: write
-      phase: JUSTIFICATION_CONFIRMED
-      requires_human_confirmation: true
-      max_status: DRAFT
-  ai_layer_steps:                 # not catalogue tools; the four-tool ceiling still holds
-    - name: retrieve_policy
-      phase: COMPARISON_CONFIRMED
-      built: true                 # Week 3 RAG pipeline, not yet wired into the loop
-    - name: draft_justification
-      phase: POLICY_RETRIEVED
-      built: false
-  control_actions: [hand_off, stop]
-  closed: true                    # the twelve prohibited names stay blocked in CI
+Precedence for any one run, highest first: a command-line flag, then an environment variable,
+then the contract.
 
-state:
-  persistence: checkpoint_per_phase   # required; not built, see section 5
-  fields:
-    review_date: date
-    sku: string
-    officer_username: string
-    caller_role: AGENT
-    phase: enum                       # section 4
-    iterations: int
-    elapsed_s: float
-    replans_by_failure_kind: map
-    last_action: {name: string, arguments: object}
-    results: {eligibility: object, comparison: object, policy: object, justification: object, draft: object}
-    confirmations: {comparison: bool, justification: bool, draft: bool}
-    stop_reason: string               # set once, on the final iteration
-
-limits:
-  iterations_per_item: 8
-  wall_clock_seconds: 120             # hand-off waiting time is not counted
-  replans_per_failure_kind: 1
-  repeated_identical_action: 0        # same action, same arguments, twice => NO_PROGRESS
-  model_calls_per_iteration: 1        # plan step; tool retries do not consume the budget
-  model_calls_per_run_max: 10         # 8 plan calls + policy + justification
-  decoding: {temperature: 0, max_output_tokens: 2048}
-
-stop_conditions:
-  success: [DRAFT_CREATED, NO_REORDER_NEEDED]
-  human: [AWAITING_HUMAN, OFFICER_DECLINED]
-  limit: [ITERATION_LIMIT, TIMEOUT, NO_PROGRESS]
-  blocked: [TOOL_NOT_ALLOWED, UNAUTHORIZED_ROLE, FORBIDDEN_TRANSITION, GUARD_SUPPRESSED]
-  failed: [DATA_SOURCE_UNAVAILABLE, DATA_INTEGRITY_ERROR, SERVICE_UNAVAILABLE, OUTPUT_SCHEMA_INVALID]
-  rule: exactly one stop reason per run, written to the trace
-
-human_handoff:
-  gate_2_comparison:
-    when: phase COMPARED
-    who: PROCUREMENT_OFFICER
-    batched_with: [NAME_DISCREPANCY, INSUFFICIENT_QUOTATIONS, sole_eligible_option, EXCHANGE_RATE_REQUIRED]
-  gate_3_justification:
-    when: phase DRAFTED
-    who: PROCUREMENT_OFFICER
-    built: false
-  draft_confirmation:
-    when: before create_requisition_draft
-    who: PROCUREMENT_OFFICER
-  immediate_handoff:
-    when: no eligible offer to compare
-  never_in_the_loop: [approve, reject, submit, route, issue a purchase order, contact a supplier, commit funds]
-
-trace:
-  path: evidence/traces/agent-runs.jsonl
-  append_only: true
-  per_run: [run_id, review_date, sku, caller_role, planner, iterations, elapsed_s, stop_reason, limits]
-  per_iteration: [phase, proposed_action, arguments, gate_decision, tool_status, error_code, outcome_class, elapsed_s]
-  never: [api keys, suppressed text]
+```bash
+# Run under a different contract, for example while proposing new limits
+python -m procurement_agent.agent.cli --review-date 2026-10-01 --contract contracts/proposed.json
 ```
+
+Each run's report and trace name the contract that bound it:
+
+```
+iterations: 3 / 8
+contract:   contracts/agent-task-contract.json v1.0, stop AWAITING_HUMAN
+```
+
+Sections 3 to 8 below explain each part of the file. `tests/test_agent_contract.py` holds the
+code to it, including that `DEFAULT_MAX_ITERATIONS` equals the contract's limit and that every
+tool the loop can call is an approved action.
 
 ### 3. Why this task needs a loop
 

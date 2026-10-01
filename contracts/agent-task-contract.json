@@ -1,0 +1,95 @@
+{
+  "contract_version": "1.0",
+  "_source": "docs/requirements/agent-task-contract.md",
+  "_note": "Canonical. The loop loads this file at startup; the write-up explains it. Change a value here, not in code.",
+
+  "goal": {
+    "statement": "For one flagged reorder item, prepare a Purchase Requisition in DRAFT that a Procurement Officer can submit.",
+    "scope": "Charter section 6, steps 3 to 8, for a single item",
+    "caller_role": "AGENT",
+    "one_run_per": "flagged_item"
+  },
+
+  "planner": {
+    "decides": "model",
+    "enforced_by": "deterministic_policy_gate",
+    "offline_default": "deterministic",
+    "built": false
+  },
+
+  "phases": [
+    {"phase": "FRAMED", "forward_action": "check_supplier_eligibility", "next": "ELIGIBILITY_CHECKED", "built": true},
+    {"phase": "ELIGIBILITY_CHECKED", "forward_action": "compare_quotations", "next": "COMPARED", "built": true},
+    {"phase": "COMPARED", "forward_action": "hand_off", "next": "COMPARISON_CONFIRMED", "built": true},
+    {"phase": "COMPARISON_CONFIRMED", "forward_action": "retrieve_policy", "next": "POLICY_RETRIEVED", "built": false},
+    {"phase": "POLICY_RETRIEVED", "forward_action": "draft_justification", "next": "DRAFTED", "built": false},
+    {"phase": "DRAFTED", "forward_action": "hand_off", "next": "JUSTIFICATION_CONFIRMED", "built": false},
+    {"phase": "JUSTIFICATION_CONFIRMED", "forward_action": "create_requisition_draft", "next": "DRAFT_CREATED", "built": true}
+  ],
+
+  "approved_actions": {
+    "tools": [
+      {"name": "check_supplier_eligibility", "permission": "read_only", "requires_human_confirmation": false},
+      {"name": "compare_quotations", "permission": "read_only", "requires_human_confirmation": false},
+      {"name": "create_requisition_draft", "permission": "write", "requires_human_confirmation": true, "max_status": "DRAFT"}
+    ],
+    "ai_layer_steps": [
+      {"name": "retrieve_policy", "built": true, "wired_into_loop": false},
+      {"name": "draft_justification", "built": false, "wired_into_loop": false}
+    ],
+    "control_actions": ["hand_off", "stop"],
+    "closed": true
+  },
+
+  "limits": {
+    "iterations_per_item": 8,
+    "wall_clock_seconds": 120,
+    "replans_per_failure_kind": 1,
+    "repeated_identical_action": 0,
+    "model_calls_per_iteration": 1,
+    "model_calls_per_run_max": 10,
+    "decoding": {"temperature": 0, "max_output_tokens": 2048}
+  },
+
+  "stop_conditions": {
+    "success": ["DRAFT_CREATED", "NO_REORDER_NEEDED"],
+    "human": ["AWAITING_HUMAN", "OFFICER_DECLINED"],
+    "limit": ["ITERATION_LIMIT", "TIMEOUT", "NO_PROGRESS"],
+    "blocked": ["TOOL_NOT_ALLOWED", "UNAUTHORIZED_ROLE", "FORBIDDEN_TRANSITION", "GUARD_SUPPRESSED"],
+    "failed": ["DATA_SOURCE_UNAVAILABLE", "DATA_INTEGRITY_ERROR", "SERVICE_UNAVAILABLE", "OUTPUT_SCHEMA_INVALID"],
+    "implemented_as": {
+      "DRAFT_CREATED": "completed",
+      "NO_REORDER_NEEDED": "no_reorder_required",
+      "AWAITING_HUMAN": "awaiting_human",
+      "ITERATION_LIMIT": "max_iterations",
+      "TIMEOUT": "timeout",
+      "TOOL_NOT_ALLOWED": "unauthorized",
+      "UNAUTHORIZED_ROLE": "unauthorized",
+      "FORBIDDEN_TRANSITION": "refused",
+      "GUARD_SUPPRESSED": "refused",
+      "DATA_SOURCE_UNAVAILABLE": "failed",
+      "DATA_INTEGRITY_ERROR": "failed",
+      "SERVICE_UNAVAILABLE": "failed",
+      "OUTPUT_SCHEMA_INVALID": "failed"
+    },
+    "not_implemented": ["OFFICER_DECLINED", "NO_PROGRESS"]
+  },
+
+  "human_handoff": {
+    "gates": [
+      {"gate": 2, "name": "comparison", "who": "PROCUREMENT_OFFICER", "built": true},
+      {"gate": 3, "name": "justification", "who": "PROCUREMENT_OFFICER", "built": false},
+      {"gate": 0, "name": "draft_confirmation", "who": "PROCUREMENT_OFFICER", "built": true}
+    ],
+    "never_in_the_loop": [
+      "approve", "reject", "submit", "route",
+      "issue a purchase order", "contact a supplier", "commit funds"
+    ]
+  },
+
+  "trace": {
+    "path": "evidence/traces/agent-runs.jsonl",
+    "append_only": true,
+    "never": ["api keys", "suppressed text"]
+  }
+}

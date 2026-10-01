@@ -28,3 +28,25 @@ def test_cli_handoff_without_confirmation(tmp_path, capsys):
     assert code == cli.EXIT_HANDOFF
     assert payload["stop_reason"] == "awaiting_human"
     assert payload["iterations"] == 3
+
+
+def test_the_report_prints_on_a_default_windows_console(tmp_path, capsys):
+    """cp1252 is the default console encoding on Windows, where the team works.
+
+    A "->" arrow in the report raised UnicodeEncodeError on every real run,
+    while pytest captured it as UTF-8 and saw nothing wrong.
+    """
+    cli.main(
+        [
+            "--review-date", "2026-09-25",
+            "--sku", "AH-CM-001",
+            "--no-env-file",
+            "--run-log", str(tmp_path / "agent.jsonl"),
+            "--tool-log", str(tmp_path / "tools.jsonl"),
+            "--store", str(tmp_path / "req.jsonl"),
+        ]
+    )
+    report = capsys.readouterr().out
+
+    assert "check_reorder_need -> ok" in report
+    report.encode("cp1252")

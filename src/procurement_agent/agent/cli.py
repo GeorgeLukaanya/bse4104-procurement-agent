@@ -126,7 +126,9 @@ def _report(result) -> str:
     if result.calls:
         lines.append("calls:")
         for call in result.calls:
-            lines.append(f"  - {call.get('tool')} → {call.get('status')}")
+            # ASCII only: the default Windows console is cp1252, and a "→" here
+            # raised UnicodeEncodeError on every run rather than printing.
+            lines.append(f"  - {call.get('tool')} -> {call.get('status')}")
     if result.stop_reason == STOP_AWAITING_HUMAN:
         lines.append(
             "Re-run with --confirm-comparison and/or --confirm-draft after the officer reviews."

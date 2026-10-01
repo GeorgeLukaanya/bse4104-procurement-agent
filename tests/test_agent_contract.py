@@ -195,3 +195,29 @@ def test_the_command_reports_a_missing_contract_without_a_traceback(tmp_path, ca
 
     assert code == cli.EXIT_STOP
     assert "no agent task contract" in capsys.readouterr().err
+
+
+def test_an_ambiguous_stop_string_is_not_given_a_contract_name():
+    """`unauthorized` is both TOOL_NOT_ALLOWED and UNAUTHORIZED_ROLE; naming one
+    of them in a trace would be a guess."""
+    contract = load_contract(REAL_CONTRACT)
+
+    assert contract.stop_reason_for("unauthorized") is None
+    assert contract.stop_reason_for("failed") is None
+    assert contract.stop_reason_for("completed") == "DRAFT_CREATED"
+
+
+def test_the_write_tool_runs_under_the_officer_not_the_agent():
+    """dispatch swaps the identity once the officer confirms (Requirement 9.1)."""
+    payload = json.loads(REAL_CONTRACT.read_text(encoding="utf-8"))
+    draft = next(t for t in payload["approved_actions"]["tools"]
+                 if t["name"] == "create_requisition_draft")
+
+    assert draft["proposed_by"] == "AGENT"
+    assert draft["executes_as"] == "PROCUREMENT_OFFICER"
+
+
+def test_the_planner_is_never_given_document_text():
+    """Requirement 14.5: an embedded instruction has nothing to act through."""
+    rules = json.loads(REAL_CONTRACT.read_text(encoding="utf-8"))["rules"]
+    assert "No quotation or policy text reaches the planner" in rules["planner_context"]

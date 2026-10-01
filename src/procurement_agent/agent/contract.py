@@ -55,6 +55,7 @@ class AgentContract:
     closed_action_set: bool
     stop_reasons: dict[str, tuple[str, ...]]
     implemented_as: dict[str, str]
+    trace_names: dict[str, str]
     never_in_the_loop: tuple[str, ...]
     path: str
 
@@ -66,11 +67,15 @@ class AgentContract:
         return tool_name in self.write_tools
 
     def stop_reason_for(self, implemented: str) -> str | None:
-        """The contract's name for a stop reason the code produced."""
-        for contract_name, code_name in self.implemented_as.items():
-            if code_name == implemented:
-                return contract_name
-        return None
+        """The contract's name for a stop reason the code produced, when there is one.
+
+        None where the code's string covers several contract names: `unauthorized`
+        is both TOOL_NOT_ALLOWED and UNAUTHORIZED_ROLE, and naming one of them
+        would put a guess in the trace. The architecture wants exactly one
+        specific stop reason per run, so the trace keeps the code's string until
+        the loop reports which it was.
+        """
+        return self.trace_names.get(implemented)
 
 
 def load_contract(path: str | Path = DEFAULT_CONTRACT_PATH) -> AgentContract:
@@ -131,6 +136,7 @@ def load_contract(path: str | Path = DEFAULT_CONTRACT_PATH) -> AgentContract:
         closed_action_set=bool(actions.get("closed", True)),
         stop_reasons=stop_reasons,
         implemented_as=dict(stops.get("implemented_as", {})),
+        trace_names=dict(stops.get("trace_name_for", {})),
         never_in_the_loop=tuple(handoff.get("never_in_the_loop", ())),
         path=contract_path.as_posix(),
     )

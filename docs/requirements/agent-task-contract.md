@@ -85,6 +85,10 @@ computes a figure, changes a status or approves anything.
 | `DRAFTED` | hand-off, Gate 3 | `JUSTIFICATION_CONFIRMED` | No |
 | `JUSTIFICATION_CONFIRMED` | `create_requisition_draft` after confirmation | `DRAFT_CREATED`, stop | Yes |
 
+**What the planner is given.** A compact summary of status codes, counts and identifiers from
+the checkpoint, and nothing else. No quotation or policy text reaches it, so an instruction
+embedded in a supplier document has nothing to act through (Requirement 14.5).
+
 `hand_off` and `stop` are allowed in every phase. Gates 2 and 3 are hand-offs, not actions: the
 loop cannot confirm on the officer's behalf. `retrieve_policy` and `draft_justification` are
 AI-layer steps rather than catalogue tools, so the charter's four-tool ceiling holds and policy
@@ -130,7 +134,8 @@ A checkpoint is written after every Observe step, holding:
 | `stop_reason` | Set once, on the final iteration |
 
 For Week 5 this is a JSON file per run under `var/agent-state/`, which is git-ignored. The Week
-6 state model decides its permanent form.
+6 state model decides its permanent form. The checkpoint is **required and not yet built**: that
+is a build status, not a design choice, and `TERMINAL`, state kept, depends on it.
 
 A retry resumes from the
 last checkpoint and does not repeat completed steps. Requirements 7.5, 8.5 and 9.4 each require
@@ -149,7 +154,7 @@ which is acceptable only because the repeated steps are read-only and spend no m
 | Iterations per item | **8** | The happy path uses 5. Officer clearance of a `NAME_DISCREPANCY` costs 2 re-checks, giving 7. One spare re-plan. At 6 the loop would stop with `ITERATION_LIMIT` on the exact case Requirement 4.6 exists for |
 | Wall clock | 120 s | Covers one RAG call, measured at 42.01 s in Week 3, plus one draft call. Waiting at a hand-off is not counted |
 | Re-plans per failure kind | 1 | Retrying the same failure is looping, not recovery |
-| Repeated identical action | 0 | Same action and arguments twice in a row is `NO_PROGRESS` |
+| Repeated identical action | 0 | Same action and arguments twice in a row is `NO_PROGRESS`. **Not enforced yet**, so execution traces (#23) must not claim it |
 | Re-plans per failure kind | 1 | Already above; repeated here because it bounds `RECOVERABLE` |
 | Model calls per run | ≤ 10 | One plan call per iteration plus the two AI-layer steps. The Model Selection Note makes requests per day the binding free-tier constraint |
 
@@ -180,16 +185,30 @@ contract adopts the architecture's names; the implementation's current strings m
 | `TOOL_NOT_ALLOWED`, `UNAUTHORIZED_ROLE`, `FORBIDDEN_TRANSITION`, `GUARD_SUPPRESSED` | Boundary refused; audit entry written (Requirement 14.4); never retried | `unauthorized`, `refused` |
 | `DATA_SOURCE_UNAVAILABLE`, `DATA_INTEGRITY_ERROR`, `SERVICE_UNAVAILABLE`, `OUTPUT_SCHEMA_INVALID` | Failed with state kept | `failed` |
 
+Three of the code's strings cover several contract names: `unauthorized` is both
+`TOOL_NOT_ALLOWED` and `UNAUTHORIZED_ROLE`, `refused` covers two, `failed` covers four. The
+architecture wants exactly one specific stop reason per run, so where the mapping is ambiguous
+the trace records the code's string and no contract name rather than guessing. Reporting the
+specific reason is a loop change, listed in section 12.
+
 ### 9. Human hand-off
 
 Two gates are enforced today, and the officer passes them by re-running with `--confirm-comparison`
 and `--confirm-draft`.
 
-| Gate | When | Who | Status |
+| Gate | Phase | Who | Status |
 |---|---|---|---|
-| Gate 2, comparison | Landed-cost table ready | Officer | Enforced |
-| Gate 3, justification | Draft justification ready | Officer | Not built; collapsed into the draft confirmation |
-| Draft confirmation | Before `create_requisition_draft` | Officer | Enforced; `AGENT` still needs it |
+| Gate 2, comparison | `COMPARED` | Officer | Enforced |
+| Gate 3, justification | `DRAFTED` | Officer | Not built; collapsed into the draft confirmation |
+| Draft confirmation (not numbered) | Inside `JUSTIFICATION_CONFIRMED` | Officer | Enforced; `AGENT` still needs it |
+
+Gate 1, confirming extracted quotation data, sits before the loop: the Week 4 tools read records
+the officer has already confirmed. Gates 4 and 5, submit and approve or reject, sit after it.
+Neither is reachable from inside the loop.
+
+**Who writes the requisition.** `AGENT` may propose `create_requisition_draft`, but the
+confirmed call executes under `PROCUREMENT_OFFICER`; `dispatch` swaps the identity once the
+officer confirms (Requirement 9.1). The trace records the officer on that step.
 
 Gate 2 is reached by any of these, which are the `NEEDS_HUMAN` triggers from section 5:
 
@@ -286,6 +305,10 @@ class is one of section 5's. There are no ad-hoc statuses.
    `status: ok` for a malformed result. The `OUTPUT_SCHEMA_INVALID` stop reason above cannot be
    raised until that is fixed, so this contract depends on it.
 4. **Two phases are unbuilt**, and a run currently skips them.
+5. **Stop reasons are coarser in code than in this contract.** `unauthorized`, `refused` and
+   `failed` each cover several contract names, so a trace cannot yet name which one applied.
+6. **`NO_PROGRESS` is not enforced**, so the repeated-action limit is a rule without a check
+   behind it.
 
 ### 13. Traceability
 

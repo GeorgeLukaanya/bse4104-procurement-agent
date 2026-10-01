@@ -18,6 +18,7 @@ from ..tools.contract import (
     STATUS_UNAVAILABLE,
 )
 from ..tools.dispatch import invoke
+from .contract import DEFAULT_CONTRACT_PATH, AgentContract, load_contract
 from .planner import DeterministicPlanner, Planner
 from .state import AgentState
 from .steps import (
@@ -59,6 +60,15 @@ class AgentResult:
             "review_date": self.state.review_date,
             "sku": self.state.sku,
             "caller_role": self.state.caller_role,
+            # Which contract bounded this run, and that contract's name for how
+            # it ended, so a trace can be read against the document.
+            "contract": None if self.state.contract is None else {
+                "path": self.state.contract.path,
+                "version": self.state.contract.version,
+                "iterations_per_item": self.state.contract.iterations_per_item,
+                "wall_clock_seconds": self.state.contract.wall_clock_seconds,
+                "stop_reason": self.state.contract.stop_reason_for(self.stop_reason),
+            },
             "reorder": self.state.reorder,
             "eligibility": self.state.eligibility,
             "comparison": self.state.comparison,
@@ -96,12 +106,22 @@ def run_workflow(
     run_log: str | None = None,
     record_trace: bool = True,
     clock: Clock | None = None,
+    contract: AgentContract | None = None,
+    contract_path: str | None = None,
 ) -> AgentResult:
+    # The contract is the floor: its limits apply unless this run was given a
+    # flag or the machine sets an environment variable. A missing or malformed
+    # contract stops the run, because an unbounded loop is the thing the
+    # contract exists to prevent. The module defaults remain only as the shape
+    # of the values, never as a silent fallback.
+    active_contract = contract if contract is not None else load_contract(
+        contract_path or DEFAULT_CONTRACT_PATH
+    )
     limit = max_iterations if max_iterations is not None else _env_int(
-        "AGENT_MAX_ITERATIONS", DEFAULT_MAX_ITERATIONS
+        "AGENT_MAX_ITERATIONS", active_contract.iterations_per_item
     )
     budget = timeout_s if timeout_s is not None else _env_float(
-        "AGENT_TIMEOUT_SECONDS", DEFAULT_TIMEOUT_S
+        "AGENT_TIMEOUT_SECONDS", active_contract.wall_clock_seconds
     )
     started = time.perf_counter()
     state = AgentState(
@@ -111,6 +131,7 @@ def run_workflow(
         caller_role=caller_role,
         confirm_comparison=confirm_comparison,
         confirm_draft=confirm_draft,
+        contract=active_contract,
     )
     active_planner = planner or DeterministicPlanner(
         quotations_path=quotations_path,

@@ -26,9 +26,8 @@ Environment used:
 
 - Python 3.13.5
 - pytest 9.0.2
-- Repository version: uploaded Week 4 code
 
-The existing Week 4 tool and authorization tests were first run together:
+The existing tool and authorization tests were first run together:
 
 ```bash
 python -m pytest -v \

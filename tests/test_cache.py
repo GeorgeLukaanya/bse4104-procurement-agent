@@ -50,12 +50,13 @@ def test_changing_the_prompt_version_invalidates_the_cache(make_extractor):
     backend = StubBackend()
     make_extractor(backend).extract(MARKDOWN, source="q.md")
 
-    bumped = ExtractionConfig(prompt_version="1.2")
+    bumped_version = ExtractionConfig().prompt_version + "-next"
+    bumped = ExtractionConfig(prompt_version=bumped_version)
     result = make_extractor(backend, config=bumped).extract(MARKDOWN, source="q.md")
 
     assert backend.call_count == 2
     assert result.cache_hit is False
-    assert result.config_fingerprint["prompt_version"] == "1.2"
+    assert result.config_fingerprint["prompt_version"] == bumped_version
 
 
 def test_every_fingerprint_field_changes_the_key():

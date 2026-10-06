@@ -36,6 +36,7 @@ procurement-policy = "procurement_agent.rag.cli:main"
 procurement-policy-ingest = "procurement_agent.rag.ingest:main"
 procurement-tools = "procurement_agent.tools.cli:main"
 procurement-agent = "procurement_agent.agent.cli:main"
+procurement-memory = "procurement_agent.memory.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

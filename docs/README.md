@@ -91,7 +91,7 @@ Due dates are the Friday of each teaching week.
 |---|---|---|---|
 | State model | [`docs/architecture/state-model.md`](architecture/state-model.md) | Sekyeza Elroy Nunda | Not started |
 | Memory design and data handling | [`docs/architecture/memory-design.md`](architecture/memory-design.md) | Beingana Jim Junior | Not started |
-| Working memory / state demonstration | [`docs/architecture/working-memory.md`](architecture/working-memory.md) | Lukaanya George | Not started |
+| Working memory / state demonstration | [`docs/architecture/working-memory.md`](architecture/working-memory.md) | Lukaanya George | Complete, awaiting team review |
 | MCP-style interface specification | [`docs/architecture/mcp-interface.md`](architecture/mcp-interface.md) | Nannyombi Shakiran | Not started |
 | Week 6 progress report | [`docs/weekly-reports/week-06.md`](weekly-reports/week-06.md) | Ainamani Jim Isaac | Not started |
 

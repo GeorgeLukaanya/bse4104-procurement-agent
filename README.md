@@ -294,6 +294,13 @@ written or nothing needs reordering, `1` when the officer must confirm, `2` on
 a cap, failure or unauthorized start. Write-up:
 [`docs/architecture/working-agent.md`](docs/architecture/working-agent.md).
 
+Since Week 6 a re-run of the same review resumes from a checkpoint in
+`var/agent-state/` instead of repeating steps (`--fresh` starts over), and
+advisory memory from `var/memory/` is shown beside the result without changing
+any decision (`--no-memory` hides it). `procurement-memory` adds, lists and
+deletes supplier notes. Write-up:
+[`docs/architecture/working-memory.md`](docs/architecture/working-memory.md).
+
 ### What a run produces
 
 | Path | Contents | Tracked? |
@@ -447,6 +454,9 @@ The extraction package still does none of this arithmetic.
 | `agent/workflow.py` | Bounded reorder-to-DRAFT loop, iteration and timeout caps |
 | `agent/planner.py` | Next-tool proposal (deterministic by default) |
 | `agent/cli.py` | Command-line entry point for the agent |
+| `agent/checkpoint.py` | Saves and restores run state so a re-run resumes |
+| `memory/store.py` | Advisory memory: prior outcomes and supplier notes, retention, deletion |
+| `memory/cli.py` | `procurement-memory` officer commands |
 
 ## Specification
 

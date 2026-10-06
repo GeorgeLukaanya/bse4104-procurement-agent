@@ -98,10 +98,16 @@ allow-list, validates requests and records a trace
 ([`working-tools.md`](working-tools.md)); the officer confirmation before
 `create_requisition_draft` is enforced and tested.
 
-Not yet implemented: the bounded agent loop and its state machine (Week 5), so the allow-list is
-currently the full catalogue rather than per step; model-proposed tool calls; output-schema
-validation at the dispatcher (failure FA-10 in [`tool-failure-tests.md`](../evaluation/tool-failure-tests.md));
-and Gates 1, 2, 4 and 5, which are specified but have no screens yet.
+The dispatcher also checks every tool response against its output schema and discards a
+non-conforming one (FA-10 in [`tool-failure-tests.md`](../evaluation/tool-failure-tests.md), fixed
+6 October 2026). The Week 5 bounded loop is built ([`working-agent.md`](working-agent.md)) and
+passes a per-step allow-list to `dispatch.invoke`; its limits come from the
+[Agent Task Contract](../requirements/agent-task-contract.md).
+
+Not yet implemented: model-proposed tool calls (the planner is deterministic); a persisted run
+checkpoint, so a retry repeats completed steps; the policy-retrieval and justification-drafting
+phases inside the loop; and Gates 1, 4 and 5, which are specified but have no screens yet. Gate 2
+and the draft confirmation are enforced through command-line flags.
 
 Related specifications:
 

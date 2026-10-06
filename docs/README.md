@@ -71,7 +71,7 @@ Due dates are the Friday of each teaching week.
 |---|---|---|---|
 | Tool catalogue and schemas | [`docs/architecture/tool-catalogue.md`](architecture/tool-catalogue.md) + [`schemas/`](architecture/schemas/) | Lukaanya George | Done (v1.1) |
 | Working demonstration of two tools | [`docs/architecture/working-tools.md`](architecture/working-tools.md) | Nannyombi Shakiran | Done |
-| Failure / authorization test evidence | [`docs/evaluation/tool-failure-tests.md`](evaluation/tool-failure-tests.md) | Beingana Jim Junior | Done (FA-10 open) |
+| Failure / authorization test evidence | [`docs/evaluation/tool-failure-tests.md`](evaluation/tool-failure-tests.md) | Beingana Jim Junior | Done (FA-10 fixed 6 Oct) |
 | Updated architecture diagram | [`docs/architecture/architecture.md`](architecture/architecture.md) | Ainamani Jim Isaac | Done |
 | Week 4 progress report | [`docs/weekly-reports/week-04.md`](weekly-reports/week-04.md) | Sekyeza Elroy Nunda | Done |
 
@@ -80,8 +80,8 @@ Due dates are the Friday of each teaching week.
 | Deliverable | Path | Owner | Status |
 |---|---|---|---|
 | Agent architecture diagram | [`docs/architecture/agent-architecture.md`](architecture/agent-architecture.md) | Lukaanya George | Complete, awaiting team review |
-| Agent task contract | [`docs/requirements/agent-task-contract.md`](requirements/agent-task-contract.md) | Sekyeza Elroy Nunda | Not started |
-| Working bounded agent workflow | [`docs/architecture/working-agent.md`](architecture/working-agent.md) | Nannyombi Shakiran | Done (write-up) |
+| Agent task contract | [`docs/requirements/agent-task-contract.md`](requirements/agent-task-contract.md) | Sekyeza Elroy Nunda | Complete, awaiting team review |
+| Working bounded agent workflow | [`docs/architecture/working-agent.md`](architecture/working-agent.md) | Nannyombi Shakiran | Done |
 | Three execution traces | [`docs/evaluation/execution-traces.md`](evaluation/execution-traces.md) | Ainamani Jim Isaac | Not started |
 | Week 5 progress report | [`docs/weekly-reports/week-05.md`](weekly-reports/week-05.md) | Beingana Jim Junior | Not started |
 

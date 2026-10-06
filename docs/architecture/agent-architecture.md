@@ -16,11 +16,12 @@ Design Sense/Context → Plan/Decide → Act/Tool → Observe → Stop/Re-plan f
 
 ![Bounded agent architecture](agent-architecture.svg)
 
-This document designs the loop. It does not claim the loop exists: the Week 4 tools are
-callable, but no planner, loop or run state is implemented yet. That is issue #22. The
-limits and stop conditions here are proposals, and the Agent Task Contract
-([`agent-task-contract.md`](../requirements/agent-task-contract.md), issue #21) fixes them.
-Where the two disagree, the contract wins and this page is updated.
+This document designs the loop. The [Agent Task Contract](../requirements/agent-task-contract.md)
+(#21) fixes its limits and stop conditions, in
+[`contracts/agent-task-contract.json`](../../contracts/agent-task-contract.json), which the code
+loads at startup. Where this page and the contract disagree, the contract wins. The loop is built
+([`working-agent.md`](working-agent.md), #22) with a deterministic planner and the four
+catalogue tools. Section 9 lists which parts of this design are built and which are not.
 
 ### 1. The task and why it needs a loop
 
@@ -121,9 +122,9 @@ requires.
 
 ### 6. Limits
 
-These are proposed values; the Agent Task Contract fixes them.
+The Agent Task Contract (section 7) adopted these values unchanged.
 
-| Limit | Proposed | Reason |
+| Limit | Value | Reason |
 |---|---|---|
 | Iterations per item | **8** | The happy path uses 5. Officer clearance of a discrepancy costs 2 re-checks. One re-plan is spare. |
 | Wall-clock per run | 120 s (`AGENT_TIMEOUT_SECONDS`) | Covers one RAG call (42.01 s measured in Week 3) plus one draft call. Time spent waiting at a hand-off is not counted. |
@@ -135,8 +136,8 @@ These are proposed values; the Agent Task Contract fixes them.
 **Why 8 and not 6.** `.env.example` has carried `AGENT_MAX_ITERATIONS=6` since Week 2, before
 any path was counted. The cement walk-through in section 8 shows that the officer-clearance path
 needs 7 iterations. At 6, the loop would stop with `ITERATION_LIMIT` on the exact case
-Requirement 4.6 was written for. The value should change in `.env.example` once the contract
-confirms it.
+Requirement 4.6 was written for. The contract confirmed 8, and `.env.example` and
+`DEFAULT_MAX_ITERATIONS` now carry it.
 
 ### 7. Run state
 
@@ -180,28 +181,30 @@ limit is 8.
 These two paths plus a failure case, such as the Policy Corpus unavailable at iteration 3
 followed by a resume, are natural candidates for the three execution traces (#23).
 
-### 9. What the implementation needs
+### 9. Design against what is built
 
-Items that already exist and that the loop depends on:
+Status as of 6 October 2026. The contract's section 12 holds the same list of gaps.
 
-- `dispatch.invoke` accepts `allowed_tools`. The loop should pass the current phase's list
-  instead of `ALL_TOOLS`.
-- `caller_role = AGENT` with `officer_confirmed` already implements the draft gate.
-- `guards.scan` and `guards.suppress`, the RAG citation check, and the JSONL trace idiom.
+| Design element | Built? |
+|---|---|
+| Per-phase allow-list passed to `dispatch.invoke` | Yes, one tool per step ([`steps.py`](../../src/procurement_agent/agent/steps.py)) |
+| Policy gate: role injection, argument schema, budget | Yes |
+| Output-schema validation at Observe (FA-10) | Yes, since 6 October 2026: a non-conforming response is discarded with `OUTPUT_SCHEMA_INVALID` |
+| Gate 2 and the draft confirmation | Yes, as command-line flags (`--confirm-comparison`, `--confirm-draft`) |
+| Iteration cap 8 and 120 s timeout, loaded from the contract | Yes |
+| Gemini as the planner | No. The planner is deterministic; `Planner.propose` is where a model planner plugs in |
+| Run state checkpoint and resume | No. A retry repeats the completed read-only steps (Week 6, #26) |
+| `retrieve_policy` and `draft_justification` phases | No. The run skips them and the justification is compiled from tool results |
+| `NO_PROGRESS` check and per-reason stop codes | No (contract gaps 5 and 6) |
 
-Items that are missing:
+Two differences between the code and this design are worth knowing when reading traces:
 
-1. **Output-schema validation in `dispatch.invoke` (FA-10).** Observe relies on it, so it
-   comes first.
-2. A run state checkpoint and a resume entry point.
-3. A planner call that declares only the current allow-list as functions.
-4. `draft_justification`, the AI-layer step. It is not yet built.
-5. A way for the officer to answer a hand-off. A CLI prompt is enough for Week 5.
-
-**Planner choice.** A deterministic next-action table would satisfy this design, because most
-phases have one forward action. Using Gemini at the Plan step is what makes the choice points
-genuinely model-decided: whether to proceed, re-check, hand off or stop. Either way the policy
-gate is identical. The task contract should record which one the team builds.
+- **`check_reorder_need` runs inside the loop** as its first step and uses an iteration. In this
+  design it runs once, before the loop starts. A completed run therefore shows 4 iterations in
+  code where the worked example in section 8 counts 5 phases after the scan, two of which are
+  not built.
+- **The loop runs as `PROCUREMENT_OFFICER` by default**, not `AGENT`. Running with `--role AGENT`
+  exercises the agent-proposes, officer-confirms path in `dispatch`.
 
 ### 10. Traceability
 

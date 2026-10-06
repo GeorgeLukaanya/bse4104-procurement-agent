@@ -166,7 +166,8 @@
               "INCOMPARABLE_QUOTATION",
               "EXCHANGE_RATE_REQUIRED",
               "MISSING_COMPONENT",
-              "FORBIDDEN_TRANSITION"
+              "FORBIDDEN_TRANSITION",
+              "OUTPUT_SCHEMA_INVALID"
             ]
           },
           "field": {

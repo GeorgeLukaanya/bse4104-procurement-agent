@@ -1,6 +1,6 @@
 **PROMPT SPECIFICATION AND PROMPT VERSION HISTORY**
 
-*Project: SME Procurement Agent  |  Model: Gemini 3.1 Flash-Lite  |  Version: 1.1  |  Date: 11th September 2026*
+*Project: SME Procurement Agent  |  Model: Gemini 3.1 Flash-Lite  |  Version: 1.2  |  Date: 2nd October 2026*
 
 ## **1\. Purpose**
 

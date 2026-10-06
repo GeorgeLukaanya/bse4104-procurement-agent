@@ -42,7 +42,7 @@ def test_decoding_settings_match_the_prompt_specification():
     assert config.max_output_tokens == 2048
     assert config.thinking_budget == 0
     assert config.response_mime_type == "application/json"
-    assert config.prompt_version == "1.1"
+    assert config.prompt_version == "1.2"
 
 
 def test_fingerprint_contains_every_setting_that_changes_output():
@@ -88,7 +88,7 @@ def test_config_is_immutable():
 
 
 def test_prompt_version_matches_the_config():
-    assert prompts.PROMPT_VERSION == ExtractionConfig().prompt_version == "1.1"
+    assert prompts.PROMPT_VERSION == ExtractionConfig().prompt_version == "1.2"
 
 
 def test_system_instruction_carries_all_eight_rules():

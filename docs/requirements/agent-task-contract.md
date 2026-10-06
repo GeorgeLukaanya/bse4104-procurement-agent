@@ -29,9 +29,9 @@ They currently disagree in five places. This contract settles each one.
 | State on retry | Resumes from a checkpoint | In memory; a retry repeats completed steps | **Resume is required**; not built, and it is a named gap |
 | Stop-reason names | `DRAFT_CREATED`, `ITERATION_LIMIT`, `NO_PROGRESS` | `completed`, `max_iterations` | **The architecture's names**, with the mapping in section 8 |
 
-Two consequences for other pages: the architecture doc says "no planner, loop or run state is
-implemented yet", which PR #60 has overtaken, and `.env.example` carries
-`AGENT_MAX_ITERATIONS=6`, which section 7 changes to 8.
+Two consequences for other pages, both since applied: the architecture doc no longer says the
+loop is unbuilt (its section 9 now compares the design with the build), and `.env.example` carries
+`AGENT_MAX_ITERATIONS=8`.
 
 ### 2. The contract
 
@@ -155,7 +155,6 @@ which is acceptable only because the repeated steps are read-only and spend no m
 | Wall clock | 120 s | Covers one RAG call, measured at 42.01 s in Week 3, plus one draft call. Waiting at a hand-off is not counted |
 | Re-plans per failure kind | 1 | Retrying the same failure is looping, not recovery |
 | Repeated identical action | 0 | Same action and arguments twice in a row is `NO_PROGRESS`. **Not enforced yet**, so execution traces (#23) must not claim it |
-| Re-plans per failure kind | 1 | Already above; repeated here because it bounds `RECOVERABLE` |
 | Model calls per run | ≤ 10 | One plan call per iteration plus the two AI-layer steps. The Model Selection Note makes requests per day the binding free-tier constraint |
 
 Two accounting rules go with these. Time spent waiting at a hand-off is not counted against the
@@ -300,10 +299,10 @@ class is one of section 5's. There are no ad-hoc statuses.
 1. **The planner is deterministic today.** This contract sets Gemini-proposes as the design; the
    loop does not call the model yet. The policy gate is identical either way, so the change is
    contained to the plan step.
-2. **State does not survive a run** (section 5).
-3. **FA-10 is open.** `dispatch.invoke` validates tool inputs but not tool outputs, and returns
-   `status: ok` for a malformed result. The `OUTPUT_SCHEMA_INVALID` stop reason above cannot be
-   raised until that is fixed, so this contract depends on it.
+2. **State does not survive a run** (section 6).
+3. **FA-10 is closed (6 October 2026).** `dispatch.invoke` now checks every tool response
+   against its output schema and discards a non-conforming one with `OUTPUT_SCHEMA_INVALID`, so
+   that stop reason can now be raised. It still surfaces as the code's coarse `failed` (gap 5).
 4. **Two phases are unbuilt**, and a run currently skips them.
 5. **Stop reasons are coarser in code than in this contract.** `unauthorized`, `refused` and
    `failed` each cover several contract names, so a trace cannot yet name which one applied.
@@ -315,9 +314,9 @@ class is one of section 5's. There are no ad-hoc statuses.
 | Requirement | How this contract meets it |
 |---|---|
 | Charter section 6, steps 3 to 8 | Goal and phases, one run per flagged item |
-| Charter section 6, step 10 | One stop reason per run, trace fields in section 2 |
+| Charter section 6, step 10 | One stop reason per run, trace fields in section 11 |
 | Requirement 4.6 | `NAME_DISCREPANCY` is a `NEEDS_HUMAN` hand-off; the iteration budget allows the re-checks it costs |
-| Requirements 7.5, 8.5, 9.4 | Checkpoint resume required in section 5, recorded as not built |
+| Requirements 7.5, 8.5, 9.4 | Checkpoint resume required in section 6, recorded as not built |
 | Requirement 14.2 | Guard suppression stops the run; suppressed text is never traced |
 | Requirement 14.3 | No transition beyond `DRAFT`; `max_status: DRAFT` |
 | Requirement 14.4 | Blocked actions stop the run and write an audit entry |

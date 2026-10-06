@@ -46,7 +46,7 @@ def test_every_call_is_written_with_its_configuration_fingerprint(
     assert REQUIRED_KEYS <= set(entry)
     assert entry["config_fingerprint"] == extractor.config.fingerprint()
     assert entry["config_fingerprint"]["model"] == "gemini-3.1-flash-lite"
-    assert entry["config_fingerprint"]["prompt_version"] == "1.1"
+    assert entry["config_fingerprint"]["prompt_version"] == ExtractionConfig().prompt_version
     assert entry["config_fingerprint"]["temperature"] == 0
     assert entry["config_fingerprint"]["thinking_budget"] == 0
     assert entry["config_fingerprint"]["max_output_tokens"] == 2048

@@ -49,13 +49,14 @@ What that prints (no `--json`):
 ```
 stop:       awaiting_human
 detail:     Landed-cost comparison is on the table. The officer must confirm it before a requisition is compiled (Requirement 7.1 / gate 2).
-iterations: 3 / 6
+iterations: 3 / 8
+contract:   contracts/agent-task-contract.json v1.0, stop AWAITING_HUMAN
 step:       draft
 role:       PROCUREMENT_OFFICER
 calls:
-  - check_reorder_need → ok
-  - check_supplier_eligibility → ok
-  - compare_quotations → ok
+  - check_reorder_need -> ok
+  - check_supplier_eligibility -> ok
+  - compare_quotations -> ok
 Re-run with --confirm-comparison and/or --confirm-draft after the officer reviews.
 ```
 
@@ -64,14 +65,15 @@ After both confirms:
 ```
 stop:       completed
 detail:     Requisition compiled in DRAFT. Further status changes are human actions.
-iterations: 4 / 6
+iterations: 4 / 8
+contract:   contracts/agent-task-contract.json v1.0, stop DRAFT_CREATED
 step:       draft
 role:       PROCUREMENT_OFFICER
 calls:
-  - check_reorder_need → ok
-  - check_supplier_eligibility → ok
-  - compare_quotations → ok
-  - create_requisition_draft → ok
+  - check_reorder_need -> ok
+  - check_supplier_eligibility -> ok
+  - compare_quotations -> ok
+  - create_requisition_draft -> ok
 ```
 
 `procurement-agent` is the same command once the package is installed. `--role` injects the session role; it is never read from a payload. `PROCUREMENT_MANAGER` cannot start the loop.
@@ -124,7 +126,9 @@ On the completed run the comparison still has one eligible offer (QT-002) after 
 
 ### Not this week
 
-The Sense/Plan/Act diagram (#20) is now on main. This loop implements the four catalogue tools, the six-iteration cap already in `.env.example`, and the officer gates. The diagram's Gemini proposer, `retrieve_policy` / `draft_justification` phases, eight-iteration cap, and checkpointed resume wait on the agent task contract (#21) and Week 6 state. Gemini proposing the next tool is possible at the planner seam (`Planner.propose`) and is not the default, because the Model Selection Note makes request throughput the binding constraint.
+The loop follows the [Agent Task Contract](../requirements/agent-task-contract.md), which it loads at startup: an 8-iteration cap, a 120 s timeout and a closed action set. Tool responses are checked against their output schemas before the loop sees them (FA-10, fixed 6 October 2026). Still to do, as recorded in the contract's section 12: the Gemini planner (the deterministic planner is the default; `Planner.propose` is the seam), the `retrieve_policy` and `draft_justification` phases, a persisted checkpoint so a retry resumes rather than repeating steps (Week 6, #26), `NO_PROGRESS`, and per-reason stop codes. The Model Selection Note makes request throughput the binding constraint, which is why the model planner is not the default.
+
+The recorded runs above were made on 29 September, before the contract raised the cap from 6 to 8. The stop reasons and iteration counts are unchanged under the new cap.
 
 ### Code
 

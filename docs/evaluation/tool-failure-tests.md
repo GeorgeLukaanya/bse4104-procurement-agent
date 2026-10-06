@@ -94,6 +94,8 @@ This is a genuine Week 4 failure because an unexpected tool response could be tr
 
 **Recommended remediation:** validate each tool's returned `data` against its declared output schema before returning it to the caller. A non-conforming response should be converted to a safe failure with no usable data, then recorded in the tool trace. FA-10 should be re-run after that change.
 
+**Update, 6 October 2026: fixed and re-tested.** `dispatch.invoke` now checks every tool response against its output schema (`src/procurement_agent/tools/output_schema.py`) and replaces a non-conforming one with `status: failed`, `data: null` and the new error code `OUTPUT_SCHEMA_INVALID`, recorded in the tool trace. The FA-10 payload above is now a permanent regression test, `tests/test_tools_output_schema.py::test_fa10_malformed_output_is_discarded`, and it passes. A missing schema also fails closed. FA-10 is now **PASS**; the original FAIL result is kept in the evidence file as the Week 4 record.
+
 ### 6. Conclusion
 
 The Week 4 implementation shows strong input validation and authorization enforcement. All existing targeted tool tests passed, and nine of the ten focused failure/authorization scenarios behaved as expected. The testing also exposed one concrete reliability gap: malformed tool output is not currently rejected by the orchestration layer.

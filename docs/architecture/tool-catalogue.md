@@ -14,7 +14,13 @@ Define at least two tools/functions with purpose, input schema, output schema, a
 
 ## Write-up
 
-Version 1.1 | 29 September 2026 | Machine-readable companion: [`schemas/`](schemas/)
+Version 1.2 | 6 October 2026 | Machine-readable companion: [`schemas/`](schemas/)
+
+> **v1.2 (6 October 2026).** Adds `OUTPUT_SCHEMA_INVALID` to the shared error vocabulary and
+> to all four output schemas. `dispatch.invoke` now checks every tool response against its output
+> schema and discards a non-conforming one, as section 9 always required (closes FA-10). One
+> limit: `create_requisition_draft` writes its record before the response is checked, so a
+> non-conforming draft response is reported as failed but the record already in the store stays.
 
 > **v1.1 (29 September 2026).** Worked examples in sections 6 and 7 corrected to match
 > Requirement 4.6 and section 5: both Lakeview offers (QT-001 and QT-003) are excluded with
@@ -111,6 +117,7 @@ was wrong and why, and stops.
 | `EXCHANGE_RATE_REQUIRED` | A non-UGX offer is in scope and no rate was supplied |
 | `MISSING_COMPONENT` | A requisition component required at compilation is absent |
 | `FORBIDDEN_TRANSITION` | A status beyond `DRAFT` was requested |
+| `OUTPUT_SCHEMA_INVALID` | A tool's response did not conform to its output schema and was discarded (raised by the orchestration layer, not by a tool) |
 
 Codes are SCREAMING_SNAKE, matching the `AVL_ABSENT` / `BLACKLISTED` / `EXPIRED` vocabulary
 Requirement 4 already fixes.

@@ -1,0 +1,263 @@
+{
+  "component": "AGENT",
+  "stop_reason": "completed",
+  "stop_detail": "Requisition compiled in DRAFT. Further status changes are human actions.",
+  "iterations": 4,
+  "step": "draft",
+  "run_id": "AGT-2026-09-25-AH-CM-001-a.nakato",
+  "resumed": {
+    "restored": true,
+    "from_checkpoint_saved_at": "2026-10-06T17:07:59Z",
+    "previous_stop_reason": "awaiting_human",
+    "kept_steps": [
+      "scan",
+      "eligibility",
+      "compare"
+    ],
+    "restored_iterations": 3
+  },
+  "confirmations": {
+    "comparison": {
+      "by": "a.nakato",
+      "at": "2026-10-06T17:07:59Z"
+    },
+    "draft": {
+      "by": "a.nakato",
+      "at": "2026-10-06T17:07:59Z"
+    }
+  },
+  "review_date": "2026-09-25",
+  "sku": "AH-CM-001",
+  "caller_role": "PROCUREMENT_OFFICER",
+  "contract": {
+    "path": "contracts/agent-task-contract.json",
+    "version": "1.0",
+    "iterations_per_item": 8,
+    "wall_clock_seconds": 120.0,
+    "stop_reason": "DRAFT_CREATED"
+  },
+  "reorder": {
+    "review_date": "2026-09-25",
+    "evaluated_count": 1,
+    "flagged_count": 1,
+    "no_reorder_required": false,
+    "items": [
+      {
+        "sku": "AH-CM-001",
+        "item_name": "Portland cement 42.5N 50 kg bag",
+        "category": "cement and masonry",
+        "unit_of_measure": "bag",
+        "current_stock": 150,
+        "reorder_point": 150,
+        "target_stock_level": 270,
+        "reorder_quantity": 120,
+        "estimated_unit_cost_ugx": 32000.0,
+        "estimated_total_ugx": 3840000.0,
+        "location": "Nakawa Main Store",
+        "at_or_below_reorder_point": true
+      }
+    ]
+  },
+  "eligibility": {
+    "category": "cement and masonry",
+    "as_of_date": "2026-09-25",
+    "results": [
+      {
+        "requested": "SUP-002",
+        "matched_by": "supplier_id",
+        "supplier_id": "SUP-002",
+        "registered_name": "Lakeview Building Materials",
+        "avl_status": "ACTIVE",
+        "approved_categories": [
+          "cement and masonry"
+        ],
+        "eligible": false,
+        "exclusion_reasons": [
+          "NAME_DISCREPANCY"
+        ],
+        "similar_registered_names": [
+          "Lakeview Building Supplies"
+        ]
+      },
+      {
+        "requested": "SUP-004",
+        "matched_by": "supplier_id",
+        "supplier_id": "SUP-004",
+        "registered_name": "Bugolobi Hardware Supplies",
+        "avl_status": "ACTIVE",
+        "approved_categories": [
+          "cement and masonry",
+          "hand tools and safety equipment"
+        ],
+        "eligible": true,
+        "exclusion_reasons": [],
+        "similar_registered_names": []
+      },
+      {
+        "requested": "SUP-007",
+        "matched_by": "supplier_id",
+        "supplier_id": "SUP-007",
+        "registered_name": "Lakeview Building Supplies",
+        "avl_status": "ACTIVE",
+        "approved_categories": [
+          "cement and masonry"
+        ],
+        "eligible": false,
+        "exclusion_reasons": [
+          "NAME_DISCREPANCY"
+        ],
+        "similar_registered_names": [
+          "Lakeview Building Materials"
+        ]
+      },
+      {
+        "requested": "SUP-006",
+        "matched_by": "supplier_id",
+        "supplier_id": "SUP-006",
+        "registered_name": "Kireka Steel and Cement Ltd",
+        "avl_status": "BLACKLISTED",
+        "approved_categories": [
+          "cement and masonry"
+        ],
+        "eligible": false,
+        "exclusion_reasons": [
+          "BLACKLISTED"
+        ],
+        "similar_registered_names": []
+      }
+    ]
+  },
+  "comparison": {
+    "sku": "AH-CM-001",
+    "reorder_quantity": 120,
+    "comparison_date": "2026-09-25",
+    "currency": "UGX",
+    "exchange_rate": null,
+    "ranked": [
+      {
+        "rank": 1,
+        "quotation_id": "QT-002",
+        "supplier_id": "SUP-004",
+        "supplier_name": "Bugolobi Hardware Supplies",
+        "original_currency": "UGX",
+        "original_unit_price": 620000,
+        "unit_conversion_factor": 20.0,
+        "normalised_unit_cost_ugx": 31000.0,
+        "extended_cost_ugx": 3720000.0,
+        "vat_amount_ugx": 669600.0,
+        "delivery_cost_ugx": 90000.0,
+        "landed_cost_ugx": 4479600.0,
+        "lead_time_days": 7,
+        "validity_date": "2026-10-24",
+        "tie_broken_on_supplier_name": false
+      }
+    ],
+    "excluded": [
+      {
+        "quotation_id": "QT-001",
+        "supplier_id": "SUP-002",
+        "supplier_name": "Lakeview Building Materials",
+        "reasons": [
+          "NAME_DISCREPANCY"
+        ],
+        "missing_fields": []
+      },
+      {
+        "quotation_id": "QT-003",
+        "supplier_id": "SUP-007",
+        "supplier_name": "Lakeview Building Supplies",
+        "reasons": [
+          "NAME_DISCREPANCY"
+        ],
+        "missing_fields": []
+      },
+      {
+        "quotation_id": "QT-004",
+        "supplier_id": "SUP-006",
+        "supplier_name": "Kireka Steel and Cement Ltd",
+        "reasons": [
+          "BLACKLISTED"
+        ],
+        "missing_fields": []
+      }
+    ],
+    "quotation_requirement": {
+      "value_band": "500k_to_under_5m",
+      "clause": "POL-001-C02",
+      "required_count": 3,
+      "eligible_count": 1,
+      "satisfied": false,
+      "exception_required": true
+    },
+    "sole_eligible_option": true
+  },
+  "draft": {
+    "requisition_id": "REQ-2026-001",
+    "status": "DRAFT",
+    "created_at": "2026-10-06T17:07:59Z",
+    "created_by": "a.nakato",
+    "review_date": "2026-09-25",
+    "items": [
+      {
+        "sku": "AH-CM-001",
+        "reorder_quantity": 120,
+        "comparison_reference": "CMP-20260925-AH-CM-001",
+        "recommended_quotation_id": "QT-002"
+      }
+    ],
+    "policy_clauses": [
+      "POL-001-C02",
+      "POL-002-C04",
+      "POL-003-C03"
+    ],
+    "justification": "AH-CM-001 is at or below its reorder point. After eligibility exclusions, the lowest landed cost is Bugolobi Hardware Supplies (QT-002). POL-001-C02 is not satisfied (1 eligible of 3 required), so an exception would be required before the requisition proceeds.",
+    "unresolved_issues": [
+      "QT-001 (Lakeview Building Materials): NAME_DISCREPANCY.",
+      "QT-003 (Lakeview Building Supplies): NAME_DISCREPANCY.",
+      "QT-004 (Kireka Steel and Cement Ltd): BLACKLISTED."
+    ],
+    "human_confirmation_required": true,
+    "routed_to": null,
+    "approved_by": null,
+    "decision": null
+  },
+  "calls": [
+    {
+      "tool": "create_requisition_draft",
+      "status": "ok",
+      "errors": []
+    }
+  ],
+  "memory": {
+    "advisory": true,
+    "influenced_decisions": false,
+    "statement": "Advisory context from memory. Eligibility, landed cost, ranking and the requisition were computed without it.",
+    "store": "var/week6-demo/memory.jsonl",
+    "records": [
+      {
+        "id": "MEM-0c9e96b9fd",
+        "kind": "supplier_note",
+        "supplier_id": "SUP-004",
+        "recorded_on": "2026-09-10",
+        "expires_on": "2027-09-10",
+        "summary": "SUP-004 note by a.nakato on 2026-09-10: \"Last two cement deliveries arrived two days after the quoted lead time. Confirm the 7-day lead time before relying on it.\""
+      },
+      {
+        "id": "MEM-8fe62d8f82",
+        "kind": "supplier_note",
+        "supplier_id": "SUP-002",
+        "recorded_on": "2026-08-28",
+        "expires_on": "2027-08-28",
+        "summary": "SUP-002 note by a.nakato on 2026-08-28: \"Registered entity is Lakeview Building Materials Ltd, Ntinda. It is not the same business as Lakeview Building Supplies; check the letterhead and TIN on any quotation.\""
+      },
+      {
+        "id": "MEM-feff4c2759",
+        "kind": "supplier_note",
+        "supplier_id": "SUP-006",
+        "recorded_on": "2026-06-15",
+        "expires_on": "2027-06-15",
+        "summary": "SUP-006 note by a.nakato on 2026-06-15: \"Placed on the Blacklist in June 2026 after short-weight cement bags on two deliveries.\""
+      }
+    ]
+  }
+}

@@ -1,8 +1,9 @@
-"""Mutable run state. Nothing here is persisted between process starts.
+"""Mutable run state for one bounded-agent run.
 
-Week 6 owns the state model. This object lasts for one CLI invocation so a
-retry of the command repeats completed steps, the same way the RAG pipeline
-does not preserve state today.
+The object itself lasts for one invocation. When a checkpoint directory is
+given, ``checkpoint.py`` saves it after every tool step and restores it on the
+next invocation of the same review, so a re-run resumes instead of repeating
+completed steps (Requirements 7.5, 8.5, 9.4; Agent Task Contract section 6).
 """
 
 from __future__ import annotations
@@ -33,6 +34,14 @@ class AgentState:
     calls: list[dict[str, Any]] = field(default_factory=list)
     # The contract this run was bound by, carried so the trace can name it.
     contract: AgentContract | None = None
+    # Week 6 run state. run_id names the checkpoint; step_sources holds the
+    # data fingerprints each completed step read, so a resume can tell whether
+    # a saved result is still current; confirmations records who passed which
+    # gate and when; resumed describes what a resume restored, or None.
+    run_id: str | None = None
+    step_sources: dict[str, dict[str, str | None]] = field(default_factory=dict)
+    confirmations: dict[str, dict[str, Any]] = field(default_factory=dict)
+    resumed: dict[str, Any] | None = None
 
     def current_allow_list(self) -> tuple[str, ...]:
         from .steps import ALLOW_LIST

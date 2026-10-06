@@ -2,14 +2,21 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from procurement_agent.agent import run_workflow
 from procurement_agent.agent.planner import Proposal, ScriptedPlanner
 from procurement_agent.agent.steps import (
     STOP_AWAITING_HUMAN,
     STOP_COMPLETED,
+    STOP_FAILED,
     STOP_MAX_ITERATIONS,
     STOP_NO_REORDER,
     STOP_UNAUTHORIZED,
+)
+from procurement_agent.tools.contract import (
+    CODE_DATA_INTEGRITY_ERROR,
+    CODE_DATA_SOURCE_UNAVAILABLE,
 )
 
 
@@ -87,4 +94,27 @@ def test_proposal_off_the_step_allow_list_is_refused(tmp_path):
     result = _run(tmp_path, planner=planner, confirm_draft=True)
     assert result.stop_reason == STOP_UNAUTHORIZED
     assert result.calls[0]["errors"][0]["code"] == "TOOL_NOT_ALLOWED"
+    assert not (tmp_path / "requisitions.jsonl").exists()
+
+
+def test_missing_quotations_file_is_unavailable(tmp_path):
+    result = _run(tmp_path, quotations_path=str(tmp_path / "missing.json"))
+    assert result.stop_reason == STOP_FAILED
+    assert result.stop_detail.startswith(f"{CODE_DATA_SOURCE_UNAVAILABLE}:")
+    assert result.iterations == 1
+    assert result.state.eligibility is None
+    assert not (tmp_path / "requisitions.jsonl").exists()
+
+
+def test_tampered_quotations_file_is_integrity_failure(tmp_path):
+    mutated = tmp_path / "quotations.json"
+    mutated.write_text(
+        Path("knowledge/data/quotations.json").read_text(encoding="utf-8") + " ",
+        encoding="utf-8",
+    )
+    result = _run(tmp_path, quotations_path=str(mutated))
+    assert result.stop_reason == STOP_FAILED
+    assert result.stop_detail.startswith(f"{CODE_DATA_INTEGRITY_ERROR}:")
+    assert result.iterations == 1
+    assert result.state.eligibility is None
     assert not (tmp_path / "requisitions.jsonl").exists()

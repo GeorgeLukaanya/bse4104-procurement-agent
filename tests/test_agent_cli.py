@@ -56,3 +56,28 @@ def test_the_report_prints_on_a_default_windows_console(tmp_path, capsys):
 
     assert "check_reorder_need -> ok" in report
     report.encode("cp1252")
+
+
+def test_cli_missing_quotations_reports_unavailable(tmp_path, capsys):
+    code = cli.main(
+        [
+            "--review-date",
+            "2026-09-25",
+            "--sku",
+            "AH-CM-001",
+            "--quotations",
+            str(tmp_path / "missing.json"),
+            "--json",
+            "--no-env-file",
+            "--run-log",
+            str(tmp_path / "agent.jsonl"),
+            "--tool-log",
+            str(tmp_path / "tools.jsonl"),
+            "--store",
+            str(tmp_path / "req.jsonl"),
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert code == cli.EXIT_STOP
+    assert payload["stop_reason"] == "failed"
+    assert payload["stop_detail"].startswith("DATA_SOURCE_UNAVAILABLE:")

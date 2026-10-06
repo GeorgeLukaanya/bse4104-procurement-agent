@@ -15,15 +15,18 @@ from .. import guards
 from . import compare as compare_mod
 from . import draft as draft_mod
 from . import eligibility as eligibility_mod
+from . import output_schema
 from . import reorder as reorder_mod
 from .contract import (
     ALL_TOOLS,
+    CODE_OUTPUT_SCHEMA_INVALID,
     CODE_TOOL_NOT_ALLOWED,
     CODE_UNAUTHORIZED_ROLE,
     ROLE_AGENT,
     ROLE_MANAGER,
     ROLE_OFFICER,
     ROLES,
+    STATUS_FAILED,
     STATUS_INVALID_INPUT,
     STATUS_UNAUTHORIZED,
     envelope,
@@ -204,5 +207,40 @@ def invoke(
             store_path=requisition_store,
             corpus_dir=corpus_dir,
             now=called_at,
+        )
+
+    # FA-10: the response is checked against the tool's output schema before
+    # anyone sees it. A non-conforming result is discarded, not relayed, and
+    # the step fails visibly (tool-catalogue section 9). A schema that cannot
+    # be loaded fails closed for the same reason.
+    candidate = envelope(
+        tool_name,
+        status,
+        data=data,
+        errors=errors,
+        caller_role=caller_role,
+        latency_ms=0,
+        data_fingerprint=fingerprint,
+        called_at=called_at,
+    )
+    try:
+        problems = output_schema.check(tool_name, candidate)
+    except output_schema.SchemaUnavailable as exc:
+        problems = [f"output schema unavailable: {exc}"]
+    if problems:
+        shown = "; ".join(problems[:5])
+        more = f" (+{len(problems) - 5} more)" if len(problems) > 5 else ""
+        return finish(
+            STATUS_FAILED,
+            None,
+            [
+                error(
+                    CODE_OUTPUT_SCHEMA_INVALID,
+                    f"{tool_name} returned a response that does not conform to its "
+                    f"output schema; it was discarded. {shown}{more}",
+                )
+            ],
+            None,
+            role=caller_role,
         )
     return finish(status, data, errors, fingerprint, role=caller_role)

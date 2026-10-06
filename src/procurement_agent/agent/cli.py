@@ -7,6 +7,11 @@
 Direct orchestration. No framework. The default planner proposes catalogue
 tools in charter order; dispatch executes them. Gemini is not called.
 
+Week 6: the run is checkpointed under var/agent-state/, so re-running the same
+review resumes instead of repeating completed steps (--fresh starts over), and
+advisory memory from var/memory/ is shown beside the result (--no-memory hides
+it). Memory never changes a decision.
+
 Exit 0 on completed / no_reorder_required.
 Exit 1 on awaiting_human (the officer must confirm and re-run).
 Exit 2 on max_iterations, timeout, failure, unauthorized, or usage error.
@@ -21,6 +26,8 @@ import sys
 from typing import Sequence
 
 from ..dotenv import DEFAULT_ENV_FILE, load_env_file
+from ..memory.store import DEFAULT_MEMORY_PATH
+from .checkpoint import DEFAULT_STATE_DIR
 from ..tools.contract import ROLE_OFFICER, ROLES
 from .contract import ContractError
 from .steps import (
@@ -69,6 +76,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             tool_log=args.tool_log,
             run_log=args.run_log,
             record_trace=not args.no_trace,
+            checkpoint_dir=None if args.no_state else args.state_dir,
+            fresh=args.fresh,
+            memory_path=None if args.no_memory else args.memory,
         )
     except ContractError as exc:
         # No limits, no run. Reported like any other usage error rather than as
@@ -125,6 +135,19 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--no-trace", action="store_true")
     parser.add_argument("--env-file")
     parser.add_argument("--no-env-file", action="store_true")
+    parser.add_argument(
+        "--state-dir",
+        default=str(DEFAULT_STATE_DIR),
+        help=f"run checkpoints (default: {DEFAULT_STATE_DIR})",
+    )
+    parser.add_argument("--no-state", action="store_true", help="do not save or resume a checkpoint")
+    parser.add_argument("--fresh", action="store_true", help="discard this review's checkpoint and start over")
+    parser.add_argument(
+        "--memory",
+        default=str(DEFAULT_MEMORY_PATH),
+        help=f"advisory memory store (default: {DEFAULT_MEMORY_PATH})",
+    )
+    parser.add_argument("--no-memory", action="store_true", help="neither read nor write memory")
     return parser
 
 
@@ -154,17 +177,42 @@ def _report(result) -> str:
         f"step:       {result.state.step}",
         f"role:       {result.state.caller_role}",
     ]
+    resumed = result.state.resumed
+    if resumed is not None:
+        if resumed.get("restored"):
+            kept = ", ".join(resumed.get("kept_steps") or [])
+            lines.append(
+                f"resumed:    {kept} restored from checkpoint "
+                f"({resumed.get('restored_iterations')} iterations carried over)"
+            )
+        else:
+            lines.append(f"resumed:    no ({resumed.get('reason') or 'nothing reusable'})")
+        if resumed.get("recomputed_from"):
+            changed = ", ".join(resumed.get("changed_sources") or [])
+            lines.append(f"            {resumed['recomputed_from']} onward recomputed: {changed} changed")
     if result.calls:
         lines.append("calls:")
         for call in result.calls:
             # ASCII only: the default Windows console is cp1252, and a "→" here
             # raised UnicodeEncodeError on every run rather than printing.
             lines.append(f"  - {call.get('tool')} -> {call.get('status')}")
+    elif resumed is not None and resumed.get("restored"):
+        lines.append("calls:      none this run")
+    memory = result.memory
+    if memory is not None:
+        records = memory.get("records") or []
+        lines.append(f"memory:     {len(records)} advisory record(s); did not change any decision")
+        for record in records:
+            lines.append(f"  - [{record.get('id')}] {_ascii(record.get('summary') or '')}")
     if result.stop_reason == STOP_AWAITING_HUMAN:
         lines.append(
             "Re-run with --confirm-comparison and/or --confirm-draft after the officer reviews."
         )
     return "\n".join(lines)
+
+
+def _ascii(text: str) -> str:
+    return text.encode("ascii", "replace").decode("ascii")
 
 
 if __name__ == "__main__":

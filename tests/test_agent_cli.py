@@ -22,6 +22,10 @@ def test_cli_handoff_without_confirmation(tmp_path, capsys):
             str(tmp_path / "tools.jsonl"),
             "--store",
             str(tmp_path / "req.jsonl"),
+            "--state-dir",
+            str(tmp_path / "state"),
+            "--memory",
+            str(tmp_path / "memory.jsonl"),
         ]
     )
     payload = json.loads(capsys.readouterr().out)
@@ -44,6 +48,8 @@ def test_the_report_prints_on_a_default_windows_console(tmp_path, capsys):
             "--run-log", str(tmp_path / "agent.jsonl"),
             "--tool-log", str(tmp_path / "tools.jsonl"),
             "--store", str(tmp_path / "req.jsonl"),
+            "--state-dir", str(tmp_path / "state"),
+            "--memory", str(tmp_path / "memory.jsonl"),
         ]
     )
     report = capsys.readouterr().out

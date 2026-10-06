@@ -17,7 +17,9 @@ from ..tools.contract import (
     STATUS_UNAUTHORIZED,
     STATUS_UNAVAILABLE,
 )
+from ..memory.store import MemoryRefused, MemoryStore, advisory_block
 from ..tools.dispatch import invoke
+from .checkpoint import STEP_SOURCES, CheckpointStore, current_sources, restore, run_id_for
 from .contract import DEFAULT_CONTRACT_PATH, AgentContract, load_contract
 from .planner import DeterministicPlanner, Planner
 from .state import AgentState
@@ -49,6 +51,8 @@ class AgentResult:
     iterations: int
     state: AgentState
     calls: list[dict[str, Any]] = field(default_factory=list)
+    # Advisory memory shown beside the result; never an input to it.
+    memory: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -57,6 +61,9 @@ class AgentResult:
             "stop_detail": self.stop_detail,
             "iterations": self.iterations,
             "step": self.state.step,
+            "run_id": self.state.run_id,
+            "resumed": self.state.resumed,
+            "confirmations": self.state.confirmations,
             "review_date": self.state.review_date,
             "sku": self.state.sku,
             "caller_role": self.state.caller_role,
@@ -81,6 +88,7 @@ class AgentResult:
                 }
                 for call in self.calls
             ],
+            "memory": self.memory,
         }
 
 
@@ -108,6 +116,9 @@ def run_workflow(
     clock: Clock | None = None,
     contract: AgentContract | None = None,
     contract_path: str | None = None,
+    checkpoint_dir: str | None = None,
+    fresh: bool = False,
+    memory_path: str | None = None,
 ) -> AgentResult:
     # The contract is the floor: its limits apply unless this run was given a
     # flag or the machine sets an environment variable. A missing or malformed
@@ -137,38 +148,62 @@ def run_workflow(
         quotations_path=quotations_path,
         register_path=register_path,
     )
+    state.run_id = run_id_for(review_date, sku, officer_username)
+    sources = dict(
+        inventory_path=inventory_path,
+        suppliers_path=suppliers_path,
+        quotations_path=quotations_path,
+        register_path=register_path,
+    )
+    run = _Run(
+        store=CheckpointStore(checkpoint_dir) if checkpoint_dir else None,
+        memory=MemoryStore(memory_path) if memory_path else None,
+        run_log=run_log,
+        record_trace=record_trace,
+        clock=clock,
+    )
+
+    def finish(reason: str, detail: str) -> AgentResult:
+        return _finish(state, reason, detail, run=run)
 
     if caller_role == ROLE_MANAGER:
-        return _finish(
-            state,
+        run.store = None  # no run starts, so nothing is saved
+        return finish(
             STOP_UNAUTHORIZED,
             "PROCUREMENT_MANAGER does not operate the agent loop. "
             "Approval is a screen action, not a tool (POL-004-C03).",
-            run_log=run_log,
-            record_trace=record_trace,
-            clock=clock,
         )
+
+    if run.store is not None:
+        if fresh:
+            run.store.discard(state.run_id)
+        saved = run.store.load(state.run_id)
+        if saved is not None:
+            state.resumed = restore(state, saved, current_sources(**sources))
+            if state.draft is not None:
+                # The requisition already exists. Running again must not
+                # compile a second one for the same review.
+                run.completed_earlier = True
+                return finish(
+                    STOP_COMPLETED,
+                    f"Already completed in an earlier run: {state.draft.get('requisition_id')} "
+                    "is in DRAFT. No tool was called. Use --fresh to start a new run.",
+                )
+        # A gate passed in an earlier invocation stays passed for the same
+        # comparison; restore() drops it if the comparison is recomputed.
+        if "comparison" in state.confirmations:
+            state.confirm_comparison = True
+        if "draft" in state.confirmations:
+            state.confirm_draft = True
 
     while state.iterations < limit:
         if time.perf_counter() - started > budget:
-            return _finish(
-                state,
-                STOP_TIMEOUT,
-                f"Stopped after {budget:.0f}s (AGENT_TIMEOUT_SECONDS).",
-                run_log=run_log,
-                record_trace=record_trace,
-                clock=clock,
-            )
+            return finish(STOP_TIMEOUT, f"Stopped after {budget:.0f}s (AGENT_TIMEOUT_SECONDS).")
+        if state.step == STEP_DRAFT and state.comparison is not None:
+            _record_confirmations(state, run)
         proposal = active_planner.propose(state)
         if proposal.kind == "stop":
-            return _finish(
-                state,
-                proposal.stop_reason or STOP_COMPLETED,
-                proposal.detail or "",
-                run_log=run_log,
-                record_trace=record_trace,
-                clock=clock,
-            )
+            return finish(proposal.stop_reason or STOP_COMPLETED, proposal.detail or "")
 
         state.iterations += 1
         envelope = invoke(
@@ -176,7 +211,7 @@ def run_workflow(
             proposal.payload or {},
             caller_role=caller_role,
             allowed_tools=state.current_allow_list(),
-            officer_confirmed=officer_confirmed or confirm_draft,
+            officer_confirmed=officer_confirmed or state.confirm_draft,
             inventory_path=inventory_path,
             suppliers_path=suppliers_path,
             quotations_path=quotations_path,
@@ -192,43 +227,19 @@ def run_workflow(
         data = envelope.get("data")
 
         if status == STATUS_UNAUTHORIZED:
-            return _finish(
-                state,
-                STOP_UNAUTHORIZED,
-                _error_detail(envelope),
-                run_log=run_log,
-                record_trace=record_trace,
-                clock=clock,
-            )
+            return finish(STOP_UNAUTHORIZED, _error_detail(envelope))
         if status in {STATUS_UNAVAILABLE, STATUS_FAILED}:
-            return _finish(
-                state,
-                STOP_FAILED,
-                _error_detail(envelope),
-                run_log=run_log,
-                record_trace=record_trace,
-                clock=clock,
-            )
+            return finish(STOP_FAILED, _error_detail(envelope))
         if status not in {STATUS_OK, STATUS_NO_RESULT}:
-            return _finish(
-                state,
-                STOP_REFUSED,
-                _error_detail(envelope),
-                run_log=run_log,
-                record_trace=record_trace,
-                clock=clock,
-            )
+            return finish(STOP_REFUSED, _error_detail(envelope))
 
+        completed_step = state.step
         if state.step == STEP_SCAN:
             state.reorder = data
             if not data or data.get("no_reorder_required"):
-                return _finish(
-                    state,
+                return finish(
                     STOP_NO_REORDER,
                     "Nothing is at or below its reorder point. Requirement 1.5 ends the review.",
-                    run_log=run_log,
-                    record_trace=record_trace,
-                    clock=clock,
                 )
             state.advance()
         elif state.step == STEP_ELIGIBILITY:
@@ -239,34 +250,58 @@ def run_workflow(
             state.advance()
         elif state.step == STEP_DRAFT:
             state.draft = data
-            return _finish(
-                state,
+            _note_sources(state, completed_step, sources, run)
+            return finish(
                 STOP_COMPLETED,
                 "Requisition compiled in DRAFT. Further status changes are human actions.",
-                run_log=run_log,
-                record_trace=record_trace,
-                clock=clock,
             )
+        _note_sources(state, completed_step, sources, run)
+        _save(state, run)
 
-    return _finish(
-        state,
+    return finish(
         STOP_MAX_ITERATIONS,
         f"Reached the iteration cap ({limit}). No further tool call was made.",
-        run_log=run_log,
-        record_trace=record_trace,
-        clock=clock,
     )
 
 
-def _finish(
-    state: AgentState,
-    reason: str,
-    detail: str,
-    *,
-    run_log: str | None,
-    record_trace: bool,
-    clock: Clock | None,
-) -> AgentResult:
+@dataclass
+class _Run:
+    """Where this run's checkpoint, memory and trace go."""
+
+    store: CheckpointStore | None
+    memory: MemoryStore | None
+    run_log: str | None
+    record_trace: bool
+    clock: Clock | None
+    completed_earlier: bool = False
+
+    def now(self) -> datetime:
+        return self.clock() if self.clock is not None else datetime.now(timezone.utc)
+
+    def stamp(self) -> str:
+        return self.now().replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _note_sources(state: AgentState, step: str, sources: dict[str, Any], run: _Run) -> None:
+    """Record which data a step's result came from, so a resume can check it."""
+    if run.store is None:
+        return
+    now = current_sources(**sources)
+    state.step_sources[step] = {name: now.get(name) for name in STEP_SOURCES[step]}
+
+
+def _record_confirmations(state: AgentState, run: _Run) -> None:
+    for gate, given in (("comparison", state.confirm_comparison), ("draft", state.confirm_draft)):
+        if given and gate not in state.confirmations:
+            state.confirmations[gate] = {"by": state.officer_username, "at": run.stamp()}
+
+
+def _save(state: AgentState, run: _Run) -> None:
+    if run.store is not None and state.run_id:
+        run.store.save(state, saved_at=run.stamp())
+
+
+def _finish(state: AgentState, reason: str, detail: str, *, run: _Run) -> AgentResult:
     state.stop_reason = reason
     state.stop_detail = detail
     result = AgentResult(
@@ -276,12 +311,65 @@ def _finish(
         state=state,
         calls=list(state.calls),
     )
-    if record_trace:
+    if run.memory is not None:
+        result.memory = _advise(state, run.memory)
+        if reason == STOP_COMPLETED and state.draft is not None and not run.completed_earlier:
+            _remember_outcome(state, run.memory)
+    # State is kept on every stop, including failures, so a retry resumes
+    # (Agent Task Contract section 5, TERMINAL with state kept).
+    _save(state, run)
+    if run.record_trace:
         record = result.to_dict()
-        moment = clock() if clock is not None else datetime.now(timezone.utc)
-        record["called_at"] = moment.replace(microsecond=0).isoformat().replace("+00:00", "Z")
-        AgentLog(run_log or DEFAULT_AGENT_LOG).append(record)
+        record["called_at"] = run.stamp()
+        AgentLog(run.run_log or DEFAULT_AGENT_LOG).append(record)
     return result
+
+
+def _supplier_ids(state: AgentState) -> list[str]:
+    ids: list[str] = []
+    for row in (state.eligibility or {}).get("results") or []:
+        supplier_id = row.get("supplier_id")
+        if isinstance(supplier_id, str) and supplier_id not in ids:
+            ids.append(supplier_id)
+    return ids
+
+
+def _advise(state: AgentState, memory: MemoryStore) -> dict[str, Any]:
+    """Read memory for the officer. Runs after every decision is already made."""
+    records = memory.relevant(
+        supplier_ids=_supplier_ids(state),
+        sku=state.sku or (state.flagged_item() or {}).get("sku"),
+        as_of=state.review_date,
+    )
+    return advisory_block(records, store_path=str(memory.path))
+
+
+def _remember_outcome(state: AgentState, memory: MemoryStore) -> None:
+    comparison = state.comparison or {}
+    ranked = comparison.get("ranked") or []
+    top = ranked[0] if ranked else {}
+    requirement = comparison.get("quotation_requirement") or {}
+    item = state.flagged_item() or {}
+    try:
+        memory.record_outcome(
+            role=state.caller_role,
+            run_id=state.run_id or "",
+            sku=item.get("sku") or state.sku or "",
+            review_date=state.review_date,
+            requisition_id=(state.draft or {}).get("requisition_id"),
+            supplier_id=top.get("supplier_id"),
+            supplier_name=top.get("supplier_name"),
+            quotation_id=top.get("quotation_id"),
+            landed_cost_ugx=top.get("landed_cost_ugx"),
+            exception_required=bool(requirement.get("exception_required")),
+            excluded_suppliers=[
+                row.get("supplier_id") for row in comparison.get("excluded") or []
+                if row.get("supplier_id")
+            ],
+        )
+    except MemoryRefused:
+        # Memory is advisory; failing to record it never fails the run.
+        pass
 
 
 def _error_detail(envelope: dict[str, Any]) -> str:

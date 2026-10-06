@@ -82,7 +82,7 @@ Due dates are the Friday of each teaching week.
 | Agent architecture diagram | [`docs/architecture/agent-architecture.md`](architecture/agent-architecture.md) | Lukaanya George | Complete, awaiting team review |
 | Agent task contract | [`docs/requirements/agent-task-contract.md`](requirements/agent-task-contract.md) | Sekyeza Elroy Nunda | Complete, awaiting team review |
 | Working bounded agent workflow | [`docs/architecture/working-agent.md`](architecture/working-agent.md) | Nannyombi Shakiran | Done |
-| Three execution traces | [`docs/evaluation/execution-traces.md`](evaluation/execution-traces.md) | Ainamani Jim Isaac | Not started |
+| Three execution traces | [`docs/evaluation/execution-traces.md`](evaluation/execution-traces.md) | Ainamani Jim Isaac | Complete, awaiting team review |
 | Week 5 progress report | [`docs/weekly-reports/week-05.md`](weekly-reports/week-05.md) | Beingana Jim Junior | Not started |
 
 ## Week 6 — 9 October 2026

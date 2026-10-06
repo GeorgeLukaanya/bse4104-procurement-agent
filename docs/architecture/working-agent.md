@@ -123,10 +123,16 @@ On the completed run the comparison still has one eligible offer (QT-002) after 
 | `--max-iterations 1` | `max_iterations`, nothing written |
 | Manager role | `unauthorized`, zero calls |
 | Planner proposes `create_requisition_draft` on the scan step | `TOOL_NOT_ALLOWED`, nothing written |
+| Missing quotations file | `failed`, `DATA_SOURCE_UNAVAILABLE` (same code as a missing inventory file) |
+| Tampered quotations checksum | `failed`, `DATA_INTEGRITY_ERROR` |
 
 ### Not this week
 
 The loop follows the [Agent Task Contract](../requirements/agent-task-contract.md), which it loads at startup: an 8-iteration cap, a 120 s timeout and a closed action set. Tool responses are checked against their output schemas before the loop sees them (FA-10, fixed 6 October 2026). Still to do, as recorded in the contract's section 12: the Gemini planner (the deterministic planner is the default; `Planner.propose` is the seam), the `retrieve_policy` and `draft_justification` phases, a persisted checkpoint so a retry resumes rather than repeating steps (Week 6, #26), `NO_PROGRESS`, and per-reason stop codes. The Model Selection Note makes request throughput the binding constraint, which is why the model planner is not the default.
+
+Supplier IDs for the eligibility step are still resolved in the planner from the quotations file, because `compare_quotations` is not on that step's allow-list. A missing or tampered file now stops as `failed` with `DATA_SOURCE_UNAVAILABLE` or `DATA_INTEGRITY_ERROR`, the same codes `dispatch.invoke` returns when inventory cannot be read. That read is not a catalogue call and does not appear in `tool-runs.jsonl`; routing it through `compare_quotations` would run the calculator before eligibility.
+
+Two differences from the contract are recorded in [`agent-architecture.md`](agent-architecture.md) section 9, not changed here: `check_reorder_need` counts as an iteration, and the default role is `PROCUREMENT_OFFICER` (`--role AGENT` is the contract's loop identity).
 
 The recorded runs above were made on 29 September, before the contract raised the cap from 6 to 8. The stop reasons and iteration counts are unchanged under the new cap.
 

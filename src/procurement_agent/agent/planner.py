@@ -10,7 +10,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Protocol
 
-from ..tools.data import load_quotations
+from ..tools.contract import (
+    CODE_DATA_INTEGRITY_ERROR,
+    CODE_DATA_SOURCE_UNAVAILABLE,
+)
+from ..tools.data import DataIntegrityError, DataUnavailable, load_quotations
 from .state import AgentState
 from .steps import (
     STEP_COMPARE,
@@ -63,7 +67,20 @@ class DeterministicPlanner:
                     stop_reason=STOP_NO_REORDER,
                     detail="Nothing is at or below its reorder point. Requirement 1.5 ends the review.",
                 )
-            supplier_ids = self._supplier_ids_for(item["sku"])
+            try:
+                supplier_ids = self._supplier_ids_for(item["sku"])
+            except DataUnavailable as exc:
+                return Proposal(
+                    kind="stop",
+                    stop_reason=STOP_FAILED,
+                    detail=f"{CODE_DATA_SOURCE_UNAVAILABLE}: {exc}",
+                )
+            except DataIntegrityError as exc:
+                return Proposal(
+                    kind="stop",
+                    stop_reason=STOP_FAILED,
+                    detail=f"{CODE_DATA_INTEGRITY_ERROR}: {exc}",
+                )
             if not supplier_ids:
                 return Proposal(
                     kind="stop",
@@ -119,10 +136,11 @@ class DeterministicPlanner:
         return Proposal(kind="stop", stop_reason=STOP_COMPLETED, detail="No further catalogue step.")
 
     def _supplier_ids_for(self, sku: str) -> list[str]:
-        try:
-            quotations, _ = load_quotations(self._quotations_path, self._register_path)
-        except Exception:
-            return []
+        # Same loader the tools use. A missing or tampered file must raise so
+        # the officer sees DATA_SOURCE_UNAVAILABLE / DATA_INTEGRITY_ERROR, not
+        # a false "no held quotations". This read is not a catalogue call:
+        # compare_quotations is the next step's allow-list, not this one's.
+        quotations, _ = load_quotations(self._quotations_path, self._register_path)
         ids: list[str] = []
         for row in quotations:
             if row.get("sku") != sku:

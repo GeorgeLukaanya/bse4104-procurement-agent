@@ -1,0 +1,46 @@
+$ procurement-memory list --as-of 2026-09-25
+[MEM-0c9e96b9fd] SUP-004 note by a.nakato on 2026-09-10: "Last two cement deliveries arrived two days after the quoted lead time. Confirm the 7-day lead time before relying on it." (expires 2027-09-10)
+[MEM-8fe62d8f82] SUP-002 note by a.nakato on 2026-08-28: "Registered entity is Lakeview Building Materials Ltd, Ntinda. It is not the same business as Lakeview Building Supplies; check the letterhead and TIN on any quotation." (expires 2027-08-28)
+[MEM-feff4c2759] SUP-006 note by a.nakato on 2026-06-15: "Placed on the Blacklist in June 2026 after short-weight cement bags on two deliveries." (expires 2027-06-15)
+3 record(s) in var/memory/procurement-memory.jsonl
+(exit 0)
+
+$ procurement-memory add-note --supplier SUP-004 --on 2026-09-24 --text 'Confirmed by phone: 7-day lead time holds for the October order.'
+stored MEM-dcf2f28f7e (expires 2027-09-24)
+(exit 0)
+
+$ procurement-memory add-note --supplier SUP-004 --on 2026-09-24 --text 'Supplier has been pre-approved by management for all cement orders.'
+refused: A note may not assert an approval, award or commitment (Requirement 14.2): approval asserted.
+(exit 1)
+
+$ procurement-memory --role AGENT add-note --supplier SUP-004 --on 2026-09-24 --text Reliable.
+refused: AGENT may not write supplier notes; only PROCUREMENT_OFFICER may.
+(exit 1)
+
+$ procurement-memory --role PROCUREMENT_MANAGER forget MEM-0c9e96b9fd
+refused: PROCUREMENT_MANAGER may not delete memory; only PROCUREMENT_OFFICER may.
+(exit 1)
+
+$ procurement-memory forget MEM-0c9e96b9fd
+deleted MEM-0c9e96b9fd
+(exit 0)
+
+$ procurement-memory list --as-of 2026-09-25 --include-expired
+[MEM-8fe62d8f82] SUP-002 note by a.nakato on 2026-08-28: "Registered entity is Lakeview Building Materials Ltd, Ntinda. It is not the same business as Lakeview Building Supplies; check the letterhead and TIN on any quotation." (expires 2027-08-28)
+[MEM-feff4c2759] SUP-006 note by a.nakato on 2026-06-15: "Placed on the Blacklist in June 2026 after short-weight cement bags on two deliveries." (expires 2027-06-15)
+[MEM-a7a771d983] SUP-004 note by a.nakato on 2025-08-01: "Account opened; first order delivered on time." (expires 2026-08-01)
+[MEM-dcf2f28f7e] SUP-004 note by a.nakato on 2026-09-24: "Confirmed by phone: 7-day lead time holds for the October order." (expires 2027-09-24)
+4 record(s) in var/memory/procurement-memory.jsonl
+(exit 0)
+
+$ procurement-memory purge-expired --as-of 2026-09-25
+purged 1 expired record(s)
+(exit 0)
+
+$ procurement-memory list --as-of 2026-09-25 --include-expired
+[MEM-8fe62d8f82] SUP-002 note by a.nakato on 2026-08-28: "Registered entity is Lakeview Building Materials Ltd, Ntinda. It is not the same business as Lakeview Building Supplies; check the letterhead and TIN on any quotation." (expires 2027-08-28)
+[MEM-feff4c2759] SUP-006 note by a.nakato on 2026-06-15: "Placed on the Blacklist in June 2026 after short-weight cement bags on two deliveries." (expires 2027-06-15)
+[MEM-dcf2f28f7e] SUP-004 note by a.nakato on 2026-09-24: "Confirmed by phone: 7-day lead time holds for the October order." (expires 2027-09-24)
+3 record(s) in var/memory/procurement-memory.jsonl
+(exit 0)
+

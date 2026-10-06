@@ -1,0 +1,77 @@
+$ procurement-agent --review-date 2026-09-25 --sku AH-CM-001 --no-memory
+stop:       awaiting_human
+detail:     Landed-cost comparison is on the table. The officer must confirm it before a requisition is compiled (Requirement 7.1 / gate 2).
+iterations: 3 / 8
+contract:   contracts/agent-task-contract.json v1.0, stop AWAITING_HUMAN
+step:       draft
+role:       PROCUREMENT_OFFICER
+calls:
+  - check_reorder_need -> ok
+  - check_supplier_eligibility -> ok
+  - compare_quotations -> ok
+Re-run with --confirm-comparison and/or --confirm-draft after the officer reviews.
+
+$ procurement-agent --review-date 2026-09-25 --sku AH-CM-001
+stop:       awaiting_human
+detail:     Landed-cost comparison is on the table. The officer must confirm it before a requisition is compiled (Requirement 7.1 / gate 2).
+iterations: 3 / 8
+contract:   contracts/agent-task-contract.json v1.0, stop AWAITING_HUMAN
+step:       draft
+role:       PROCUREMENT_OFFICER
+calls:
+  - check_reorder_need -> ok
+  - check_supplier_eligibility -> ok
+  - compare_quotations -> ok
+memory:     3 advisory record(s); did not change any decision
+  - [MEM-0c9e96b9fd] SUP-004 note by a.nakato on 2026-09-10: "Last two cement deliveries arrived two days after the quoted lead time. Confirm the 7-day lead time before relying on it."
+  - [MEM-8fe62d8f82] SUP-002 note by a.nakato on 2026-08-28: "Registered entity is Lakeview Building Materials Ltd, Ntinda. It is not the same business as Lakeview Building Supplies; check the letterhead and TIN on any quotation."
+  - [MEM-feff4c2759] SUP-006 note by a.nakato on 2026-06-15: "Placed on the Blacklist in June 2026 after short-weight cement bags on two deliveries."
+Re-run with --confirm-comparison and/or --confirm-draft after the officer reviews.
+
+$ procurement-agent --review-date 2026-09-25 --sku AH-CM-001 --confirm-comparison --confirm-draft
+stop:       completed
+detail:     Requisition compiled in DRAFT. Further status changes are human actions.
+iterations: 4 / 8
+contract:   contracts/agent-task-contract.json v1.0, stop DRAFT_CREATED
+step:       draft
+role:       PROCUREMENT_OFFICER
+resumed:    scan, eligibility, compare restored from checkpoint (3 iterations carried over)
+calls:
+  - create_requisition_draft -> ok
+memory:     3 advisory record(s); did not change any decision
+  - [MEM-0c9e96b9fd] SUP-004 note by a.nakato on 2026-09-10: "Last two cement deliveries arrived two days after the quoted lead time. Confirm the 7-day lead time before relying on it."
+  - [MEM-8fe62d8f82] SUP-002 note by a.nakato on 2026-08-28: "Registered entity is Lakeview Building Materials Ltd, Ntinda. It is not the same business as Lakeview Building Supplies; check the letterhead and TIN on any quotation."
+  - [MEM-feff4c2759] SUP-006 note by a.nakato on 2026-06-15: "Placed on the Blacklist in June 2026 after short-weight cement bags on two deliveries."
+
+$ (same command again)
+stop:       completed
+detail:     Already completed in an earlier run: REQ-2026-001 is in DRAFT. No tool was called. Use --fresh to start a new run.
+iterations: 4 / 8
+contract:   contracts/agent-task-contract.json v1.0, stop DRAFT_CREATED
+step:       draft
+role:       PROCUREMENT_OFFICER
+resumed:    scan, eligibility, compare, draft restored from checkpoint (4 iterations carried over)
+calls:      none this run
+memory:     4 advisory record(s); did not change any decision
+  - [MEM-9cc6ddb6f1] AH-CM-001 on 2026-09-25: ranked first Bugolobi Hardware Supplies (QT-002), UGX 4,479,600; exception required; REQ-2026-001 left in DRAFT
+  - [MEM-0c9e96b9fd] SUP-004 note by a.nakato on 2026-09-10: "Last two cement deliveries arrived two days after the quoted lead time. Confirm the 7-day lead time before relying on it."
+  - [MEM-8fe62d8f82] SUP-002 note by a.nakato on 2026-08-28: "Registered entity is Lakeview Building Materials Ltd, Ntinda. It is not the same business as Lakeview Building Supplies; check the letterhead and TIN on any quotation."
+  - [MEM-feff4c2759] SUP-006 note by a.nakato on 2026-06-15: "Placed on the Blacklist in June 2026 after short-weight cement bags on two deliveries."
+
+$ procurement-agent --review-date 2026-10-02 --sku AH-CM-001
+stop:       awaiting_human
+detail:     Landed-cost comparison is on the table. The officer must confirm it before a requisition is compiled (Requirement 7.1 / gate 2).
+iterations: 3 / 8
+contract:   contracts/agent-task-contract.json v1.0, stop AWAITING_HUMAN
+step:       draft
+role:       PROCUREMENT_OFFICER
+calls:
+  - check_reorder_need -> ok
+  - check_supplier_eligibility -> ok
+  - compare_quotations -> ok
+memory:     4 advisory record(s); did not change any decision
+  - [MEM-9cc6ddb6f1] AH-CM-001 on 2026-09-25: ranked first Bugolobi Hardware Supplies (QT-002), UGX 4,479,600; exception required; REQ-2026-001 left in DRAFT
+  - [MEM-0c9e96b9fd] SUP-004 note by a.nakato on 2026-09-10: "Last two cement deliveries arrived two days after the quoted lead time. Confirm the 7-day lead time before relying on it."
+  - [MEM-8fe62d8f82] SUP-002 note by a.nakato on 2026-08-28: "Registered entity is Lakeview Building Materials Ltd, Ntinda. It is not the same business as Lakeview Building Supplies; check the letterhead and TIN on any quotation."
+  - [MEM-feff4c2759] SUP-006 note by a.nakato on 2026-06-15: "Placed on the Blacklist in June 2026 after short-weight cement bags on two deliveries."
+Re-run with --confirm-comparison and/or --confirm-draft after the officer reviews.

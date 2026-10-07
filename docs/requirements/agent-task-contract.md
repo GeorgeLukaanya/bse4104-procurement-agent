@@ -134,18 +134,21 @@ A checkpoint is written after every Observe step, holding:
 | `stop_reason` | Set once, on the final iteration |
 
 For Week 5 this is a JSON file per run under `var/agent-state/`, which is git-ignored. The Week
-6 state model decides its permanent form. The checkpoint is **required and not yet built**: that
-is a build status, not a design choice, and `TERMINAL`, state kept, depends on it.
+6 state model decides its permanent form. The checkpoint is **required and built** (PR #65), which is what
+`TERMINAL`, state kept, depends on.
 
 A retry resumes from the
 last checkpoint and does not repeat completed steps. Requirements 7.5, 8.5 and 9.4 each require
 this, and the AI Boundary Matrix says the workflow "pauses while preserving current state, so
 that a retry does not repeat completed steps".
 
-**This is not built.** `AgentState` lives for one CLI invocation, so today a retry repeats the
-scan, the eligibility check and the comparison. The same gap exists in the RAG pipeline. It is
-the Week 6 state model's job (#26). Until then, every hand-off costs the officer a full re-run,
-which is acceptable only because the repeated steps are read-only and spend no model quota.
+**Built in PR #65.** The checkpoint is written after every tool step and at every stop, and a
+re-run of the same review resumes from it. A saved result is reused only while the files it was
+computed from are unchanged: each step records their SHA-256 fingerprints, and the first step
+whose inputs changed re-runs along with every step after it. A Gate 2 confirmation is dropped
+when the comparison it belonged to is recomputed, and the iteration budget is cumulative across
+commands. [`state-model.md`](../architecture/state-model.md) models this. The RAG pipeline still
+has the same gap.
 
 ### 7. Limits, and why these numbers
 
@@ -299,7 +302,7 @@ class is one of section 5's. There are no ad-hoc statuses.
 1. **The planner is deterministic today.** This contract sets Gemini-proposes as the design; the
    loop does not call the model yet. The policy gate is identical either way, so the change is
    contained to the plan step.
-2. **State does not survive a run** (section 6).
+2. **State surviving a run: RESOLVED (PR #65).** Checkpoints persist under `var/agent-state/<run_id>.json` and a re-run resumes instead of repeating completed steps, so `TERMINAL`, state kept, is now fulfillable. Modelled in [`state-model.md`](../architecture/state-model.md).
 3. **FA-10 is closed (6 October 2026).** `dispatch.invoke` now checks every tool response
    against its output schema and discards a non-conforming one with `OUTPUT_SCHEMA_INVALID`, so
    that stop reason can now be raised. It still surfaces as the code's coarse `failed` (gap 5).

@@ -341,7 +341,6 @@
   },
   "run_state": {
     "written_after": "every Observe step",
-    "storage_week_5": "var/agent-state/<run_id>.json (git-ignored)",
     "fields": [
       "run_id",
       "sku",
@@ -360,7 +359,14 @@
     "confirmations": "Gate 2 and Gate 3 decisions, clearances and exception reasons, with who and when",
     "stop_reason": "set once, on the final iteration",
     "required": true,
-    "built": false,
-    "_built_note": "TERMINAL_STATE_KEPT promises a retry resumes from the checkpoint, which needs a persisted checkpoint. Not built; Week 6 state model (#26)"
+    "built": true,
+    "_built_note": "built in PR #65: var/agent-state/<run_id>.json, written after every step and at every stop, resumed on re-run. Modelled in docs/architecture/state-model.md",
+    "storage": "var/agent-state/<run_id>.json (git-ignored)",
+    "run_id_format": "AGT-<review_date>-<sku or ALL>-<officer_username>",
+    "retention_days": {
+      "value": 30,
+      "enforced": false,
+      "_note": "target specification; manual removal via --fresh or deleting the file until a housekeeping command exists"
+    }
   }
 }

@@ -221,3 +221,13 @@ def test_the_planner_is_never_given_document_text():
     """Requirement 14.5: an embedded instruction has nothing to act through."""
     rules = json.loads(REAL_CONTRACT.read_text(encoding="utf-8"))["rules"]
     assert "No quotation or policy text reaches the planner" in rules["planner_context"]
+
+
+def test_the_contract_records_state_as_built():
+    """Gap 2 is resolved: TERMINAL, state kept, depends on a real checkpoint."""
+    run_state = json.loads(REAL_CONTRACT.read_text(encoding="utf-8"))["run_state"]
+
+    assert run_state["required"] is True
+    assert run_state["built"] is True
+    assert run_state["retention_days"]["value"] == 30
+    assert run_state["retention_days"]["enforced"] is False

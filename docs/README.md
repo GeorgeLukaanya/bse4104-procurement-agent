@@ -89,11 +89,11 @@ Due dates are the Friday of each teaching week.
 
 | Deliverable | Path | Owner | Status |
 |---|---|---|---|
-| State model | [`docs/architecture/state-model.md`](architecture/state-model.md) | Sekyeza Elroy Nunda | Not started |
+| State model | [`docs/architecture/state-model.md`](architecture/state-model.md) | Sekyeza Elroy Nunda | Complete, awaiting team review |
 | Memory design and data handling | [`docs/architecture/memory-design.md`](architecture/memory-design.md) | Beingana Jim Junior | Complete; awaiting team review |
 | Working memory / state demonstration | [`docs/architecture/working-memory.md`](architecture/working-memory.md) | Lukaanya George | Complete, awaiting team review |
-| MCP-style interface specification | [`docs/architecture/mcp-interface.md`](architecture/mcp-interface.md) | Nannyombi Shakiran | Complete, awaiting team review |
-| Week 6 progress report | [`docs/weekly-reports/week-06.md`](weekly-reports/week-06.md) | Ainamani Jim Isaac | Not started |
+| MCP-style interface specification | [`docs/architecture/mcp-interface.md`](architecture/mcp-interface.md) | Nannyombi Shakiran | Draft for review |
+| Week 6 progress report | [`docs/weekly-reports/week-06.md`](weekly-reports/week-06.md) | Ainamani Jim Isaac | Complete, awaiting team review |
 
 ## Week 7 — 16 October 2026
 

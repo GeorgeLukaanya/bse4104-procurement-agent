@@ -1,0 +1,56 @@
+{
+  "results": [
+    {
+      "source": "evaluation-cases/TC-07.md",
+      "status": "ok",
+      "cache_key": "4f0455768aea98fe10270a6a64d074d020e5a0cfa127c7063ceb9cd95c124839",
+      "cache_hit": false,
+      "attempts": 1,
+      "latency_s": 2.8365,
+      "record": {
+        "supplier_name": "EASTERN SUPPLIES",
+        "currency": "UGX",
+        "vat_treatment": "exclusive",
+        "vat_rate_percent": 18.0,
+        "delivery_cost": 40000.0,
+        "lead_time_days": 4.0,
+        "validity_date": null,
+        "items": [
+          {
+            "item_name": "Filing Cabinet",
+            "quantity": 5.0,
+            "unit_of_measure": "Each",
+            "unit_price": 420000.0
+          }
+        ],
+        "missing_fields": [
+          {
+            "field": "validity_date",
+            "reason": "The source date 10/11/2026 is ambiguous as it could be interpreted as DD/MM/YYYY or MM/DD/YYYY."
+          }
+        ]
+      },
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": true,
+        "blockers": []
+      },
+      "detail": null,
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.3"
+      }
+    }
+  ],
+  "summary": {
+    "files": 1,
+    "cache_hits": 0,
+    "live_calls": 1,
+    "median_latency_s": 2.8365,
+    "worst_latency_s": 2.8365
+  }
+}

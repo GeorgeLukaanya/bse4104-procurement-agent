@@ -277,3 +277,17 @@ is expected to validate by hand as `schema.validate` already does.
   owners from GitHub issues #15 to #19. The Week 4 rows were corrected to match the tracker;
   Weeks 5 to 8 diverge the same way and were left for the group.
 - **A fifth tool needs a charter amendment.** Four is the section 7 ceiling.
+
+### 2026-10-09 — Week 5 review follow-up
+
+- **Context:** Jim Junior requested completion of outstanding Week 5 feedback. The report was still a template; FA-10, prompt v1.2 configuration alignment and quotation-loading fixes had already landed.
+- **AI contribution:** Codex drafted the report from repository evidence, distinguished post-deadline fixes, grouped date handling under rule 6, corrected punctuation and advanced the literal prompt and configuration to v1.3. It synchronised the prompt specification and added a current-text fidelity check.
+- **Human review:** Pending Jim Junior and team review. The attached course/project document was read as reference and was not edited.
+- **Outcome:** The report is ready for review. Historical v1.1 results are preserved. After the user configured a Gemini API key, the v1.3 dedicated TC-07 retest and regression TC-07 passed; the full regression scored 9/10 because TC-04 returned `unit` instead of `each`. Raw evidence and verdicts are under `evidence/evaluation/week-05-v1.3/`. Local suite: 365 passed, 3 skipped. TC-04 remains a documented failure, not silently accepted.
+
+### 2026-10-09 — Week 6 memory design and data handling
+
+- **Context:** Jim Junior requested completion of `docs/architecture/memory-design.md`, his assigned Week 6 deliverable.
+- **AI contribution:** Codex documented the implemented supplier-note/prior-outcome use case, record fields, advisory-only data flow, access controls, retention/deletion semantics and supporting evidence. It checked the store, CLI, workflow, checkpoint and tests against the state model and working demonstration.
+- **Human review:** Pending Jim Junior and team review; status is complete, awaiting team review.
+- **Outcome:** Design note and index updated. The note explicitly records unimplemented checkpoint expiry, purge authorization, weak load-time record validation and deletion scope. No new memory capability or behaviour was added.

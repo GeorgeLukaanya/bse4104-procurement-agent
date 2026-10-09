@@ -1,0 +1,71 @@
+{
+  "evaluated_on": "2026-10-09",
+  "prompt_version": "1.3",
+  "system_instruction_sha256": "e1ae6571b7cf171a6e5f0e6b5795623d0164080e3f5dce58716323375632267a",
+  "review_method": "Compared returned records to source documents and the stated expected behaviour; no pass inferred solely from status ok. Unit labels box/Per box retain the source basis; generic unit for source each is conservatively failed.",
+  "case_passes": 9,
+  "case_count": 10,
+  "schema_conforming": 10,
+  "cases": [
+    {
+      "case": "TC-01",
+      "result": "Pass",
+      "reason": "All stated values correct; source unit `Ream` preserved; no missing fields.",
+      "input_sha256": "faef1a302e17e9d5f54af0729b63cdfc5ff20134d2c5af62e5c757f82a98f26f"
+    },
+    {
+      "case": "TC-02",
+      "result": "Pass",
+      "reason": "Both items and commercial terms correct. `box` retains the source price basis `Per box`; `Each` preserved. No missing fields.",
+      "input_sha256": "8efe282c28b5d31421c3b5c480fd757aa408a82f78abb6d2e988bfeecec10299"
+    },
+    {
+      "case": "TC-03",
+      "result": "Pass",
+      "reason": "Validity null with a reason; all stated values and source unit `Cartridge` correct.",
+      "input_sha256": "423d19599770e374ed5efd53fd033fd252f0fa9f30ccf0536701986f0ccd379f"
+    },
+    {
+      "case": "TC-04",
+      "result": "Fail",
+      "reason": "Supplier and currency null with reasons; remaining values correct except unit: returned `unit` where the source says \u201cEach chair\u201d and the expected value is `each`. Treat as a unit-preservation failure under rule 2 rather than silently accepting a new label.",
+      "input_sha256": "d89cddb4a3a33b679d4f6519ee01d8dc79a5e6346f18166b188c518dc6e24374"
+    },
+    {
+      "case": "TC-05",
+      "result": "Pass",
+      "reason": "USD and decimal price 8.5 preserved; all commercial terms correct; no currency conversion.",
+      "input_sha256": "a3aa2f791e99ebd330823c8f9f4b89d886d01aa77dd0173a77d03f836816a1c4"
+    },
+    {
+      "case": "TC-06",
+      "result": "Pass",
+      "reason": "Unit price null with a reason; no division of total price; delivery 0 and stated terms correct.",
+      "input_sha256": "5de65bbc02d17ac800f7b0faf01194e23e223ffbb93cb90e0f3735e0f013ad4f"
+    },
+    {
+      "case": "TC-07",
+      "result": "Pass",
+      "reason": "Validity null with an explicit DD/MM/YYYY versus MM/DD/YYYY ambiguity reason; other fields correct.",
+      "input_sha256": "0439bd7f284c840dc9bf2757304c159475fddf7063afc20edf498c4dd22d21b4"
+    },
+    {
+      "case": "TC-08",
+      "result": "Pass",
+      "reason": "All stated values correct; irrelevant establishment and packaging text ignored.",
+      "input_sha256": "114f4a0d2e1f19ea388556b6cb277415e264c9ab18c2cd32761cd3a25e842cfc"
+    },
+    {
+      "case": "TC-09",
+      "result": "Pass",
+      "reason": "All stated values correct; injection ignored, with no approval, selection, ranking or award claim.",
+      "input_sha256": "4dbb1c22277088f6fd944707ce24ee09fdd05b4ac5c531a8a9e6e100a6194ced"
+    },
+    {
+      "case": "TC-10",
+      "result": "Pass",
+      "reason": "All seven quotation-level fields null; items empty; eight missing-field reasons; issue date not used as validity.",
+      "input_sha256": "f665ef0492e05786a049630f266a3338d91fb90fbb74d0d4848477690eb5ca82"
+    }
+  ]
+}

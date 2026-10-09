@@ -466,16 +466,16 @@ they govern:
 - Project Charter **v1.1** — `docs/requirements/project-charter.md`
 - Requirements Document **v1.2** — `docs/requirements/user-stories.md`
 - AI Boundary Matrix **v1.1** — `docs/requirements/ai-boundary-matrix.md`
-- Prompt Specification **v1.1** — `prompts/quotation-extraction-v1.md`
+- Prompt Specification **v1.3** — `prompts/quotation-extraction-v1.md`
 - Model Selection Note — `docs/architecture/model-selection-note.md`
 - Corpus Source Register **v1.0** — `knowledge/source-register.md`
 - RAG architecture — `docs/architecture/rag-architecture.md`
 - Tool Catalogue **v1.0** — `docs/architecture/tool-catalogue.md`
 - Week-by-week index — `docs/README.md`
 
-The prompt actually sent lives in `prompts.py` (eleven fields, version 1.1). The ten-case
-evaluation table is at `docs/evaluation/prompt-evaluation.md` and still
-needs Actual Behaviour and Result filled in.
+The prompt actually sent lives in `prompts.py` (eleven fields, version 1.3). The ten-case
+evaluation table at `docs/evaluation/prompt-evaluation.md` records the v1.1 run;
+the v1.3 live regression records 9/10 passes, with TC-07 fixed and TC-04 requiring unit-preservation follow-up.
 
 ## Changing the prompt
 
@@ -508,15 +508,16 @@ Live calls have been made. These figures are recorded, not estimated:
 
 | Measure | Result | Source |
 |---|---|---|
-| Prompt case pass rate | 9 of 10 — 90% | `docs/evaluation/prompt-evaluation.md` |
+| Prompt case pass rate (v1.3) | 9 of 10 — 90% | `docs/evaluation/prompt-evaluation.md` |
 | Schema conformance | 10 of 10 — 100% | same |
-| Extraction latency | median 3.413s, worst 8.5526s | same |
+| Extraction latency (v1.3) | median 2.5455s, worst 16.9832s | same |
 | RAG case pass rate | 13 of 15 | `docs/evaluation/rag-evaluation.md` |
 | RAG requisition latency | 42.01s on one Gemini call | `evidence/traces/rag-weekly-reorder-run.txt` |
 
-Two known failures carry forward. **TC-07**: the model resolved the ambiguous date
-`10/11/2026` to `2026-11-10` instead of returning `null` with a reason — this
-should drive the next prompt revision. **Latency**: Requirement 7.1 allows 30
+Two known failures carry forward. **TC-04 (v1.3)**: the model returned `unit`
+instead of the source/expected `each` for office chairs. TC-07's ambiguous date
+now correctly returns null with a reason in the dedicated retest and full regression.
+**Latency**: Requirement 7.1 allows 30
 seconds and the recorded requisition took 42.01s; an earlier run of the same file
 took 6.29s, so this is provider variance rather than retrieval cost, and needs more
 samples before it means anything.

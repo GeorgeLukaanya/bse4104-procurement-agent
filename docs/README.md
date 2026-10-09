@@ -83,14 +83,14 @@ Due dates are the Friday of each teaching week.
 | Agent task contract | [`docs/requirements/agent-task-contract.md`](requirements/agent-task-contract.md) | Sekyeza Elroy Nunda | Complete, awaiting team review |
 | Working bounded agent workflow | [`docs/architecture/working-agent.md`](architecture/working-agent.md) | Nannyombi Shakiran | Done |
 | Three execution traces | [`docs/evaluation/execution-traces.md`](evaluation/execution-traces.md) | Ainamani Jim Isaac | Complete, awaiting team review |
-| Week 5 progress report | [`docs/weekly-reports/week-05.md`](weekly-reports/week-05.md) | Beingana Jim Junior | Not started |
+| Week 5 progress report | [`docs/weekly-reports/week-05.md`](weekly-reports/week-05.md) | Beingana Jim Junior | Complete; awaiting team review (9 Oct) |
 
 ## Week 6 — 9 October 2026
 
 | Deliverable | Path | Owner | Status |
 |---|---|---|---|
 | State model | [`docs/architecture/state-model.md`](architecture/state-model.md) | Sekyeza Elroy Nunda | Not started |
-| Memory design and data handling | [`docs/architecture/memory-design.md`](architecture/memory-design.md) | Beingana Jim Junior | Not started |
+| Memory design and data handling | [`docs/architecture/memory-design.md`](architecture/memory-design.md) | Beingana Jim Junior | Complete; awaiting team review |
 | Working memory / state demonstration | [`docs/architecture/working-memory.md`](architecture/working-memory.md) | Lukaanya George | Complete, awaiting team review |
 | MCP-style interface specification | [`docs/architecture/mcp-interface.md`](architecture/mcp-interface.md) | Nannyombi Shakiran | Complete, awaiting team review |
 | Week 6 progress report | [`docs/weekly-reports/week-06.md`](weekly-reports/week-06.md) | Ainamani Jim Isaac | Not started |

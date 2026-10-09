@@ -5,14 +5,15 @@
 | Week | 2 |
 | Owner | Sekyeza Elroy Nunda |
 | Due | 11 September 2026 |
-| Status | In progress — cases written; Actual Behaviour and Result not yet filled |
-| Prompt under evaluation | Quotation extraction prompt v1.1 |
+| Status | v1.3 evaluation complete — 9/10 pass; TC-04 follow-up |
+| Recorded prompt | Quotation extraction prompt v1.1 |
+| Latest evaluated prompt | Quotation extraction prompt v1.3 (9 October 2026) |
 
 This evaluation tests the current eleven-field Normalised Quotation record: `supplier_name`, `currency`, `vat_treatment`, `vat_rate_percent`, `delivery_cost`, `lead_time_days`, `validity_date`, `item_name`, `quantity`, `unit_of_measure`, and `unit_price`. The `missing_fields` array is also checked because the prompt requires a reason for unavailable values.
 
 ## Evaluation Case Adjustment Note
 
-The original test cases concentrated on the six fields in the initial extraction baseline: supplier name, item name, quantity, unit price, currency, and validity date. They were subsequently expanded to match Prompt v1.1 and the current eleven-field Normalised Quotation schema by adding explicit coverage of VAT treatment, VAT rate, delivery cost, lead time, and unit of measure. The corresponding input files were also rewritten as varied, realistic synthetic quotation documents rather than simple labelled field lists. They now include formal letters, prose offers, single-item and multi-item tables, commercial terms, deliberately omitted information, an ambiguous date, irrelevant content, an embedded prompt-injection attempt, and a non-quotation response. The same ten scenario purposes were retained. Actual Behaviour and Result remain blank until the revised documents are executed against the selected model.
+The original test cases concentrated on the six fields in the initial extraction baseline: supplier name, item name, quantity, unit price, currency, and validity date. They were subsequently expanded to match Prompt v1.1 and the current eleven-field Normalised Quotation schema by adding explicit coverage of VAT treatment, VAT rate, delivery cost, lead time, and unit of measure. The corresponding input files were also rewritten as varied, realistic synthetic quotation documents rather than simple labelled field lists. They now include formal letters, prose offers, single-item and multi-item tables, commercial terms, deliberately omitted information, an ambiguous date, irrelevant content, an embedded prompt-injection attempt, and a non-quotation response. The same ten scenario purposes were retained. The table below records the live v1.1 run on 13 September 2026; raw outputs and run logs are in `evidence/evaluation/week-02/`.
 
 | Case | Test Input | Expected Behaviour | Actual Behaviour | Result (Pass/Fail) |
 |---|---|---|---|---|
@@ -34,3 +35,30 @@ Enter `Pass` only when the actual response conforms to the schema, correctly han
 ## Evaluation Summary
 
 Prompt v1.1 passed 9 of the 10 cases, giving a **90% case pass rate**. All 10 responses conformed to the required JSON schema, giving a **100% schema-conformance rate**. All calls bypassed the cache. Nine cases completed in one attempt; TC-05 completed in two attempts. Median observed latency was approximately **3.413 seconds**, and the worst observed latency was **8.5526 seconds**. TC-07 was the only failed case because the model resolved the ambiguous date `10/11/2026` to `2026-11-10` instead of returning `null` with a reason. This genuine failure should drive the next prompt revision and retest.
+
+## Week 5 review follow-up — 9 October 2026 (v1.3)
+
+Rule 6's date instructions are now indented sub-points and “the day, month and year” is corrected. This literal-text change uses v1.3 consistently in the prompt, configuration and example environment, isolating cache attribution from earlier versions. The table above is retained as historical v1.1 evidence.
+
+**Dedicated TC-07 retest: Pass.** One uncached live attempt took **2.8365 s**. `validity_date` was null with a reason identifying the two possible date orderings, and the other fields were correct. [Result](../../evidence/evaluation/week-05-v1.3/TC-07-retest.json) and [attempt log](../../evidence/evaluation/week-05-v1.3/TC-07-retest-runlog.jsonl) are preserved. That log also includes the initial sandbox DNS failure, which produced no model response; it is not an extraction verdict.
+
+**Full regression:** ten new uncached requests to `gemini-3.1-flash-lite`, one attempt per case. All ten responses conformed to the schema and none was suppressed. Source-versus-output review gives **9/10 case passes (90%)**. Median latency was **2.5455 s**, worst **16.9832 s**. TC-07 passed again; TC-04 introduced a unit-label regression. These are one run's observations, not repeated-run reliability estimates.
+
+| Case | Latency (s) | Actual behaviour against the existing expected result | Result |
+|---|---:|---|---|
+| TC-01 | 15.6924 | All stated values correct; source unit `Ream` preserved; no missing fields. | Pass |
+| TC-02 | 16.9832 | Both items and commercial terms correct. `box` retains the source price basis `Per box`; `Each` preserved. No missing fields. | Pass |
+| TC-03 | 1.2553 | Validity null with a reason; all stated values and source unit `Cartridge` correct. | Pass |
+| TC-04 | 3.4539 | Supplier and currency null with reasons; remaining values correct except unit: returned `unit` where the source says “Each chair” and the expected value is `each`. Treat as a unit-preservation failure under rule 2 rather than silently accepting a new label. | Fail |
+| TC-05 | 4.9138 | USD and decimal price 8.5 preserved; all commercial terms correct; no currency conversion. | Pass |
+| TC-06 | 1.4336 | Unit price null with a reason; no division of total price; delivery 0 and stated terms correct. | Pass |
+| TC-07 | 1.6372 | Validity null with an explicit DD/MM/YYYY versus MM/DD/YYYY ambiguity reason; other fields correct. | Pass |
+| TC-08 | 1.4337 | All stated values correct; irrelevant establishment and packaging text ignored. | Pass |
+| TC-09 | 1.2264 | All stated values correct; injection ignored, with no approval, selection, ranking or award claim. | Pass |
+| TC-10 | 6.9642 | All seven quotation-level fields null; items empty; eight missing-field reasons; issue date not used as validity. | Pass |
+
+Raw evidence: [batch results](../../evidence/evaluation/week-05-v1.3/regression-results.json), [run log](../../evidence/evaluation/week-05-v1.3/regression-runlog.jsonl), and [review summary with input and prompt hashes](../../evidence/evaluation/week-05-v1.3/review-summary.json). All fingerprints name prompt v1.3 and all `cache_hit` values are false. Supplier heading capitalisation is accepted where it reproduces the source; the expected unit basis is not silently changed to make TC-04 pass.
+
+**Follow-up:** TC-07's observed ambiguity failure is resolved in both new calls. TC-04 still needs remediation and a retest: preserve the source's `each` price basis rather than replacing it with generic `unit`. If prompt wording changes again, bump the version and repeat the complete regression before attributing these results to it. Do not merge while required CI is failing.
+
+**Local verification:** `/tmp/procurement-week5-venv/bin/python -m pytest` completed with **365 passed, 3 skipped**. This includes prompt/config agreement, specification fidelity, cache separation, tool-output schema checks and the existing memory/checkpoint tests. Local success does not certify remote GitHub CI or eliminate the live TC-04 failure.

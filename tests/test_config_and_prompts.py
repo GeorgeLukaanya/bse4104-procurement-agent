@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from procurement_agent import prompts
@@ -42,7 +44,7 @@ def test_decoding_settings_match_the_prompt_specification():
     assert config.max_output_tokens == 2048
     assert config.thinking_budget == 0
     assert config.response_mime_type == "application/json"
-    assert config.prompt_version == "1.2"
+    assert config.prompt_version == "1.3"
 
 
 def test_fingerprint_contains_every_setting_that_changes_output():
@@ -88,7 +90,7 @@ def test_config_is_immutable():
 
 
 def test_prompt_version_matches_the_config():
-    assert prompts.PROMPT_VERSION == ExtractionConfig().prompt_version == "1.2"
+    assert prompts.PROMPT_VERSION == ExtractionConfig().prompt_version == "1.3"
 
 
 def test_system_instruction_carries_all_eight_rules():
@@ -131,3 +133,10 @@ def test_document_content_is_inserted_verbatim():
     """Rewriting supplier text would corrupt the figures we are extracting."""
     tricky = "Price: 34,500 | 50% off\n<b>bold</b> {braces} \\backslash"
     assert tricky in prompts.build_user_message(tricky)
+
+
+def test_current_prompt_is_reproduced_verbatim_in_the_specification():
+    specification = (Path(__file__).resolve().parents[1] / "prompts/quotation-extraction-v1.md").read_text(encoding="utf-8")
+    current = specification.split("### 8.4 Prompt Text (v1.3) — current", 1)[1]
+    literal = current.split("```text\n", 1)[1].split("\n```", 1)[0]
+    assert literal == prompts.SYSTEM_INSTRUCTION

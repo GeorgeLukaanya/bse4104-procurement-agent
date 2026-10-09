@@ -150,3 +150,12 @@ The traces provide evidence that:
 
 Automated coverage for these behaviours is in `tests/test_agent_workflow.py` and
 `tests/test_agent_cli.py`.
+
+### Post-deadline recovery evidence — Week 6
+
+The third Week 5 run above proves a controlled halt, not recovery. Recovery is now demonstrated by the Week 6 checkpoint work (PR #65):
+
+- [Supplier register unavailable](../../evidence/traces/memory/06-failure-suppliers-missing.json): the run stops `failed` with `DATA_SOURCE_UNAVAILABLE` after two calls and retains its checkpoint.
+- [Register restored and run resumed](../../evidence/traces/memory/07-recovery-resumes.json): the run reuses the inventory scan, repeats eligibility and comparison, and stops at the officer gate after two new calls.
+
+This pair supplies the failure-and-recovery evidence requested in review. It is a later implementation, rather than a fourth original Week 5 run. The historical limitations above describe the original runs; current resume behaviour and its input-invalidation rules are explained in [Working Memory, section 4](../architecture/working-memory.md#4-run-state-resume-instead-of-repeat).

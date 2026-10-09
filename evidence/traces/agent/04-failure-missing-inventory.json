@@ -1,0 +1,37 @@
+{
+  "component": "AGENT",
+  "stop_reason": "failed",
+  "stop_detail": "DATA_SOURCE_UNAVAILABLE: knowledge/data/missing.csv could not be read",
+  "iterations": 1,
+  "step": "scan",
+  "run_id": "AGT-2026-09-25-AH-CM-001-a.nakato",
+  "resumed": null,
+  "confirmations": {},
+  "review_date": "2026-09-25",
+  "sku": "AH-CM-001",
+  "caller_role": "PROCUREMENT_OFFICER",
+  "contract": {
+    "path": "contracts/agent-task-contract.json",
+    "version": "1.0",
+    "iterations_per_item": 8,
+    "wall_clock_seconds": 120.0,
+    "stop_reason": null
+  },
+  "reorder": null,
+  "eligibility": null,
+  "comparison": null,
+  "draft": null,
+  "calls": [
+    {
+      "tool": "check_reorder_need",
+      "status": "unavailable",
+      "errors": [
+        {
+          "code": "DATA_SOURCE_UNAVAILABLE",
+          "detail": "knowledge/data/missing.csv could not be read"
+        }
+      ]
+    }
+  ],
+  "memory": null
+}

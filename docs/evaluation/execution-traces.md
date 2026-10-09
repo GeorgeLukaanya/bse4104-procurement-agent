@@ -16,9 +16,10 @@ Capture at least three execution traces, including one failure/recovery case. St
 
 ### Purpose and scope
 
-This document records three executions of the Week 5 bounded procurement agent. Together they
-show the normal human hand-off, successful creation of a purchase requisition in `DRAFT`, and a
-controlled stop at the iteration limit. The raw JSON evidence is preserved under
+This document records executions of the Week 5 bounded procurement agent. Together they show
+the normal human hand-off, successful creation of a purchase requisition in `DRAFT`, a
+controlled stop at the iteration limit, and a failure followed by a recovery run. The raw JSON
+evidence is preserved under
 [`evidence/traces/agent/`](../../evidence/traces/agent/), while the append-only machine log is
 [`agent-runs.jsonl`](../../evidence/traces/agent-runs.jsonl).
 
@@ -53,6 +54,8 @@ or reaches a limit.
 | [01 — human hand-off](../../evidence/traces/agent/01-awaiting-human.json) | 3 | `awaiting_human` | Comparison produced; no requisition created |
 | [02 — completed draft](../../evidence/traces/agent/02-completed-draft.json) | 4 | `completed` | `REQ-2026-001` created with status `DRAFT` |
 | [03 — iteration limit](../../evidence/traces/agent/03-max-iterations.json) | 1 | `max_iterations` | Safe halt after the inventory check; no draft created |
+| [04 — missing inventory](../../evidence/traces/agent/04-failure-missing-inventory.json) | 1 | `failed` | Missing inventory reported as `DATA_SOURCE_UNAVAILABLE`; nothing written |
+| [05 — recovery rerun](../../evidence/traces/agent/05-recovery-rerun.json) | 3 | `awaiting_human` | Real inventory restored; workflow reached the officer gate |
 
 ### Trace 1 — comparison held for the officer
 
@@ -97,9 +100,33 @@ The third run deliberately set the maximum iteration count to one. The agent com
 `max_iterations`. Its stop detail states that the cap was reached and no further tool call was
 made.
 
-The `eligibility`, `comparison`, and `draft` fields are all `null`. This is the required
-failure/controlled-stop case: the workflow fails closed at its configured boundary and does
-not attempt to finish the procurement task after its execution budget is exhausted.
+The `eligibility`, `comparison`, and `draft` fields are all `null`. This trace demonstrates a
+configured limit stop: the workflow does not attempt to finish the procurement task after its
+execution budget is exhausted. It is not presented as the brief's failure/recovery case.
+
+### Trace 4 — missing inventory failure and recovery
+
+This paired run closes the failure/recovery gap identified in review. The failure run
+deliberately pointed the inventory input at `knowledge/data/missing.csv`:
+
+- `check_reorder_need` returned `unavailable` with `DATA_SOURCE_UNAVAILABLE`;
+- the workflow stopped as `failed` after one iteration;
+- `reorder`, `eligibility`, `comparison`, and `draft` were all `null`; and
+- no requisition was written.
+
+The recovery run used the registered inventory file. It completed the reorder, eligibility,
+and comparison steps, then stopped as `awaiting_human` after three iterations. The recovered
+result again calculated 120 bags, retained QT-002 at UGX 4,479,600 landed cost, and created no
+draft before officer confirmation.
+
+This recovery is a **full rerun**, not a checkpoint resume. The two commands use `--no-state`
+to reproduce the Week 5 behaviour accurately: checkpoint and resume support had not yet been
+built during Week 5 and was introduced later as Week 6 work.
+
+Evidence:
+
+- [04-failure-missing-inventory.json](../../evidence/traces/agent/04-failure-missing-inventory.json)
+- [05-recovery-rerun.json](../../evidence/traces/agent/05-recovery-rerun.json)
 
 ### How the evidence was generated
 
@@ -121,6 +148,16 @@ python -m procurement_agent.agent.cli \
 python -m procurement_agent.agent.cli \
   --review-date 2026-09-25 --sku AH-CM-001 \
   --max-iterations 1 --json
+
+# Failure: missing inventory
+python -m procurement_agent.agent.cli \
+  --review-date 2026-09-25 --sku AH-CM-001 \
+  --inventory knowledge/data/missing.csv --no-state --no-memory --json
+
+# Recovery: full rerun with the registered inventory file
+python -m procurement_agent.agent.cli \
+  --review-date 2026-09-25 --sku AH-CM-001 \
+  --no-state --no-memory --json
 ```
 
 The CLI passes each proposed action to `dispatch.invoke`, which enforces the current step's
@@ -137,25 +174,17 @@ The traces provide evidence that:
 - the only side effect produces a requisition in `DRAFT`;
 - exclusions and policy exceptions remain visible to the reviewer;
 - an iteration cap prevents unbounded execution; and
+- an unavailable inventory source fails safely and succeeds on a full rerun after restoration;
 - every run ends with an explicit, auditable stop reason.
 
 ### Limitations and follow-up
 
 - The default planner is deterministic. A Gemini-backed planner is required before the project
   can claim model-driven action selection.
-- The three traces cover one cement scenario; they are not broad performance evidence.
-- A rerun after a human hand-off repeats earlier steps. Persistent checkpoint/resume behaviour
-  is still to be implemented.
+- The recorded traces cover one cement scenario; they are not broad performance evidence.
+- The Week 5 recovery evidence is a full rerun and repeats earlier work. Checkpoint/resume
+  behaviour was added later as part of Week 6 and is not claimed by these two new traces.
 - Policy retrieval and AI justification drafting are not yet wired into this loop.
 
 Automated coverage for these behaviours is in `tests/test_agent_workflow.py` and
 `tests/test_agent_cli.py`.
-
-### Post-deadline recovery evidence — Week 6
-
-The third Week 5 run above proves a controlled halt, not recovery. Recovery is now demonstrated by the Week 6 checkpoint work (PR #65):
-
-- [Supplier register unavailable](../../evidence/traces/memory/06-failure-suppliers-missing.json): the run stops `failed` with `DATA_SOURCE_UNAVAILABLE` after two calls and retains its checkpoint.
-- [Register restored and run resumed](../../evidence/traces/memory/07-recovery-resumes.json): the run reuses the inventory scan, repeats eligibility and comparison, and stops at the officer gate after two new calls.
-
-This pair supplies the failure-and-recovery evidence requested in review. It is a later implementation, rather than a fourth original Week 5 run. The historical limitations above describe the original runs; current resume behaviour and its input-invalidation rules are explained in [Working Memory, section 4](../architecture/working-memory.md#4-run-state-resume-instead-of-repeat).

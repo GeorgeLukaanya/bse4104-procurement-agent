@@ -99,7 +99,7 @@ Due dates are the Friday of each teaching week.
 
 | Deliverable | Path | Owner | Status |
 |---|---|---|---|
-| 30+ scenario evaluation | [`docs/evaluation/scenarios.md`](evaluation/scenarios.md) | Ainamani Jim Isaac | Not started |
+| 30+ scenario evaluation | [`docs/evaluation/scenarios.md`](evaluation/scenarios.md) | Lukaanya George | Complete, awaiting team review |
 | Observability / tracing evidence | [`docs/evaluation/observability.md`](evaluation/observability.md) | Beingana Jim Junior | Not started |
 | Guardrail implementation evidence | [`docs/evaluation/guardrails.md`](evaluation/guardrails.md) | Sekyeza Elroy Nunda | Not started |
 | Failure catalogue | [`docs/evaluation/failure-catalogue.md`](evaluation/failure-catalogue.md) | Lukaanya George | Not started |
@@ -160,7 +160,7 @@ Issues: [https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues](htt
 
 ### Week 7 — due 16 Oct 2026
 
-- 30+ scenario evaluation — Ainamani Jim Isaac — `docs/evaluation/scenarios.md` — [#31](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/31)
+- 30+ scenario evaluation — Lukaanya George — `docs/evaluation/scenarios.md` — [#31](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/31)
 - Observability / tracing evidence — Beingana Jim Junior — `docs/evaluation/observability.md` — [#32](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/32)
 - Guardrail implementation evidence — Sekyeza Elroy Nunda — `docs/evaluation/guardrails.md` — [#33](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/33)
 - Failure catalogue — Lukaanya George — `docs/evaluation/failure-catalogue.md` — [#34](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/34)

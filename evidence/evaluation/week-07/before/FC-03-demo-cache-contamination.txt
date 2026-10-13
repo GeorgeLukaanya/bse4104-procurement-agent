@@ -1,0 +1,30 @@
+# FC-03 before fix: offline demo writes scripted records into the real cache and evidence log
+# Commit under test: b1a6412 (b1a6412 2026-09-29 Merge pull request #58 from GeorgeLukaanya/ft-week-5-agent-architecture)
+# Recorded: 2026-10-13T15:51:28Z
+# Run in a detached git worktree of that commit, PYTHONPATH=src, no API key set.
+
+## 1. python tools/offline_demo.py --json   (default paths)
+exit 1
+
+## 2. git status after the demo
+ M evidence/traces/extraction-runs.jsonl
+(.cache is git-ignored; files present:)
+1e0a4142b9adbd7d0b62970ae2ae27b019226488cdf185e12b7fc746f971cb88.json
+438ff889d47084201564c322ad420b69574ded0aca07b581ca04ec6ef94f1d33.json
+68d8d0496c6de9452dd468c294fa55b42d8e9377bceca2c5d7ec0aaaf961b1b4.json
+b18df546b1645145b15a896fc948b5fa24eda815719bd15a855118a5f6f2d65e.json
+dae536e4c49ca17fc05486f9581b36231e429d90d75cf62c5b7046784c882adb.json
+f185d4517fda6778c01d02731e5af48545ece22a00fe0b2afd1490ebd6e3a49a.json
+
+## 3. a later extraction with the default configuration, model backend replaced by one that
+##    raises if called (no key or SDK needed; a cache miss would fail):
+##    cli.main(["fixtures/01-clean-table-ugx.md", "--no-env-file", "--json"], backend=NeverCalled())
+exit: 0
+cache_hit: True
+config model: gemini-3.1-flash-lite
+supplier_name: Nakawa Building Supplies Ltd
+first item: {'item_name': 'Portland cement, 50 kg bag', 'quantity': 120.0, 'unit_of_measure': 'per bag', 'unit_price': 34500.0}
+
+The record is the demo's hand-written SCRIPTED_RECORDS["Nakawa Building Supplies"]
+(tools/offline_demo.py), returned as a cache hit under the gemini-3.1-flash-lite
+fingerprint. A live run on that machine would have reported it as model output.

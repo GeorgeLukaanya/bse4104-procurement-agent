@@ -1,0 +1,369 @@
+{
+  "catalogue_version": "1.0",
+  "updated_on": "2026-10-13",
+  "definition": "A genuine failure was observed on this system in a test, a recorded run or a review. Hypothetical risks are not catalogued.",
+  "allowed": {
+    "status": [
+      "fixed",
+      "open"
+    ],
+    "category": [
+      "model",
+      "retrieval",
+      "tool",
+      "orchestration",
+      "data-handling",
+      "evaluation-integrity",
+      "portability",
+      "latency"
+    ],
+    "severity": [
+      "high",
+      "medium",
+      "low"
+    ],
+    "retest_kind": [
+      "offline-tests",
+      "live-recorded"
+    ]
+  },
+  "failures": [
+    {
+      "id": "FC-01",
+      "title": "Malformed tool output relayed as status ok",
+      "category": "tool",
+      "severity": "high",
+      "status": "fixed",
+      "discovered_on": "2026-09-25",
+      "how_found": "Week 4 failure and authorization test FA-10",
+      "discovery_evidence": [
+        "evidence/evaluation/week-04/Failure-authorization-evidence.json",
+        "docs/evaluation/tool-failure-tests.md"
+      ],
+      "symptom": "A tool returning {\"unexpected\": \"shape\"} reached the caller as status ok, so the agent could reason over data that broke its contract.",
+      "root_cause": "dispatch.invoke validated requests against the input schemas but never checked responses against the output schemas, although tool-catalogue section 9 required it.",
+      "remediation": {
+        "summary": "Every response is checked against its published output schema by a hand-written validator; a non-conforming one is discarded and the call fails with OUTPUT_SCHEMA_INVALID. A missing schema fails closed.",
+        "commits": [
+          "343ed5f"
+        ],
+        "pr": 64,
+        "merged_on": "2026-10-06"
+      },
+      "retest": {
+        "kind": "offline-tests",
+        "tests": [
+          "tests/test_tools_output_schema.py::test_fa10_malformed_output_is_discarded",
+          "tests/test_tools_output_schema.py::test_the_discard_envelope_itself_conforms",
+          "tests/test_tools_output_schema.py::test_a_missing_schema_fails_closed",
+          "tests/test_tools_output_schema.py::test_a_real_call_still_conforms"
+        ],
+        "evidence": []
+      },
+      "owner": "Lukaanya George",
+      "residual_risk": "create_requisition_draft writes its record before the response is checked, so a non-conforming draft response is reported as failed but the stored record remains."
+    },
+    {
+      "id": "FC-02",
+      "title": "Prompt version raised to 1.2 while the config stayed at 1.1",
+      "category": "evaluation-integrity",
+      "severity": "high",
+      "status": "fixed",
+      "discovered_on": "2026-10-06",
+      "how_found": "Week 5 review; CI on main had failed since PR #62 merged on 2 October",
+      "discovery_evidence": [
+        "evidence/evaluation/week-07/before/FC-02-prompt-version.txt"
+      ],
+      "symptom": "test_prompt_version_matches_the_config failed on main. The cache key uses the config's version, so a run with the v1.2 prompt could be served a cached v1.1 result and logged as v1.2.",
+      "root_cause": "PR #62 changed PROMPT_VERSION in prompts.py but not ExtractionConfig.prompt_version, and was merged while pytest was failing.",
+      "remediation": {
+        "summary": "Config, .env.example and the prompt document aligned; version tests read the version from one place so a bump cannot half-land.",
+        "commits": [
+          "a7a96de"
+        ],
+        "pr": 64,
+        "merged_on": "2026-10-06"
+      },
+      "retest": {
+        "kind": "offline-tests",
+        "tests": [
+          "tests/test_config_and_prompts.py::test_prompt_version_matches_the_config",
+          "tests/test_cache.py::test_changing_the_prompt_version_invalidates_the_cache",
+          "tests/test_runlog.py::test_every_call_is_written_with_its_configuration_fingerprint"
+        ],
+        "evidence": []
+      },
+      "owner": "Lukaanya George",
+      "residual_risk": "Branch protection does not block a merge while CI is red; the rule is a team convention only."
+    },
+    {
+      "id": "FC-03",
+      "title": "Offline demo served hand-written records to live runs",
+      "category": "evaluation-integrity",
+      "severity": "high",
+      "status": "fixed",
+      "discovered_on": "2026-09-23",
+      "how_found": "Week 4 change log noted demo rows in the evidence log (23 Sep); review on 29 Sep found the demo's records in the real extraction cache",
+      "discovery_evidence": [
+        "evidence/evaluation/week-07/before/FC-03-demo-cache-contamination.txt",
+        "docs/week-04-change-log.md"
+      ],
+      "symptom": "tools/offline_demo.py wrote its scripted records into the real extraction cache and appended rows to the evidence log. A later extraction with the default configuration returned a scripted record as a cache hit under the gemini-3.1-flash-lite fingerprint.",
+      "root_cause": "The cache key covers the document and the configuration but not the backend, and the demo used the default cache directory and run log.",
+      "remediation": {
+        "summary": "The demo uses its own cache and run log under var/offline-demo/ (git-ignored); explicit paths still win.",
+        "commits": [
+          "4a8a3fc"
+        ],
+        "pr": 59,
+        "merged_on": "2026-09-29"
+      },
+      "retest": {
+        "kind": "offline-tests",
+        "tests": [
+          "tests/test_offline_demo.py::test_defaults_point_away_from_real_cache_and_evidence",
+          "tests/test_offline_demo.py::test_explicit_paths_are_respected",
+          "tests/test_offline_demo.py::test_real_run_writes_only_under_the_given_paths"
+        ],
+        "evidence": []
+      },
+      "owner": "Lukaanya George",
+      "residual_risk": "Machines that ran the demo before the fix keep contaminated .cache/extractions entries until cleared (rm -rf .cache/extractions). The first six rows of evidence/traces/extraction-runs.jsonl (13 Sep, latency 0.0551 s) are demo output and must not be cited as model evidence."
+    },
+    {
+      "id": "FC-04",
+      "title": "Planner reported a missing or tampered quotations file as 'no quotations'",
+      "category": "orchestration",
+      "severity": "medium",
+      "status": "fixed",
+      "discovered_on": "2026-10-06",
+      "how_found": "Week 5 review while designing a failure-recovery trace",
+      "discovery_evidence": [
+        "evidence/evaluation/week-07/before/FC-04-swallowed-quotation-error.txt"
+      ],
+      "symptom": "With quotations.json missing, the run stopped with 'No held quotations name AH-CM-001' instead of DATA_SOURCE_UNAVAILABLE; a checksum mismatch was reported the same way.",
+      "root_cause": "DeterministicPlanner._supplier_ids_for wrapped load_quotations in except Exception: return [].",
+      "remediation": {
+        "summary": "The planner stops with DATA_SOURCE_UNAVAILABLE or DATA_INTEGRITY_ERROR and the real cause.",
+        "commits": [
+          "514b0d0"
+        ],
+        "pr": 66,
+        "merged_on": "2026-10-06"
+      },
+      "retest": {
+        "kind": "offline-tests",
+        "tests": [
+          "tests/test_agent_workflow.py::test_missing_quotations_file_is_unavailable",
+          "tests/test_agent_workflow.py::test_tampered_quotations_file_is_integrity_failure",
+          "tests/test_agent_cli.py::test_cli_missing_quotations_reports_unavailable"
+        ],
+        "evidence": []
+      },
+      "owner": "Nannyombi Shakiran",
+      "residual_risk": "The planner still reads the quotations file directly, outside dispatch and the tool trace."
+    },
+    {
+      "id": "FC-05",
+      "title": "Ambiguous date 10/11/2026 resolved instead of returned as null",
+      "category": "model",
+      "severity": "medium",
+      "status": "fixed",
+      "discovered_on": "2026-09-13",
+      "how_found": "Week 2 live prompt evaluation, case TC-07",
+      "discovery_evidence": [
+        "evidence/evaluation/week-02/TC-07-result.json",
+        "docs/evaluation/prompt-evaluation.md"
+      ],
+      "symptom": "Under prompt v1.1 the model returned validity_date 2026-11-10 for 10/11/2026 and reported no missing field.",
+      "root_cause": "Rule 6 allowed rewriting dates into YYYY-MM-DD without saying that a numeric date whose day/month order is undetermined must not be resolved.",
+      "remediation": {
+        "summary": "Prompt v1.2 added the ambiguity rule; v1.3 folded it into rule 6. Config and cache versioned to match.",
+        "commits": [
+          "8aded21",
+          "e0ba3b0"
+        ],
+        "pr": 69,
+        "merged_on": "2026-10-09"
+      },
+      "retest": {
+        "kind": "live-recorded",
+        "tests": [
+          "tests/test_config_and_prompts.py::test_ambiguous_date_rule_is_still_in_the_prompt"
+        ],
+        "evidence": [
+          "evidence/evaluation/week-05-v1.3/TC-07-retest.json",
+          "evidence/evaluation/week-05-v1.3/regression-results.json",
+          "evidence/evaluation/week-05-v1.3/review-summary.json"
+        ]
+      },
+      "owner": "Beingana Jim Junior",
+      "residual_risk": "Verified on two live calls under v1.3, not on repeated runs. The v1.3 regression introduced FC-08."
+    },
+    {
+      "id": "FC-06",
+      "title": "Re-running a confirmed review compiled a second requisition",
+      "category": "orchestration",
+      "severity": "high",
+      "status": "fixed",
+      "discovered_on": "2026-10-01",
+      "how_found": "Week 5 review against Requirements 7.5, 8.5, 9.4 (Agent Task Contract gap 2)",
+      "discovery_evidence": [
+        "evidence/evaluation/week-07/before/FC-06-duplicate-requisition.txt",
+        "docs/requirements/agent-task-contract.md"
+      ],
+      "symptom": "Running the same confirmed command twice produced REQ-2026-001 and REQ-2026-002 for one review, and every re-run repeated all completed steps.",
+      "root_cause": "Run state lived for one command; nothing recorded that the review had already produced its requisition.",
+      "remediation": {
+        "summary": "Run state is checkpointed after every tool step; a re-run resumes, only reuses results whose source data is unchanged, keeps the iteration budget, and never compiles a second requisition.",
+        "commits": [
+          "1697088"
+        ],
+        "pr": 65,
+        "merged_on": "2026-10-06"
+      },
+      "retest": {
+        "kind": "offline-tests",
+        "tests": [
+          "tests/test_agent_checkpoint.py::test_a_completed_run_never_compiles_a_second_requisition",
+          "tests/test_agent_checkpoint.py::test_handoff_then_confirm_resumes_without_repeating_reads",
+          "tests/test_agent_checkpoint.py::test_failure_then_recovery_resumes_at_the_failed_step"
+        ],
+        "evidence": [
+          "docs/architecture/working-memory.md"
+        ]
+      },
+      "owner": "Lukaanya George",
+      "residual_risk": "--fresh deliberately starts a new run and can compile another requisition for the same review."
+    },
+    {
+      "id": "FC-07",
+      "title": "Agent report crashed on the default Windows console",
+      "category": "portability",
+      "severity": "medium",
+      "status": "fixed",
+      "discovered_on": "2026-10-01",
+      "how_found": "Real runs on Windows, the platform the team works on (fix commit 6cba326); pytest captures output as UTF-8 so the suite never saw it",
+      "discovery_evidence": [
+        "evidence/evaluation/week-07/before/FC-07-windows-console.txt"
+      ],
+      "symptom": "Every agent run ended in UnicodeEncodeError on a cp1252 console because the report printed a '→' arrow; pytest captured output as UTF-8 and saw nothing wrong.",
+      "root_cause": "Non-ASCII characters in console output, untested under the console encoding the team actually uses.",
+      "remediation": {
+        "summary": "The report prints ASCII only, and a test encodes the report as cp1252.",
+        "commits": [
+          "6cba326"
+        ],
+        "pr": 61,
+        "merged_on": "2026-10-01"
+      },
+      "retest": {
+        "kind": "offline-tests",
+        "tests": [
+          "tests/test_agent_cli.py::test_the_report_prints_on_a_default_windows_console"
+        ],
+        "evidence": []
+      },
+      "owner": "Sekyeza Elroy Nunda",
+      "residual_risk": "Other command-line tools are not yet tested under cp1252."
+    },
+    {
+      "id": "FC-08",
+      "title": "Unit label 'each' replaced with 'unit' under prompt v1.3 (TC-04)",
+      "category": "model",
+      "severity": "medium",
+      "status": "open",
+      "discovered_on": "2026-10-09",
+      "how_found": "v1.3 ten-case live regression",
+      "discovery_evidence": [
+        "evidence/evaluation/week-05-v1.3/regression-results.json",
+        "docs/evaluation/prompt-evaluation.md"
+      ],
+      "symptom": "For 'Each chair' the model returned unit 'unit' instead of the source's 'each'.",
+      "root_cause": "Not yet established; appeared with the v1.3 wording change.",
+      "remediation": null,
+      "retest": null,
+      "owner": "Beingana Jim Junior",
+      "next_step": "Revise the unit-preservation instruction, bump the prompt version, and repeat the full ten-case regression.",
+      "residual_risk": "An extracted unit basis can differ from the quotation; the officer's Gate 1 review is the control."
+    },
+    {
+      "id": "FC-09",
+      "title": "Unrelated specifications kept for binding wire (RAG TC-02)",
+      "category": "retrieval",
+      "severity": "low",
+      "status": "open",
+      "discovered_on": "2026-09-17",
+      "how_found": "Week 3 RAG evaluation, failure F1",
+      "discovery_evidence": [
+        "docs/evaluation/rag-evaluation.md"
+      ],
+      "symptom": "Cement and cable specifications cleared the 0.58 item cutoff for a binding-wire query; the model happened not to cite them.",
+      "root_cause": "The item cutoff sits in a narrow score gap and items share one specification document.",
+      "remediation": null,
+      "retest": null,
+      "owner": "Beingana Jim Junior",
+      "next_step": "Raise the item cutoff or restrict item search to the requested category, then re-measure TC-02, TC-05 and TC-06.",
+      "residual_risk": "Citation validation still withholds anything not supplied, so no unsupported clause is shown."
+    },
+    {
+      "id": "FC-10",
+      "title": "Adjacent quotation-count band outranks the applicable one (RAG TC-10)",
+      "category": "retrieval",
+      "severity": "medium",
+      "status": "open",
+      "discovered_on": "2026-09-17",
+      "how_found": "Week 3 RAG evaluation, failure F2",
+      "discovery_evidence": [
+        "docs/evaluation/rag-evaluation.md"
+      ],
+      "symptom": "For UGX 4,140,000, POL-001-C03 (>= 5,000,000) scored above the applicable POL-001-C02.",
+      "root_cause": "The bands share wording; embeddings cannot place a figure in a band.",
+      "remediation": null,
+      "retest": null,
+      "owner": "Beingana Jim Junior",
+      "next_step": "Select the band deterministically from estimated_total before search; keep top_k >= 5 until then.",
+      "residual_risk": "With top_k 3 the applicable band would be dropped; generation chose correctly on the recorded run."
+    },
+    {
+      "id": "FC-11",
+      "title": "Foreign-currency clause cited on UGX-only items (RAG)",
+      "category": "retrieval",
+      "severity": "low",
+      "status": "open",
+      "discovered_on": "2026-09-17",
+      "how_found": "Week 3 live requisition run, failure F3",
+      "discovery_evidence": [
+        "docs/evaluation/rag-evaluation.md",
+        "evidence/traces/rag-weekly-reorder-run.txt"
+      ],
+      "symptom": "POL-003-C01 was cited for UGX-only purchases.",
+      "root_cause": "The clause is retrieved for every requisition and its wording invites citation.",
+      "remediation": null,
+      "retest": null,
+      "owner": "Beingana Jim Junior",
+      "next_step": "Restrict POL-003-C01 citation to items with a non-UGX figure and add a USD evaluation case.",
+      "residual_risk": "Every citation was in the supplied set; the error is precision, not fabrication."
+    },
+    {
+      "id": "FC-12",
+      "title": "Policy retrieval took 42.01 s against the 30 s Requirement 7.1 ceiling",
+      "category": "latency",
+      "severity": "medium",
+      "status": "open",
+      "discovered_on": "2026-09-17",
+      "how_found": "Week 3 live requisition run",
+      "discovery_evidence": [
+        "evidence/traces/rag-weekly-reorder-run.txt",
+        "docs/evaluation/rag-evaluation.md"
+      ],
+      "symptom": "One Gemini call took 42.01 s; an earlier run of the same file took 6.29 s.",
+      "root_cause": "Provider latency on the free tier; retrieval itself is fast.",
+      "remediation": null,
+      "retest": null,
+      "owner": "Beingana Jim Junior",
+      "next_step": "Measure latency over repeated runs in the Week 7 evaluation before deciding whether Requirement 7.1 needs a timeout or a different budget.",
+      "residual_risk": "The agent's 120 s wall-clock budget still bounds a run."
+    }
+  ]
+}

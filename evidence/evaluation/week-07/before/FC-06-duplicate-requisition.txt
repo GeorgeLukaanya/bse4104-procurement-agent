@@ -1,0 +1,28 @@
+# FC-06 before fix: re-running a confirmed review compiles a second requisition
+# Commit under test: 184f867 (184f867 2026-10-06 Merge pull request #64 from GeorgeLukaanya/fix-week-5-gaps)
+# Recorded: 2026-10-13T15:51:13Z
+# Command(s), run in a detached git worktree of that commit, PYTHONPATH=src:
+#   the same confirmed command, run twice, same requisition store:
+#   python -m procurement_agent.agent.cli --review-date 2026-09-25 --sku AH-CM-001 --confirm-comparison --confirm-draft --no-env-file
+
+## run 1
+stop:       completed
+detail:     Requisition compiled in DRAFT. Further status changes are human actions.
+iterations: 4 / 8
+  - check_reorder_need -> ok
+  - check_supplier_eligibility -> ok
+  - compare_quotations -> ok
+  - create_requisition_draft -> ok
+
+## run 2
+stop:       completed
+detail:     Requisition compiled in DRAFT. Further status changes are human actions.
+iterations: 4 / 8
+  - check_reorder_need -> ok
+  - check_supplier_eligibility -> ok
+  - compare_quotations -> ok
+  - create_requisition_draft -> ok
+
+## requisition store after both runs
+REQ-2026-001 DRAFT 2026-10-13T15:51:13Z
+REQ-2026-002 DRAFT 2026-10-13T15:51:13Z

@@ -119,6 +119,18 @@ def test_system_instruction_matches_specification_section_8(phrase):
     assert phrase in prompts.SYSTEM_INSTRUCTION
 
 
+def test_ambiguous_date_rule_is_still_in_the_prompt():
+    """Failure FC-05 (TC-07): without this rule the model resolved 10/11/2026 to a date.
+
+    The fix was verified live under v1.3. This guards it offline: a later
+    prompt rewrite that drops the rule would bring the failure back silently.
+    """
+    text = prompts.SYSTEM_INSTRUCTION
+    assert "10/11/2026" in text
+    assert "must NOT be interpreted as either DD/MM/YYYY or MM/DD/YYYY" in text
+    assert "set the date field to null" in text
+
+
 def test_user_message_matches_specification_section_8():
     assert "Extract the quotation record from the document below." in (
         prompts.USER_MESSAGE_TEMPLATE

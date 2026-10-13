@@ -1,0 +1,9 @@
+# FC-02 before fix: prompt 1.2 vs config 1.1
+# Commit under test: 8aded21 (8aded21 2026-10-02 ft: update prompt to fix T-07 test failure (#62))
+# Recorded: 2026-10-13T15:51:12Z
+# Command(s), run in a detached git worktree of that commit, PYTHONPATH=src:
+#   python -m pytest -q tests/test_config_and_prompts.py::test_prompt_version_matches_the_config
+
+>       assert prompts.PROMPT_VERSION == ExtractionConfig().prompt_version == "1.1"
+E       AssertionError: assert '1.2' == '1.1'
+tests/test_config_and_prompts.py:91: AssertionError

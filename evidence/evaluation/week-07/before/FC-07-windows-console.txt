@@ -1,0 +1,11 @@
+# FC-07 before fix: report crashes on a cp1252 (default Windows) console
+# Commit under test: 51b53e8 (51b53e8 2026-10-01 Write the Agent Task Contract and fix the iteration limit at 8)
+# Recorded: 2026-10-13T15:51:13Z
+# Command(s), run in a detached git worktree of that commit, PYTHONPATH=src:
+#   PYTHONIOENCODING=cp1252 python -m procurement_agent.agent.cli --review-date 2026-09-25 --sku AH-CM-001 --no-env-file
+
+  File "/usr/lib/python3.14/encodings/cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 266: character maps to <undefined>
+(exit 1)

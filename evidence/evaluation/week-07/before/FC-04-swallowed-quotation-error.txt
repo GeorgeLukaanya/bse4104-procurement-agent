@@ -1,0 +1,11 @@
+# FC-04 before fix: missing quotations file reported as 'no quotations'
+# Commit under test: 184f867 (184f867 2026-10-06 Merge pull request #64 from GeorgeLukaanya/fix-week-5-gaps)
+# Recorded: 2026-10-13T15:51:13Z
+# Command(s), run in a detached git worktree of that commit, PYTHONPATH=src:
+#   python -m procurement_agent.agent.cli --review-date 2026-09-25 --sku AH-CM-001 --quotations <missing file> --no-env-file (logs to a temp dir)
+
+stop:       failed
+detail:     No held quotations name AH-CM-001.
+iterations: 1 / 8
+contract:   contracts/agent-task-contract.json v1.0, stop unmapped
+step:       eligibility

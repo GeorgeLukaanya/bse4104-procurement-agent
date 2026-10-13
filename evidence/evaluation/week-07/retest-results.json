@@ -1,0 +1,179 @@
+{
+  "recorded_at": "2026-10-13T15:55:52Z",
+  "commit": "5d7d2b4",
+  "branch": "ft-week-7-failure-catalogue",
+  "python": "3.14.7",
+  "catalogue_version": "1.0",
+  "network_used": false,
+  "results": [
+    {
+      "id": "FC-01",
+      "title": "Malformed tool output relayed as status ok",
+      "status": "fixed",
+      "retest_kind": "offline-tests",
+      "tests": [
+        "tests/test_tools_output_schema.py::test_fa10_malformed_output_is_discarded",
+        "tests/test_tools_output_schema.py::test_the_discard_envelope_itself_conforms",
+        "tests/test_tools_output_schema.py::test_a_missing_schema_fails_closed",
+        "tests/test_tools_output_schema.py::test_a_real_call_still_conforms"
+      ],
+      "exit_code": 0,
+      "passed": 4,
+      "failed": 0,
+      "error": 0,
+      "skipped": 0,
+      "result": "PASS",
+      "summary": "4/4 passed"
+    },
+    {
+      "id": "FC-02",
+      "title": "Prompt version raised to 1.2 while the config stayed at 1.1",
+      "status": "fixed",
+      "retest_kind": "offline-tests",
+      "tests": [
+        "tests/test_config_and_prompts.py::test_prompt_version_matches_the_config",
+        "tests/test_cache.py::test_changing_the_prompt_version_invalidates_the_cache",
+        "tests/test_runlog.py::test_every_call_is_written_with_its_configuration_fingerprint"
+      ],
+      "exit_code": 0,
+      "passed": 3,
+      "failed": 0,
+      "error": 0,
+      "skipped": 0,
+      "result": "PASS",
+      "summary": "3/3 passed"
+    },
+    {
+      "id": "FC-03",
+      "title": "Offline demo served hand-written records to live runs",
+      "status": "fixed",
+      "retest_kind": "offline-tests",
+      "tests": [
+        "tests/test_offline_demo.py::test_defaults_point_away_from_real_cache_and_evidence",
+        "tests/test_offline_demo.py::test_explicit_paths_are_respected",
+        "tests/test_offline_demo.py::test_real_run_writes_only_under_the_given_paths"
+      ],
+      "exit_code": 0,
+      "passed": 3,
+      "failed": 0,
+      "error": 0,
+      "skipped": 0,
+      "result": "PASS",
+      "summary": "3/3 passed"
+    },
+    {
+      "id": "FC-04",
+      "title": "Planner reported a missing or tampered quotations file as 'no quotations'",
+      "status": "fixed",
+      "retest_kind": "offline-tests",
+      "tests": [
+        "tests/test_agent_workflow.py::test_missing_quotations_file_is_unavailable",
+        "tests/test_agent_workflow.py::test_tampered_quotations_file_is_integrity_failure",
+        "tests/test_agent_cli.py::test_cli_missing_quotations_reports_unavailable"
+      ],
+      "exit_code": 0,
+      "passed": 3,
+      "failed": 0,
+      "error": 0,
+      "skipped": 0,
+      "result": "PASS",
+      "summary": "3/3 passed"
+    },
+    {
+      "id": "FC-05",
+      "title": "Ambiguous date 10/11/2026 resolved instead of returned as null",
+      "status": "fixed",
+      "retest_kind": "live-recorded",
+      "tests": [
+        "tests/test_config_and_prompts.py::test_ambiguous_date_rule_is_still_in_the_prompt"
+      ],
+      "exit_code": 0,
+      "passed": 1,
+      "failed": 0,
+      "error": 0,
+      "skipped": 0,
+      "result": "PASS",
+      "summary": "1/1 passed",
+      "live_evidence": [
+        "evidence/evaluation/week-05-v1.3/TC-07-retest.json",
+        "evidence/evaluation/week-05-v1.3/regression-results.json",
+        "evidence/evaluation/week-05-v1.3/review-summary.json"
+      ],
+      "note": "Fix verified live earlier; offline guard tests re-run now."
+    },
+    {
+      "id": "FC-06",
+      "title": "Re-running a confirmed review compiled a second requisition",
+      "status": "fixed",
+      "retest_kind": "offline-tests",
+      "tests": [
+        "tests/test_agent_checkpoint.py::test_a_completed_run_never_compiles_a_second_requisition",
+        "tests/test_agent_checkpoint.py::test_handoff_then_confirm_resumes_without_repeating_reads",
+        "tests/test_agent_checkpoint.py::test_failure_then_recovery_resumes_at_the_failed_step"
+      ],
+      "exit_code": 0,
+      "passed": 3,
+      "failed": 0,
+      "error": 0,
+      "skipped": 0,
+      "result": "PASS",
+      "summary": "3/3 passed"
+    },
+    {
+      "id": "FC-07",
+      "title": "Agent report crashed on the default Windows console",
+      "status": "fixed",
+      "retest_kind": "offline-tests",
+      "tests": [
+        "tests/test_agent_cli.py::test_the_report_prints_on_a_default_windows_console"
+      ],
+      "exit_code": 0,
+      "passed": 1,
+      "failed": 0,
+      "error": 0,
+      "skipped": 0,
+      "result": "PASS",
+      "summary": "1/1 passed"
+    },
+    {
+      "id": "FC-08",
+      "title": "Unit label 'each' replaced with 'unit' under prompt v1.3 (TC-04)",
+      "status": "open",
+      "result": "OPEN",
+      "owner": "Beingana Jim Junior",
+      "next_step": "Revise the unit-preservation instruction, bump the prompt version, and repeat the full ten-case regression."
+    },
+    {
+      "id": "FC-09",
+      "title": "Unrelated specifications kept for binding wire (RAG TC-02)",
+      "status": "open",
+      "result": "OPEN",
+      "owner": "Beingana Jim Junior",
+      "next_step": "Raise the item cutoff or restrict item search to the requested category, then re-measure TC-02, TC-05 and TC-06."
+    },
+    {
+      "id": "FC-10",
+      "title": "Adjacent quotation-count band outranks the applicable one (RAG TC-10)",
+      "status": "open",
+      "result": "OPEN",
+      "owner": "Beingana Jim Junior",
+      "next_step": "Select the band deterministically from estimated_total before search; keep top_k >= 5 until then."
+    },
+    {
+      "id": "FC-11",
+      "title": "Foreign-currency clause cited on UGX-only items (RAG)",
+      "status": "open",
+      "result": "OPEN",
+      "owner": "Beingana Jim Junior",
+      "next_step": "Restrict POL-003-C01 citation to items with a non-UGX figure and add a USD evaluation case."
+    },
+    {
+      "id": "FC-12",
+      "title": "Policy retrieval took 42.01 s against the 30 s Requirement 7.1 ceiling",
+      "status": "open",
+      "result": "OPEN",
+      "owner": "Beingana Jim Junior",
+      "next_step": "Measure latency over repeated runs in the Week 7 evaluation before deciding whether Requirement 7.1 needs a timeout or a different budget."
+    }
+  ]
+}

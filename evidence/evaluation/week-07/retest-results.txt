@@ -1,0 +1,36 @@
+Failure Catalogue re-test
+recorded 2026-10-13T15:55:52Z  commit 5d7d2b4 (ft-week-7-failure-catalogue)  python 3.14.7  network: none
+
+FC-01  PASS  4/4 passed              Malformed tool output relayed as status ok
+        tests/test_tools_output_schema.py::test_fa10_malformed_output_is_discarded
+        tests/test_tools_output_schema.py::test_the_discard_envelope_itself_conforms
+        tests/test_tools_output_schema.py::test_a_missing_schema_fails_closed
+        tests/test_tools_output_schema.py::test_a_real_call_still_conforms
+FC-02  PASS  3/3 passed              Prompt version raised to 1.2 while the config stayed at 1.1
+        tests/test_config_and_prompts.py::test_prompt_version_matches_the_config
+        tests/test_cache.py::test_changing_the_prompt_version_invalidates_the_cache
+        tests/test_runlog.py::test_every_call_is_written_with_its_configuration_fingerprint
+FC-03  PASS  3/3 passed              Offline demo served hand-written records to live runs
+        tests/test_offline_demo.py::test_defaults_point_away_from_real_cache_and_evidence
+        tests/test_offline_demo.py::test_explicit_paths_are_respected
+        tests/test_offline_demo.py::test_real_run_writes_only_under_the_given_paths
+FC-04  PASS  3/3 passed              Planner reported a missing or tampered quotations file as 'no quotations'
+        tests/test_agent_workflow.py::test_missing_quotations_file_is_unavailable
+        tests/test_agent_workflow.py::test_tampered_quotations_file_is_integrity_failure
+        tests/test_agent_cli.py::test_cli_missing_quotations_reports_unavailable
+FC-05  PASS  1/1 passed              Ambiguous date 10/11/2026 resolved instead of returned as null
+        tests/test_config_and_prompts.py::test_ambiguous_date_rule_is_still_in_the_prompt
+        live evidence: evidence/evaluation/week-05-v1.3/TC-07-retest.json, evidence/evaluation/week-05-v1.3/regression-results.json, evidence/evaluation/week-05-v1.3/review-summary.json
+FC-06  PASS  3/3 passed              Re-running a confirmed review compiled a second requisition
+        tests/test_agent_checkpoint.py::test_a_completed_run_never_compiles_a_second_requisition
+        tests/test_agent_checkpoint.py::test_handoff_then_confirm_resumes_without_repeating_reads
+        tests/test_agent_checkpoint.py::test_failure_then_recovery_resumes_at_the_failed_step
+FC-07  PASS  1/1 passed              Agent report crashed on the default Windows console
+        tests/test_agent_cli.py::test_the_report_prints_on_a_default_windows_console
+FC-08  OPEN  owner Beingana Jim Junior: Unit label 'each' replaced with 'unit' under prompt v1.3 (TC-04)
+FC-09  OPEN  owner Beingana Jim Junior: Unrelated specifications kept for binding wire (RAG TC-02)
+FC-10  OPEN  owner Beingana Jim Junior: Adjacent quotation-count band outranks the applicable one (RAG TC-10)
+FC-11  OPEN  owner Beingana Jim Junior: Foreign-currency clause cited on UGX-only items (RAG)
+FC-12  OPEN  owner Beingana Jim Junior: Policy retrieval took 42.01 s against the 30 s Requirement 7.1 ceiling
+
+7/7 fixed failures re-tested PASS; 5 open.

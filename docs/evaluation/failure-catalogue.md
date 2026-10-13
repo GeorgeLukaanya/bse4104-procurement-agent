@@ -3,10 +3,14 @@
 | Field | Value |
 |---|---|
 | Week | 7 |
-| Owner | Lukaanya George |
+| Owner | Ainamani Jim Isaac |
 | Due | 16 October 2026 |
 | Status | Complete for recorded failures; Week 7 scenario failures to be added |
 | Path | `docs/evaluation/failure-catalogue.md` |
+
+Reassigned from Lukaanya George to Ainamani Jim Isaac on 13 October 2026, in exchange for the
+30+ scenario evaluation (#31). Sections 1–4 and 6–7 were drafted by Lukaanya George before the
+reassignment; see issue #34.
 
 ## Brief requirement
 

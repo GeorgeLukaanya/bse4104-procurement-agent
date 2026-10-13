@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Week | 7 |
-| Owner | Ainamani Jim Isaac |
+| Owner | Lukaanya George |
 | Due | 16 October 2026 |
 | Status | Not started |
 | Path | `docs/evaluation/scenarios.md` |

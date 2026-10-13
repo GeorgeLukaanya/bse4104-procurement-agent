@@ -99,10 +99,10 @@ Due dates are the Friday of each teaching week.
 
 | Deliverable | Path | Owner | Status |
 |---|---|---|---|
-| 30+ scenario evaluation | [`docs/evaluation/scenarios.md`](evaluation/scenarios.md) | Ainamani Jim Isaac | Not started |
+| 30+ scenario evaluation | [`docs/evaluation/scenarios.md`](evaluation/scenarios.md) | Lukaanya George | Not started |
 | Observability / tracing evidence | [`docs/evaluation/observability.md`](evaluation/observability.md) | Beingana Jim Junior | Not started |
 | Guardrail implementation evidence | [`docs/evaluation/guardrails.md`](evaluation/guardrails.md) | Sekyeza Elroy Nunda | Not started |
-| Failure catalogue | [`docs/evaluation/failure-catalogue.md`](evaluation/failure-catalogue.md) | Lukaanya George | Recorded failures done; Week 7 scenario failures pending |
+| Failure catalogue | [`docs/evaluation/failure-catalogue.md`](evaluation/failure-catalogue.md) | Ainamani Jim Isaac | Recorded failures done; Week 7 scenario failures pending |
 | Week 7 progress report | [`docs/weekly-reports/week-07.md`](weekly-reports/week-07.md) | Nannyombi Shakiran | Not started |
 
 ## Week 8 — 23 October 2026
@@ -160,10 +160,10 @@ Issues: [https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues](htt
 
 ### Week 7 — due 16 Oct 2026
 
-- 30+ scenario evaluation — Ainamani Jim Isaac — `docs/evaluation/scenarios.md` — [#31](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/31)
+- 30+ scenario evaluation — Lukaanya George — `docs/evaluation/scenarios.md` — [#31](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/31)
 - Observability / tracing evidence — Beingana Jim Junior — `docs/evaluation/observability.md` — [#32](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/32)
 - Guardrail implementation evidence — Sekyeza Elroy Nunda — `docs/evaluation/guardrails.md` — [#33](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/33)
-- Failure catalogue — Lukaanya George — `docs/evaluation/failure-catalogue.md` — [#34](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/34)
+- Failure catalogue — Ainamani Jim Isaac — `docs/evaluation/failure-catalogue.md` — [#34](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/34)
 - Week 7 progress report — Nannyombi Shakiran — `docs/weekly-reports/week-07.md` — [#35](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/35)
 
 ### Week 8 — due 23 Oct 2026

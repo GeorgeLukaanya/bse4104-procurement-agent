@@ -23,6 +23,10 @@ class AgentState:
     caller_role: str
     confirm_comparison: bool = False
     confirm_draft: bool = False
+    # Set when the officer discloses a rate for a non-UGX quotation (POL-003-C01).
+    # None means the officer has not supplied one.
+    exchange_rate_ugx_per_usd: float | None = None
+    exchange_rate_effective_date: str | None = None
     step: str = STEP_SCAN
     iterations: int = 0
     stop_reason: str | None = None

@@ -123,6 +123,8 @@ class CheckpointStore:
             },
             "step_sources": state.step_sources,
             "confirmations": state.confirmations,
+            "exchange_rate_ugx_per_usd": state.exchange_rate_ugx_per_usd,
+            "exchange_rate_effective_date": state.exchange_rate_effective_date,
             "saved_at": saved_at,
         }
         # Write then rename, so a crash mid-write leaves the previous

@@ -58,6 +58,26 @@ def test_the_report_prints_on_a_default_windows_console(tmp_path, capsys):
     report.encode("cp1252")
 
 
+def test_cli_missing_exchange_rate_asks_for_one(tmp_path, capsys):
+    code = cli.main(
+        [
+            "--review-date", "2026-09-25",
+            "--sku", "AH-HT-001",
+            "--no-env-file",
+            "--run-log", str(tmp_path / "agent.jsonl"),
+            "--tool-log", str(tmp_path / "tools.jsonl"),
+            "--store", str(tmp_path / "req.jsonl"),
+            "--no-state",
+            "--no-memory",
+        ]
+    )
+    report = capsys.readouterr().out
+    assert code == cli.EXIT_HANDOFF
+    assert "EXCHANGE_RATE_REQUIRED" in report
+    assert "--exchange-rate" in report
+    assert not (tmp_path / "req.jsonl").exists()
+
+
 def test_cli_missing_quotations_reports_unavailable(tmp_path, capsys):
     code = cli.main(
         [

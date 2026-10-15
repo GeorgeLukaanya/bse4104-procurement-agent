@@ -54,6 +54,18 @@ def test_a_completed_run_never_compiles_a_second_requisition(tmp_path):
     assert len(lines) == 1
 
 
+def test_a_rate_supplied_on_resume_reruns_only_the_comparison(tmp_path):
+    waiting = _run(tmp_path, sku="AH-HT-001")
+    assert waiting.stop_reason == STOP_AWAITING_HUMAN
+    assert "EXCHANGE_RATE_REQUIRED" in waiting.stop_detail
+
+    rated = _run(tmp_path, sku="AH-HT-001", exchange_rate_ugx_per_usd=3700)
+    assert rated.stop_reason == STOP_AWAITING_HUMAN
+    assert _tools(rated) == ["compare_quotations"]
+    assert rated.state.comparison["exchange_rate"]["ugx_per_usd"] == 3700
+    assert rated.state.draft is None
+
+
 def test_failure_then_recovery_resumes_at_the_failed_step(tmp_path):
     failed = _run(tmp_path, suppliers_path=str(tmp_path / "missing-suppliers.json"))
     assert failed.stop_reason == STOP_FAILED
@@ -119,6 +131,7 @@ def test_checkpoint_holds_working_state_only(tmp_path):
         "checkpoint_format", "run_id", "review_date", "sku", "officer_username",
         "contract_version", "step", "iterations", "stop_reason", "stop_detail",
         "results", "step_sources", "confirmations", "saved_at",
+        "exchange_rate_ugx_per_usd", "exchange_rate_effective_date",
     }
     assert set(saved["results"]) == {"scan", "eligibility", "compare"}
 

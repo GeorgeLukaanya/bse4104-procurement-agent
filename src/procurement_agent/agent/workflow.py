@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from typing import Any, Callable
 
 from ..tools.contract import (
+    CODE_EXCHANGE_RATE_REQUIRED,
     ROLE_MANAGER,
     ROLE_OFFICER,
     STATUS_FAILED,
@@ -100,6 +101,8 @@ def run_workflow(
     caller_role: str = ROLE_OFFICER,
     confirm_comparison: bool = False,
     confirm_draft: bool = False,
+    exchange_rate_ugx_per_usd: float | None = None,
+    exchange_rate_effective_date: str | None = None,
     max_iterations: int | None = None,
     timeout_s: float | None = None,
     planner: Planner | None = None,
@@ -142,6 +145,8 @@ def run_workflow(
         caller_role=caller_role,
         confirm_comparison=confirm_comparison,
         confirm_draft=confirm_draft,
+        exchange_rate_ugx_per_usd=exchange_rate_ugx_per_usd,
+        exchange_rate_effective_date=exchange_rate_effective_date,
         contract=active_contract,
     )
     active_planner = planner or DeterministicPlanner(
@@ -180,6 +185,8 @@ def run_workflow(
         saved = run.store.load(state.run_id)
         if saved is not None:
             state.resumed = restore(state, saved, current_sources(**sources))
+            _adopt_exchange_rate(state, saved)
+            _drop_comparison_if_rate_changed(state)
             if state.draft is not None:
                 # The requisition already exists. Running again must not
                 # compile a second one for the same review.
@@ -231,6 +238,14 @@ def run_workflow(
         if status in {STATUS_UNAVAILABLE, STATUS_FAILED}:
             return finish(STOP_FAILED, _error_detail(envelope))
         if status not in {STATUS_OK, STATUS_NO_RESULT}:
+            # The contract classes a missing rate as NEEDS_HUMAN, not a refusal.
+            # The compare step is not advanced, so the next run repeats it.
+            if _error_code(envelope) == CODE_EXCHANGE_RATE_REQUIRED:
+                return finish(
+                    STOP_AWAITING_HUMAN,
+                    _error_detail(envelope)
+                    + " Re-run with --exchange-rate once the officer discloses one.",
+                )
             return finish(STOP_REFUSED, _error_detail(envelope))
 
         completed_step = state.step
@@ -370,6 +385,60 @@ def _remember_outcome(state: AgentState, memory: MemoryStore) -> None:
     except MemoryRefused:
         # Memory is advisory; failing to record it never fails the run.
         pass
+
+
+def _adopt_exchange_rate(state: AgentState, checkpoint: dict[str, Any]) -> None:
+    """Keep a rate the officer already disclosed, unless this run supplies one."""
+    if state.exchange_rate_ugx_per_usd is None and checkpoint.get("exchange_rate_ugx_per_usd") is not None:
+        state.exchange_rate_ugx_per_usd = checkpoint["exchange_rate_ugx_per_usd"]
+    if not state.exchange_rate_effective_date and checkpoint.get("exchange_rate_effective_date"):
+        state.exchange_rate_effective_date = checkpoint["exchange_rate_effective_date"]
+
+
+def _drop_comparison_if_rate_changed(state: AgentState) -> None:
+    """A saved comparison belongs to the rate it was computed with."""
+    comparison = state.comparison
+    if comparison is None or not _rate_changed(
+        comparison,
+        state.exchange_rate_ugx_per_usd,
+        state.exchange_rate_effective_date,
+    ):
+        return
+    state.comparison = None
+    state.draft = None
+    state.step_sources.pop(STEP_COMPARE, None)
+    state.step_sources.pop(STEP_DRAFT, None)
+    state.confirmations.pop("comparison", None)
+    state.confirmations.pop("draft", None)
+    state.step = STEP_COMPARE
+    if state.resumed is not None:
+        kept = [
+            step for step in (state.resumed.get("kept_steps") or [])
+            if step not in {STEP_COMPARE, STEP_DRAFT}
+        ]
+        state.resumed["kept_steps"] = kept
+        state.resumed["restored"] = bool(kept)
+        state.resumed["recomputed_from"] = STEP_COMPARE
+        state.resumed["changed_sources"] = ["exchange_rate"]
+
+
+def _rate_changed(comparison: dict[str, Any], rate: float | None, rate_date: str | None) -> bool:
+    exchange = comparison.get("exchange_rate") or None
+    saved = None if not exchange else exchange.get("ugx_per_usd")
+    if (saved is None) != (rate is None):
+        return True
+    if saved is not None and rate is not None and float(saved) != float(rate):
+        return True
+    if rate_date and exchange and exchange.get("effective_date") != rate_date:
+        return True
+    return False
+
+
+def _error_code(envelope: dict[str, Any]) -> str | None:
+    errors = envelope.get("errors") or []
+    if not errors:
+        return None
+    return errors[0].get("code")
 
 
 def _error_detail(envelope: dict[str, Any]) -> str:

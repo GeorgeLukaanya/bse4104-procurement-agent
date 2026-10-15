@@ -42,6 +42,11 @@ python -m procurement_agent.agent.cli \
 python -m procurement_agent.agent.cli \
     --review-date 2026-09-25 --sku AH-CM-001 \
     --confirm-comparison --confirm-draft
+
+# A USD quotation with no rate stops for the officer (exit 1). Re-run with the rate.
+python -m procurement_agent.agent.cli \
+    --review-date 2026-09-25 --sku AH-HT-001 \
+    --exchange-rate 3700 --exchange-rate-date 2026-09-25
 ```
 
 What that prints (no `--json`):
@@ -81,7 +86,7 @@ calls:
 | Exit | Meaning |
 |---|---|
 | 0 | `completed` (DRAFT written) or `no_reorder_required` |
-| 1 | `awaiting_human` — re-run with the matching `--confirm-*` flag |
+| 1 | `awaiting_human` — re-run with the matching `--confirm-*` flag, or with `--exchange-rate` when the stop names `EXCHANGE_RATE_REQUIRED` |
 | 2 | `max_iterations`, `timeout`, `failed`, `unauthorized`, `refused`, or usage error |
 
 Halt is always explicit. The loop does not run until an exception. Every stop reason is written on the result and on `evidence/traces/agent-runs.jsonl`.
@@ -125,6 +130,8 @@ On the completed run the comparison still has one eligible offer (QT-002) after 
 | Planner proposes `create_requisition_draft` on the scan step | `TOOL_NOT_ALLOWED`, nothing written |
 | Missing quotations file | `failed`, `DATA_SOURCE_UNAVAILABLE` (same code as a missing inventory file) |
 | Tampered quotations checksum | `failed`, `DATA_INTEGRITY_ERROR` |
+| USD quotation, no rate (`AH-HT-001`) | `awaiting_human`, `EXCHANGE_RATE_REQUIRED`, nothing written. `--exchange-rate` supplies the rate on the re-run |
+| No eligible supplier (`AH-CM-002`), both confirms | `awaiting_human`, `MISSING_COMPONENT`, nothing written (Requirement 9.4) |
 
 ### Not this week
 

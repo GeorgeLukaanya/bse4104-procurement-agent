@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Callable
+from typing import Any, Callable, Mapping
 
 from ..tools.contract import (
     CODE_EXCHANGE_RATE_REQUIRED,
@@ -36,6 +38,7 @@ from .steps import (
     STOP_FAILED,
     STOP_MAX_ITERATIONS,
     STOP_NO_REORDER,
+    STOP_NO_PROGRESS,
     STOP_REFUSED,
     STOP_TIMEOUT,
     STOP_UNAUTHORIZED,
@@ -137,6 +140,7 @@ def run_workflow(
     budget = timeout_s if timeout_s is not None else _env_float(
         "AGENT_TIMEOUT_SECONDS", active_contract.wall_clock_seconds
     )
+    repeat_limit = active_contract.repeated_identical_action
     started = time.perf_counter()
     state = AgentState(
         review_date=review_date,
@@ -211,6 +215,24 @@ def run_workflow(
         proposal = active_planner.propose(state)
         if proposal.kind == "stop":
             return finish(proposal.stop_reason or STOP_COMPLETED, proposal.detail or "")
+
+        # Loop prevention. A planner that proposes the same call twice in a row
+        # is not making progress, and left alone it would spend the whole
+        # iteration budget repeating itself. The threshold comes from the
+        # contract; when the contract does not enforce it, this is skipped.
+        signature = _action_signature(proposal.tool, proposal.payload)
+        if (repeat_limit is not None
+                and state.repeats_of_last_action >= repeat_limit
+                and signature == state.last_action):
+            return finish(
+                STOP_NO_PROGRESS,
+                f"{proposal.tool} was proposed twice in a row with the same arguments. "
+                f"The contract allows {repeat_limit} repeat(s). Nothing further was called.",
+            )
+        state.repeats_of_last_action = (
+            state.repeats_of_last_action + 1 if signature == state.last_action else 0
+        )
+        state.last_action = signature
 
         state.iterations += 1
         envelope = invoke(
@@ -439,6 +461,12 @@ def _error_code(envelope: dict[str, Any]) -> str | None:
     if not errors:
         return None
     return errors[0].get("code")
+
+
+def _action_signature(tool: str | None, payload: Mapping[str, Any] | None) -> str:
+    """One string per proposed call: the tool and its arguments, order-independent."""
+    canonical = json.dumps(payload or {}, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha256(f"{tool}|{canonical}".encode("utf-8")).hexdigest()
 
 
 def _error_detail(envelope: dict[str, Any]) -> str:

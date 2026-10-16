@@ -105,8 +105,8 @@
     "repeated_identical_action": {
       "value": 0,
       "stop_reason": "NO_PROGRESS",
-      "enforced": false,
-      "_note": "not enforced yet; execution traces (#23) should not claim it"
+      "enforced": true,
+      "_note": "the loop hashes (tool, arguments) and stops when the same call is proposed twice in a row"
     },
     "model_calls_per_iteration": 1,
     "model_calls_per_run_max": 10,
@@ -158,11 +158,11 @@
       "DATA_SOURCE_UNAVAILABLE": "failed",
       "DATA_INTEGRITY_ERROR": "failed",
       "SERVICE_UNAVAILABLE": "failed",
-      "OUTPUT_SCHEMA_INVALID": "failed"
+      "OUTPUT_SCHEMA_INVALID": "failed",
+      "NO_PROGRESS": "no_progress"
     },
     "not_implemented": [
-      "OFFICER_DECLINED",
-      "NO_PROGRESS"
+      "OFFICER_DECLINED"
     ],
     "_no_reorder_needed": "decided before any loop starts, by check_reorder_need",
     "trace_name_for": {
@@ -170,7 +170,8 @@
       "no_reorder_required": "NO_REORDER_NEEDED",
       "awaiting_human": "AWAITING_HUMAN",
       "max_iterations": "ITERATION_LIMIT",
-      "timeout": "TIMEOUT"
+      "timeout": "TIMEOUT",
+      "no_progress": "NO_PROGRESS"
     },
     "ambiguous_in_code": {
       "unauthorized": [

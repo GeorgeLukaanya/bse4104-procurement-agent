@@ -47,6 +47,7 @@ class AgentContract:
     iterations_per_item: int
     wall_clock_seconds: float
     replans_per_failure_kind: int
+    repeated_identical_action: int | None
     model_calls_per_run_max: int
     planner_decides: str
     tools: tuple[str, ...]
@@ -128,6 +129,7 @@ def load_contract(path: str | Path = DEFAULT_CONTRACT_PATH) -> AgentContract:
         iterations_per_item=iterations,
         wall_clock_seconds=float(seconds),
         replans_per_failure_kind=int(limits.get("replans_per_failure_kind", 1)),
+        repeated_identical_action=_repeat_limit(limits.get("repeated_identical_action")),
         model_calls_per_run_max=int(limits.get("model_calls_per_run_max", 0)),
         planner_decides=str(planner.get("decides", "deterministic")),
         tools=tools,
@@ -140,6 +142,23 @@ def load_contract(path: str | Path = DEFAULT_CONTRACT_PATH) -> AgentContract:
         never_in_the_loop=tuple(handoff.get("never_in_the_loop", ())),
         path=contract_path.as_posix(),
     )
+
+
+def _repeat_limit(value: Any) -> int | None:
+    """How many identical repeats the contract allows, or None if it does not say.
+
+    The contract records this as an object once it is enforced:
+    ``{"value": 0, "enforced": true}``. An unenforced or absent entry returns
+    None, and the loop does not check for repeats, so the limit is never
+    claimed by a build that does not apply it.
+    """
+    if isinstance(value, dict):
+        if not value.get("enforced"):
+            return None
+        value = value.get("value")
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        return None
+    return value
 
 
 def _section(payload: dict[str, Any], key: str, path: Path) -> dict[str, Any]:

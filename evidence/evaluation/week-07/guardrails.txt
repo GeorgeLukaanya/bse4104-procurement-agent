@@ -1,0 +1,73 @@
+Guardrail evidence, recorded 2026-10-16T05:49:12+00:00
+No API key, no network, no model. Every guardrail below is deterministic.
+
+--- authorization -------------------------------------------------
+A. PROCUREMENT_MANAGER calls the write tool
+  status : unauthorized
+  errors : UNAUTHORIZED_ROLE: PROCUREMENT_MANAGER may not create a requisition. POL-004-C03 separates preparation from approval. Nothing was written.
+  written: none
+
+B. AGENT calls it without the officer's confirmation
+  status : unauthorized
+  errors : UNAUTHORIZED_ROLE: AGENT may propose create_requisition_draft but the call executes only after the officer confirms it. Requirement 9.1. Nothing was written.
+  written: none
+
+C. AGENT, confirmed, asks for status APPROVED
+  status : invalid_input
+  errors : FORBIDDEN_TRANSITION: status must be DRAFT; 'APPROVED' was requested. Requirement 14.3 permits no programmatic transition beyond DRAFT. Nothing was written.
+  written: none
+
+D. PROCUREMENT_OFFICER, confirmed, valid request
+  status : ok
+  errors : none
+  written: REQ-2026-001
+
+--- tool allow-list -----------------------------------------------
+E. write tool proposed while the loop is on the scan step
+  status : unauthorized
+  errors : TOOL_NOT_ALLOWED: create_requisition_draft is not on the orchestration allow-list for this step.
+  written: none
+
+F. a capability the catalogue forbids outright
+  status : unauthorized
+  errors : TOOL_NOT_ALLOWED: issue_purchase_order is not on the tool allow-list.
+  written: none
+
+--- output guard --------------------------------------------------
+G. output guard on a drafted sentence
+  input  : The supplier has been approved and the contract is awarded.
+  caught : approval_assertion at summary, contract_award_assertion at summary
+
+--- loop limits and gates -----------------------------------------
+H. iteration cap set to 1
+  stop:       max_iterations
+  detail:     Reached the iteration cap (1). No further tool call was made.
+  iterations: 1 / 8
+    - check_reorder_need -> ok
+
+I. default run reaches the comparison and stops for the officer
+  stop:       awaiting_human
+  detail:     Landed-cost comparison is on the table. The officer must confirm it before a requisition is compiled (Requirement 7.1 / gate 2).
+  iterations: 3 / 8
+    - check_supplier_eligibility -> ok
+    - compare_quotations -> ok
+
+J. same review run again: completed steps are not repeated
+  stop:       awaiting_human
+  iterations: 3 / 8
+  resumed:    scan, eligibility, compare restored from checkpoint (3 iterations carried over)
+  calls:      none this run
+
+--- source integrity and invalidation ------------------------------
+K. the quotations file is edited, the register is not
+  stop:       failed
+  detail:     DATA_INTEGRITY_ERROR: <workspace>\quotations.json: content does not match the registered checksum for DAT-003. The file was edited after it was registered; refuse rather than use an unreviewed figure.
+  calls:      none this run
+
+L. the same change, now registered as reviewed
+  stop:       awaiting_human
+  iterations: 5 / 8
+  resumed:    scan restored from checkpoint (3 iterations carried over)
+  calls:
+    - check_supplier_eligibility -> ok
+    - compare_quotations -> ok

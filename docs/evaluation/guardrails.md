@@ -40,7 +40,7 @@ point: a guardrail a model could talk its way past is not a guardrail.
 | 1 | **Tool allow-list and phase isolation** | `src/procurement_agent/tools/dispatch.py::invoke()` | `TOOL_NOT_ALLOWED` | E, F | S-21, S-22 |
 | 2 | **Authorization by role** | `src/procurement_agent/tools/dispatch.py::invoke()` | `UNAUTHORIZED_ROLE`, `FORBIDDEN_TRANSITION` | A, B, C, D, P | S-20, S-23, S-32, S-33, S-34, S-35 |
 | 3 | **Human approval controls** (Gate 2, draft confirmation) | `src/procurement_agent/agent/workflow.py::run_workflow()` | `awaiting_human` | I | S-01, S-02, S-34 |
-| 4 | **Iteration and time limits** (8 / 120 s) | `src/procurement_agent/agent/workflow.py::run_workflow()` | `max_iterations`, `timeout` | H, M | S-10, S-11 |
+| 4 | **Iteration and time limits** (8 / 120 s, agent loop) | `src/procurement_agent/agent/workflow.py::run_workflow()` | `max_iterations`, `timeout` | H, M | S-10, S-11 |
 | 5 | **Loop prevention** (`repeated_identical_action: 0`) | `src/procurement_agent/agent/workflow.py::run_workflow()`, `_action_signature()` | `no_progress` | R | none yet |
 | 6 | **Input and output schema validation** | `src/procurement_agent/tools/dispatch.py::invoke()`, `src/procurement_agent/tools/output_schema.py::check()` | `invalid_input`, `OUTPUT_SCHEMA_INVALID` | N, O | S-18, S-29, S-30 |
 | 7 | **Source integrity and step invalidation** | `src/procurement_agent/tools/data.py::load_*()`, `src/procurement_agent/agent/checkpoint.py::restore()` | `DATA_INTEGRITY_ERROR`, silent re-run | J, K, L | S-17, S-28, S-31 |
@@ -158,7 +158,10 @@ The officer passes the gate by re-running with `--confirm-comparison` and `--con
 # src/procurement_agent/agent/workflow.py::run_workflow()
 while state.iterations < limit:
     if time.perf_counter() - started > budget:
-        return finish(STOP_TIMEOUT, f"Stopped after {budget:.0f}s (AGENT_TIMEOUT_SECONDS).")
+        spent = time.perf_counter() - started
+        return finish(STOP_TIMEOUT,
+                      f"Stopped after {spent:.2f}s, over the {budget:.2f}s budget "
+                      "(AGENT_TIMEOUT_SECONDS).")
 ...
 return finish(STOP_MAX_ITERATIONS,
               f"Reached the iteration cap ({limit}). No further tool call was made.")
@@ -360,11 +363,16 @@ violations across all 45.
 
 ### 6. What is still open
 
-Both are recorded in the task contract and neither is a guardrail that fails to fire.
+Three are recorded. The first two are in the task contract and neither is a guardrail that fails to fire; the third is a gap in coverage.
 
 - **Stop reasons are coarser in code than in the contract.** `unauthorized`, `refused` and
   `failed` each cover several contract names, so a trace cannot yet say which boundary refused.
 - **Checkpoint retention** is a 30-day rule in the state model with no cleanup behind it.
+- **The time limit covers the agent loop, not the model call.** The 120-second budget applies to
+  `run_workflow()`, and it is checked between iterations. No model call has a per-call timeout:
+  `client.py` sets none, so neither the extraction command nor the policy command is bounded.
+  S-45 ran for 280.86 s in the extraction command alone. A slow or hung model call is bounded by
+  nothing, and a per-call timeout in the client closes it for both paths.
 
 Loop prevention also has no scenario, only a unit test and run R. It should get one when the
 planner starts proposing actions, because that is when a repeat becomes likely rather than

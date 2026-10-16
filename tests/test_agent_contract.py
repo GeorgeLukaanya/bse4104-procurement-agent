@@ -231,3 +231,56 @@ def test_the_contract_records_state_as_built():
     assert run_state["built"] is True
     assert run_state["retention_days"]["value"] == 30
     assert run_state["retention_days"]["enforced"] is False
+
+
+# --- loop prevention ---------------------------------------------------------
+
+
+class _StuckPlanner:
+    """Proposes the same call forever, which is what the limit exists to catch."""
+
+    def __init__(self):
+        self.proposals = 0
+
+    def propose(self, state):
+        from procurement_agent.agent.planner import Proposal
+
+        self.proposals += 1
+        return Proposal(kind="call", tool="check_reorder_need",
+                        payload={"review_date": "2026-09-25", "skus": ["AH-CM-001"]})
+
+
+def test_a_planner_that_repeats_itself_is_stopped(tmp_path):
+    planner = _StuckPlanner()
+    result = workflow.run_workflow(
+        review_date="2026-09-25", sku="AH-CM-001", planner=planner,
+        run_log=str(tmp_path / "agent.jsonl"), tool_log=str(tmp_path / "tools.jsonl"),
+        requisition_store=str(tmp_path / "req.jsonl"), checkpoint_dir=str(tmp_path / "state"),
+    )
+
+    assert result.stop_reason == "no_progress"
+    assert "twice in a row" in result.stop_detail
+    # Stopped on the second proposal, not after burning the whole budget.
+    assert result.iterations == 1
+    assert planner.proposals == 2
+
+
+def test_the_limit_comes_from_the_contract_not_a_constant(tmp_path):
+    """With the contract not enforcing it, the loop does not check for repeats.
+
+    The run still stops, but for a different reason: the scan step has already
+    advanced, so the per-phase allow-list refuses the second call. That is why
+    repeat detection matters mainly once the model proposes actions and a phase
+    can be retried.
+    """
+    path = _write(tmp_path, limits={"iterations_per_item": 3, "wall_clock_seconds": 120,
+                                    "repeated_identical_action": {"value": 0, "enforced": False}})
+    result = workflow.run_workflow(
+        review_date="2026-09-25", sku="AH-CM-001", planner=_StuckPlanner(),
+        contract_path=str(path), run_log=str(tmp_path / "agent.jsonl"),
+        tool_log=str(tmp_path / "tools.jsonl"), requisition_store=str(tmp_path / "req.jsonl"),
+        checkpoint_dir=str(tmp_path / "state2"),
+    )
+
+    assert result.stop_reason != "no_progress"
+    assert result.stop_reason == "unauthorized"

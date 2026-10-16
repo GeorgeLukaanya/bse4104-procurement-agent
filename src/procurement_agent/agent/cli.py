@@ -195,9 +195,10 @@ def _report(result) -> str:
     if resumed is not None:
         if resumed.get("restored"):
             kept = ", ".join(resumed.get("kept_steps") or [])
+            carried = resumed.get("restored_iterations") or 0
             lines.append(
                 f"resumed:    {kept} restored from checkpoint "
-                f"({resumed.get('restored_iterations')} iterations carried over)"
+                f"({carried} iteration{'' if carried == 1 else 's'} carried over)"
             )
         else:
             lines.append(f"resumed:    no ({resumed.get('reason') or 'nothing reusable'})")

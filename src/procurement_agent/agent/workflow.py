@@ -209,7 +209,12 @@ def run_workflow(
 
     while state.iterations < limit:
         if time.perf_counter() - started > budget:
-            return finish(STOP_TIMEOUT, f"Stopped after {budget:.0f}s (AGENT_TIMEOUT_SECONDS).")
+            spent = time.perf_counter() - started
+            return finish(
+                STOP_TIMEOUT,
+                f"Stopped after {spent:.2f}s, over the {budget:.2f}s budget "
+                "(AGENT_TIMEOUT_SECONDS).",
+            )
         if state.step == STEP_DRAFT and state.comparison is not None:
             _record_confirmations(state, run)
         proposal = active_planner.propose(state)

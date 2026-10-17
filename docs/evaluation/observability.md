@@ -8,6 +8,12 @@
 | Status | Complete, awaiting team review |
 | Path | `docs/evaluation/observability.md` |
 
+**17 October 2026 follow-up:** [FC-08 and FC-09 are fixed](fc08-fc09-follow-up.md).
+Prompt v1.4 passes 10/10 live regression cases, and the combined S-41/S-44/S-45
+retest passes 3/3. Timeout results now retain attempts and measured latency in
+both extraction logs and RAG traces. The observations below describe the
+historical 13 October run; its original failures remain readable.
+
 ## Brief requirement
 
 Logs/traces that capture useful model, prompt, retrieval, tool, latency/error and outcome evidence. Point at files under `evidence/traces/`.

@@ -167,6 +167,32 @@ def test_permanent_error_fails_without_retrying(make_extractor):
     assert backend.call_count == 1
 
 
+def test_deadline_returns_structured_timeout_and_logs_real_latency(
+    make_extractor, run_log, extraction_cache,
+):
+    backend = StubBackend([client.DeadlineExceeded("30s deadline", 2, 30.0)])
+    result = make_extractor(backend).extract(MARKDOWN, source="q.md")
+    payload = result.to_dict()
+    assert payload["status"] == "timeout"
+    assert payload["record"] is None
+    assert payload["attempts"] == 2
+    assert payload["latency_s"] == 30.0
+    assert payload["detail"] == "30s deadline"
+    assert extraction_cache.get(result.cache_key) is None
+    [entry] = run_log.entries()
+    assert entry["status"] == "timeout"
+    assert entry["latency_s"] == 30.0
+
+
+def test_exhausted_short_timeouts_also_return_timeout(make_extractor):
+    result = make_extractor(
+        StubBackend([TimeoutError("timed out")]),
+        policy=client.RetryPolicy(max_attempts=2, base_delay_s=0),
+    ).extract(MARKDOWN, source="q.md")
+    assert result.status == "timeout"
+    assert result.attempts == 2
+
+
 def test_package_performs_no_arithmetic_on_monetary_values(make_extractor):
     """The extracted figures are exactly those the model returned.
 

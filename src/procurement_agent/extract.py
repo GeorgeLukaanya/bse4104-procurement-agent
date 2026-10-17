@@ -27,10 +27,12 @@ from .cache import CacheEntry, ExtractionCache, document_digest
 from .client import (
     Backend,
     CallResult,
+    DeadlineExceeded,
     PermanentError,
     RetryBudgetExhausted,
     RetryPolicy,
     TransportError,
+    TimeoutError_,
     call_with_retry,
 )
 from .config import ExtractionConfig
@@ -40,6 +42,7 @@ from .runlog import (
     STATUS_OK,
     STATUS_RATE_LIMITED,
     STATUS_SUPPRESSED,
+    STATUS_TIMEOUT,
     RunLog,
     RunLogEntry,
 )
@@ -142,13 +145,21 @@ class Extractor:
                 self.config,
                 policy=self.policy,
             )
+        except DeadlineExceeded as exc:
+            return self._finish_failure(
+                source, key, fingerprint, STATUS_TIMEOUT, str(exc),
+                attempts=exc.attempts, latency_s=exc.latency_s,
+            )
         except RetryBudgetExhausted as exc:
             # Reported as rate limiting when that is what defeated it, rather
             # than as a generic failure. A silent give-up would make a quota
             # problem look like a model problem.
             status = STATUS_RATE_LIMITED if exc.rate_limited else STATUS_CALL_FAILED
+            if isinstance(exc.last_error, TimeoutError_):
+                status = STATUS_TIMEOUT
             return self._finish_failure(
-                source, key, fingerprint, status, str(exc), attempts=exc.attempts
+                source, key, fingerprint, status, str(exc), attempts=exc.attempts,
+                latency_s=exc.latency_s,
             )
         except PermanentError as exc:
             return self._finish_failure(

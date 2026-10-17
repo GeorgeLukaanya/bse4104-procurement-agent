@@ -1,0 +1,11 @@
+{
+  "prompt_version": "1.4",
+  "model": "gemini-3.1-flash-lite",
+  "case_count": 10,
+  "case_passes": 9,
+  "timeout_cases": [
+    "TC-06"
+  ],
+  "note": "Initial verification: TC-04 returns each. TC-06 safely timed out at 30.0003s; 50ms return headroom added before final verification. Original evidence retained.",
+  "client_sha256": "c2c728ac25c1c9a3da37e407236550f4970cf88759cc7b946a8676902cfb577b"
+}

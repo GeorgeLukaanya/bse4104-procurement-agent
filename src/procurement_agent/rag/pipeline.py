@@ -40,7 +40,10 @@ from pathlib import Path
 from typing import Any, Sequence
 
 from .. import guards
-from ..client import Backend, RetryBudgetExhausted, RetryPolicy, TransportError
+from ..client import (
+    Backend, DeadlineExceeded, RetryBudgetExhausted, RetryPolicy,
+    TimeoutError_, TransportError,
+)
 from ..config import ExtractionConfig
 from .citations import CitationReport, validate_citations
 from .grounding import (
@@ -63,6 +66,7 @@ STATUS_CITATION_INVALID = "citation_invalid"
 STATUS_GENERATION_FAILED = "generation_failed"
 STATUS_RATE_LIMITED = "rate_limited"
 STATUS_CALL_FAILED = "call_failed"
+STATUS_TIMEOUT = "timeout"
 
 # Item outcomes whose content may be shown to the officer as it stands.
 SHOWABLE_STATUSES = (STATUS_OK, STATUS_NO_CLAUSES)
@@ -244,9 +248,15 @@ class PolicyPipeline:
 
         try:
             call = generate_grounded_answer(self.backend, to_ground, self.config, self.policy)
+        except DeadlineExceeded as exc:
+            return self._failed(retrievals, to_ground, STATUS_TIMEOUT, str(exc),
+                                exc.attempts, exc.latency_s)
         except RetryBudgetExhausted as exc:
             status = STATUS_RATE_LIMITED if exc.rate_limited else STATUS_CALL_FAILED
-            return self._failed(retrievals, to_ground, status, str(exc), exc.attempts)
+            if isinstance(exc.last_error, TimeoutError_):
+                status = STATUS_TIMEOUT
+            return self._failed(retrievals, to_ground, status, str(exc),
+                                exc.attempts, exc.latency_s)
         except TransportError as exc:  # includes PermanentError
             return self._failed(retrievals, to_ground, STATUS_CALL_FAILED, str(exc), 1)
         except GroundingError as exc:
@@ -296,7 +306,9 @@ class PolicyPipeline:
         status: str,
         detail: str,
         attempts: int,
+        latency_s: float | None = None,
     ) -> RequisitionOutcome:
         """The call failed: every item that needed it fails; notes-only items still stand."""
         failed = {ref: ItemOutcome(ref, status, retrievals[ref], detail=detail) for ref in to_ground}
-        return RequisitionOutcome(self._items(retrievals, failed), self.config, attempts=attempts)
+        return RequisitionOutcome(self._items(retrievals, failed), self.config,
+                                  attempts=attempts, latency_s=latency_s)

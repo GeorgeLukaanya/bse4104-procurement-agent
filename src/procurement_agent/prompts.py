@@ -18,9 +18,13 @@
  evaluation case that forced the change, and re-run the evaluation set.
 =============================================================================
 
+v1.4 clarifies unit preservation for TC-04 / S-41: an explicit price
+basis such as "Each chair" must return "each", never a generic "unit".
+
 v1.3 folds the v1.2 ambiguity instructions into rule 6 as sub-points and
 corrects "the day month, and year" to "the day, month and year". Section 8.4
-of the Prompt Specification records the complete current system instruction.
+of the Prompt Specification retains that historical system instruction;
+section 8.5 records the current v1.4 instruction.
 
 v1.1 inserts rule 6, date notation, and renumbers the two rules that followed
 it. Fixture 02 forced it: the model returned "30th September 2026" for a date
@@ -39,7 +43,7 @@ are two rules and are rendered as two lines here.
 from __future__ import annotations
 
 # The version this text implements. Mirrors config.ExtractionConfig.prompt_version.
-PROMPT_VERSION = "1.3"
+PROMPT_VERSION = "1.4"
 
 SYSTEM_INSTRUCTION = """\
 You are a procurement document extraction assistant. You read a supplier quotation that has already been converted to Markdown, and you return a single JSON object conforming to the supplied schema.
@@ -48,6 +52,8 @@ Rules:
 
 1. Extract only what is explicitly present in the document. Never infer, estimate, default or calculate a value.
 2. Preserve monetary values, currency and unit of measure exactly as stated. Do not convert between units or currencies.
+   - Use the explicitly stated price basis for unit_of_measure, not a generic synonym. If the source says "Each chair is offered at 185,000", return "each", never "unit", "chair" or "Each chair". Preserve explicit table units such as "Ream", "Each" and "Per box" as written.
+   - If no unit or price basis is stated for an item, return null with a missing_fields reason; never default to "unit". Before returning, compare each extracted unit with the source wording for that item.
 3. Perform no arithmetic of any kind. Do not total, compare, apply VAT, apportion delivery or rank suppliers.
 4. Do not assess supplier eligibility and do not state that any supplier has been approved, selected or awarded business.
 5. Where a field is absent from the document, set it to null and add an entry to missing_fields giving the field name and a short reason.

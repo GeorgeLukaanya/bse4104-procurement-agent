@@ -251,3 +251,14 @@ def test_extraction_still_sends_the_quotation_schema():
     client = _CapturingClient()
     GeminiBackend("unused", client=client).generate("s", "u", ExtractionConfig())
     assert client.sent.response_schema == quotation_schema()
+
+
+def test_gemini_sets_http_timeout_from_remaining_budget_and_disables_sdk_retries():
+    pytest.importorskip("google.genai", reason="google-genai is an optional extra")
+    from procurement_agent.client import GeminiBackend
+
+    client = _CapturingClient()
+    GeminiBackend("unused", client=client).generate("s", "u", ExtractionConfig(),
+                                                  timeout_s=1.25)
+    assert client.sent.http_options.timeout == 1250
+    assert client.sent.http_options.retry_options.attempts == 1

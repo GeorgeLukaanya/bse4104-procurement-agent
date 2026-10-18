@@ -1,0 +1,31 @@
+{
+  "full_suite": {
+    "command": "python -m pytest",
+    "exit_code": 0,
+    "passed": 511,
+    "evidence": "pytest.txt"
+  },
+  "client_timeout_tests": {
+    "command": "python -m pytest tests/test_client.py -v",
+    "exit_code": 0,
+    "passed": 28,
+    "evidence": "timeout-tests.txt"
+  },
+  "bandit": {
+    "command": "python -m bandit -r src -c pyproject.toml -ll -q",
+    "exit_code": 0,
+    "medium_or_high_findings": 0,
+    "evidence": "bandit.txt"
+  },
+  "dependencies": {
+    "command": "python -m pip check",
+    "exit_code": 0,
+    "result": "No broken requirements found."
+  },
+  "diff_check": {
+    "command": "git diff --check",
+    "exit_code": 0
+  },
+  "remote_ci": "not run",
+  "external_trackers": "not updated"
+}

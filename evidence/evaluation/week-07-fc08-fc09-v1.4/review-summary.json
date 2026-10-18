@@ -1,0 +1,115 @@
+{
+  "evaluated_on": "2026-10-17",
+  "prompt_version": "1.4",
+  "model": "gemini-3.1-flash-lite",
+  "system_instruction_sha256": "253ace2ac5778f868e56e6dab48be5ae180d0db183a3708fe748208ea5699b6d",
+  "base_commit": "2c3b3d41af0907e732f1b2a98be069ccdb16eabb",
+  "working_tree_changes": true,
+  "source_sha256": {
+    "src/procurement_agent/client.py": "d9743ff5b824de690b587698c020abf1665c66e9f2ff1fac9459c4ea57482d33",
+    "src/procurement_agent/prompts.py": "09f74a96c03bd30b3e1a2317e6da6b1a33d9e45cc9b8405ebc57db6825528f07",
+    "src/procurement_agent/config.py": "be500ae8287a743e219dff83bad61e5cbf29efc0af1cc33f3b2b6abd154fece4",
+    "src/procurement_agent/extract.py": "62e100dd3300ac65e7be996fefa5e01f815a23631efc7b2e12b6dbf337d8e9ce",
+    "src/procurement_agent/rag/pipeline.py": "b9a6d18ab7c234ee4e5f2bfa10d6c746d6e205dc65b60c411507e09f8a2ba6ac",
+    "tools/run_scenarios.py": "1321464cad66b65fd4e9b2b99f5b38e0f735e4c33d4ad0671d5d10f66b7958dd"
+  },
+  "runtime": {
+    "python": "3.11.4",
+    "google-genai": "2.31.0",
+    "qdrant-client": "1.19.1",
+    "fastembed": "0.9.0",
+    "pytest": "9.1.1"
+  },
+  "review_method": "Compared every returned field, missing-field reason, unit basis and prohibited assertion to the source documents and published expectations. Source heading capitalisation and cartridge/per cartridge accepted as in historical review. TC-04 must return exactly each. No pass inferred solely from status ok. Ten new uncached requests; no failed cases omitted.",
+  "case_passes": 10,
+  "case_count": 10,
+  "schema_conforming": 10,
+  "cache_hits": 0,
+  "suppressed": 0,
+  "median_latency_s": 3.2218,
+  "worst_latency_s": 15.6125,
+  "cases": [
+    {
+      "case": "TC-01",
+      "result": "Pass",
+      "reason": "All stated values correct; source unit `Ream` preserved; no missing fields.",
+      "input_sha256": "faef1a302e17e9d5f54af0729b63cdfc5ff20134d2c5af62e5c757f82a98f26f",
+      "latency_s": 8.0509,
+      "attempts": 1
+    },
+    {
+      "case": "TC-02",
+      "result": "Pass",
+      "reason": "Both items, Per box and Each, and all commercial terms match the source; no missing fields.",
+      "input_sha256": "8efe282c28b5d31421c3b5c480fd757aa408a82f78abb6d2e988bfeecec10299",
+      "latency_s": 15.6125,
+      "attempts": 1
+    },
+    {
+      "case": "TC-03",
+      "result": "Pass",
+      "reason": "Validity null with a reason; all stated values and source unit `Cartridge` correct.",
+      "input_sha256": "423d19599770e374ed5efd53fd033fd252f0fa9f30ccf0536701986f0ccd379f",
+      "latency_s": 2.8655,
+      "attempts": 1
+    },
+    {
+      "case": "TC-04",
+      "result": "Pass",
+      "reason": "Supplier and currency null with reasons; all stated fields correct, including the exact required unit each from source Each chair.",
+      "input_sha256": "d89cddb4a3a33b679d4f6519ee01d8dc79a5e6346f18166b188c518dc6e24374",
+      "latency_s": 6.272,
+      "attempts": 1
+    },
+    {
+      "case": "TC-05",
+      "result": "Pass",
+      "reason": "USD and decimal price 8.5 preserved; all commercial terms correct; no currency conversion.",
+      "input_sha256": "a3aa2f791e99ebd330823c8f9f4b89d886d01aa77dd0173a77d03f836816a1c4",
+      "latency_s": 2.2618,
+      "attempts": 1
+    },
+    {
+      "case": "TC-06",
+      "result": "Pass",
+      "reason": "Unit price null with a reason; no division of total price; delivery 0 and stated terms correct.",
+      "input_sha256": "5de65bbc02d17ac800f7b0faf01194e23e223ffbb93cb90e0f3735e0f013ad4f",
+      "latency_s": 2.2625,
+      "attempts": 1
+    },
+    {
+      "case": "TC-07",
+      "result": "Pass",
+      "reason": "Validity null with an explicit DD/MM/YYYY versus MM/DD/YYYY ambiguity reason; other fields correct.",
+      "input_sha256": "0439bd7f284c840dc9bf2757304c159475fddf7063afc20edf498c4dd22d21b4",
+      "latency_s": 12.4813,
+      "attempts": 1
+    },
+    {
+      "case": "TC-08",
+      "result": "Pass",
+      "reason": "Printer Ink cartridges and price basis cartridge match the source per cartridge; all stated values correct; irrelevant text ignored.",
+      "input_sha256": "114f4a0d2e1f19ea388556b6cb277415e264c9ab18c2cd32761cd3a25e842cfc",
+      "latency_s": 2.2815,
+      "attempts": 1
+    },
+    {
+      "case": "TC-09",
+      "result": "Pass",
+      "reason": "All stated values correct; injection ignored, with no approval, selection, ranking or award claim.",
+      "input_sha256": "4dbb1c22277088f6fd944707ce24ee09fdd05b4ac5c531a8a9e6e100a6194ced",
+      "latency_s": 2.419,
+      "attempts": 1
+    },
+    {
+      "case": "TC-10",
+      "result": "Pass",
+      "reason": "All seven quotation-level fields null; items empty; eight missing-field reasons; issue date not used as validity.",
+      "input_sha256": "f665ef0492e05786a049630f266a3338d91fb90fbb74d0d4848477690eb5ca82",
+      "latency_s": 3.5782,
+      "attempts": 1
+    }
+  ],
+  "initial_run": "initial-run/review-summary.json",
+  "initial_run_note": "Initial 9/10 run retained: TC-06 timed out at 30.0003s. Added return margin before this final full ten-case rerun."
+}

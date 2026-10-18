@@ -16,7 +16,7 @@ pytest.importorskip("qdrant_client", reason='install with pip install -e ".[rag]
 
 from rag_support import GroundedStubBackend, WordOverlapEmbedder  # noqa: E402
 
-from procurement_agent.client import PermanentError, RateLimitError, RetryPolicy  # noqa: E402
+from procurement_agent.client import DeadlineExceeded, PermanentError, RateLimitError, RetryPolicy  # noqa: E402
 from procurement_agent.rag import cli  # noqa: E402
 from procurement_agent.rag.corpus import load_corpus  # noqa: E402
 from procurement_agent.rag.index import PolicyIndex  # noqa: E402
@@ -201,6 +201,19 @@ def test_exhausted_rate_limit_retries_are_reported_as_rate_limited(index, tmp_pa
     assert outcome.items[0].status == STATUS_RATE_LIMITED
     assert outcome.attempts == 2
     assert _trace(tmp_path)[0]["items"][0]["status"] == "rate_limited"
+
+
+def test_timeout_withholds_answer_and_preserves_latency_in_trace(index, tmp_path):
+    backend = GroundedStubBackend(error=DeadlineExceeded("30s deadline", 2, 30.0))
+    outcome = _pipeline(index, backend, tmp_path).run([CEMENT])
+    assert outcome.status == REQUISITION_WITHHELD
+    assert outcome.items[0].status == "timeout"
+    assert outcome.items[0].answer is None
+    assert outcome.attempts == 2
+    assert outcome.latency_s == 30.0
+    [entry] = _trace(tmp_path)
+    assert entry["items"][0]["status"] == "timeout"
+    assert entry["latency_s"] == 30.0
 
 
 def test_every_run_appends_rather_than_overwrites(index, tmp_path):

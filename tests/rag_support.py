@@ -69,7 +69,7 @@ class GroundedStubBackend:
         self.error = error
         self.calls = []
 
-    def generate(self, system_instruction, user_message, config):
+    def generate(self, system_instruction, user_message, config, *, timeout_s=30.0):
         import json
 
         self.calls.append({"system_instruction": system_instruction,

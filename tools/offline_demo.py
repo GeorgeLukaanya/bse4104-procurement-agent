@@ -182,7 +182,7 @@ DEMO_RUN_LOG = DEMO_DIR / "runs.jsonl"
 class ScriptedBackend:
     """Returns a hand-written record per fixture. Never touches the network."""
 
-    def generate(self, system_instruction, user_message, config):
+    def generate(self, system_instruction, user_message, config, *, timeout_s=30.0):
         time.sleep(SIMULATED_LATENCY_S)
         for marker, record in SCRIPTED_RECORDS.items():
             if marker in user_message:

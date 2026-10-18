@@ -291,3 +291,10 @@ is expected to validate by hand as `schema.validate` already does.
 - **AI contribution:** Codex documented the implemented supplier-note/prior-outcome use case, record fields, advisory-only data flow, access controls, retention/deletion semantics and supporting evidence. It checked the store, CLI, workflow, checkpoint and tests against the state model and working demonstration.
 - **Human review:** Pending Jim Junior and team review; status is complete, awaiting team review.
 - **Outcome:** Design note and index updated. The note explicitly records unimplemented checkpoint expiry, purge authorization, weak load-time record validation and deletion scope. No new memory capability or behaviour was added.
+
+### 2026-10-17 — FC-08 / FC-09 remediation
+
+- **Context:** Jim Junior requested unit-preservation and Gemini deadline fixes, with the full ten-case regression, combined S-41/S-44/S-45 live rerun and timeout tests required before closure.
+- **AI contribution:** Codex strengthened extraction rule 2 and advanced the prompt/config/specification to v1.4. It implemented a shared request/retry deadline, per-request SDK timeout, disabled SDK retries, a wall-clock watchdog, structured timeout results and retained failure latency for extraction and grounding. It added tests and a separate scenario evidence output directory.
+- **Verification:** Full local suite **511 passed**; client/timeout tests **28 passed**; Bandit medium/high check passed; no broken dependencies. Final uncached live regression **10/10 PASS**, including exact `each` for TC-04. Combined live S-41/S-44/S-45 **3/3 PASS**, at 5.9860/2.5054/25.1461 s, with no safety violations. Initial TC-06 timeout at 30.0003 s is preserved and prompted a return margin before final verification.
+- **Outcome:** FC-08 and FC-09 are fixed under the requested retest criteria. [Closure report](evaluation/fc08-fc09-follow-up.md) links raw evidence, source hashes, runtime versions and reproduction commands. Human code review and remote CI remain pending; no merge or external tracker update was performed.

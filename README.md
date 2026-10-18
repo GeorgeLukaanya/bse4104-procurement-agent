@@ -466,16 +466,19 @@ they govern:
 - Project Charter **v1.1** — `docs/requirements/project-charter.md`
 - Requirements Document **v1.2** — `docs/requirements/user-stories.md`
 - AI Boundary Matrix **v1.1** — `docs/requirements/ai-boundary-matrix.md`
-- Prompt Specification **v1.3** — `prompts/quotation-extraction-v1.md`
+- Prompt Specification **v1.4** — `prompts/quotation-extraction-v1.md`
 - Model Selection Note — `docs/architecture/model-selection-note.md`
 - Corpus Source Register **v1.0** — `knowledge/source-register.md`
 - RAG architecture — `docs/architecture/rag-architecture.md`
 - Tool Catalogue **v1.0** — `docs/architecture/tool-catalogue.md`
 - Week-by-week index — `docs/README.md`
 
-The prompt actually sent lives in `prompts.py` (eleven fields, version 1.3). The ten-case
-evaluation table at `docs/evaluation/prompt-evaluation.md` records the v1.1 run;
-the v1.3 live regression records 9/10 passes, with TC-07 fixed and TC-04 requiring unit-preservation follow-up.
+The prompt actually sent lives in `prompts.py` (eleven fields, version 1.4). The
+17 October live regression passes all ten cases, including TC-04 unit preservation.
+The shared Gemini client enforces a 30-second budget including retries, with a
+structured `timeout` result when it cannot complete. See the
+[FC-08 / FC-09 closure evidence](docs/evaluation/fc08-fc09-follow-up.md).
+Historical v1.1 and v1.3 runs remain in the evaluation report.
 
 ## Changing the prompt
 
@@ -508,19 +511,19 @@ Live calls have been made. These figures are recorded, not estimated:
 
 | Measure | Result | Source |
 |---|---|---|
-| Prompt case pass rate (v1.3) | 9 of 10 — 90% | `docs/evaluation/prompt-evaluation.md` |
+| Prompt case pass rate (v1.4) | 10 of 10 — 100% | `docs/evaluation/fc08-fc09-follow-up.md` |
 | Schema conformance | 10 of 10 — 100% | same |
-| Extraction latency (v1.3) | median 2.5455s, worst 16.9832s | same |
+| Extraction latency (v1.4) | median 3.2218s, worst 15.6125s | same |
 | RAG case pass rate | 13 of 15 | `docs/evaluation/rag-evaluation.md` |
 | RAG requisition latency | 42.01s on one Gemini call | `evidence/traces/rag-weekly-reorder-run.txt` |
 
-Two known failures carry forward. **TC-04 (v1.3)**: the model returned `unit`
-instead of the source/expected `each` for office chairs. TC-07's ambiguous date
-now correctly returns null with a reason in the dedicated retest and full regression.
-**Latency**: Requirement 7.1 allows 30
-seconds and the recorded requisition took 42.01s; an earlier run of the same file
-took 6.29s, so this is provider variance rather than retrieval cost, and needs more
-samples before it means anything.
+**FC-08 and FC-09 are fixed as of 17 October 2026.** TC-04 and S-41 both return
+exactly `each`. S-41, S-44 and S-45 passed together at 5.9860s, 2.5054s and
+25.1461s. The client now enforces the 30-second ceiling across attempts and waits;
+timeouts withhold the model result and retain the error and elapsed time in the
+logs. The full local suite passed 511 tests, including 28 client/timeout tests.
+The older RAG measurements above remain historical observations. A passing run
+does not establish repeated-run provider reliability.
 
 Still unknown:
 

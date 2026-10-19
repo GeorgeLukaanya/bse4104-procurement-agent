@@ -173,6 +173,15 @@ The FC-08 and FC-09 follow-up returned:
 - Client and timeout tests: **28 passed, 0 failed**.
 - Full local suite: **511 passed, 0 failed**.
 
+The independent uncached rerun is captured in
+[`results.json`](../../evidence/evaluation/week7-test-rerun/results.json), with one structured
+record for each of the ten evaluation cases. Its corresponding model-call log is stored in
+[`runlog.jsonl`](../../evidence/evaluation/week7-test-rerun/runlog.jsonl). The log contains ten
+entries, no cache hits, one attempt per case, prompt version 1.4, and the measured latency for
+each call. The complete FC-08 and FC-09 remediation evidence is retained in
+[`week-07-fc08-fc09-v1.4`](../../evidence/evaluation/week-07-fc08-fc09-v1.4/), including the
+live scenario outputs, timeout tests, full-suite results, and field-by-field regression review.
+
 The [initial follow-up run](../../evidence/evaluation/week-07-fc08-fc09-v1.4/initial-run/review-summary.json)
 is retained. It scored 9/10 because TC-06 safely timed out at 30.0003 s; this led to the return
 margin in the final implementation. Review and remote CI remain separate from local results.

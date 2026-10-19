@@ -1,0 +1,505 @@
+{
+  "results": [
+    {
+      "source": "evaluation-cases/TC-01.md",
+      "status": "ok",
+      "cache_key": "e55ee9b1e8e82a1b5af03e2501698b36a5e180fb25f23a3fefb02e600c07e849",
+      "cache_hit": false,
+      "attempts": 1,
+      "latency_s": 1.966,
+      "record": {
+        "supplier_name": "KAMPALA OFFICE SUPPLIES LTD.",
+        "currency": "UGX",
+        "vat_treatment": "exclusive",
+        "vat_rate_percent": 18.0,
+        "delivery_cost": 50000.0,
+        "lead_time_days": 3.0,
+        "validity_date": "2026-09-30",
+        "items": [
+          {
+            "item_name": "A4 Printing Paper",
+            "quantity": 50.0,
+            "unit_of_measure": "Ream",
+            "unit_price": 18000.0
+          }
+        ],
+        "missing_fields": []
+      },
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": true,
+        "blockers": []
+      },
+      "detail": null,
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.4"
+      }
+    },
+    {
+      "source": "evaluation-cases/TC-02.md",
+      "status": "ok",
+      "cache_key": "12eb6bea80f4ad3f2f228f802519162512b648d7bd44e4d26bd3906ae17e5c5c",
+      "cache_hit": false,
+      "attempts": 1,
+      "latency_s": 2.5667,
+      "record": {
+        "supplier_name": "NILE TRADERS",
+        "currency": "UGX",
+        "vat_treatment": "inclusive",
+        "vat_rate_percent": 18.0,
+        "delivery_cost": 100000.0,
+        "lead_time_days": 5.0,
+        "validity_date": "2026-10-15",
+        "items": [
+          {
+            "item_name": "Blue ballpoint pens",
+            "quantity": 20.0,
+            "unit_of_measure": "Per box",
+            "unit_price": 12500.0
+          },
+          {
+            "item_name": "Staplers",
+            "quantity": 10.0,
+            "unit_of_measure": "Each",
+            "unit_price": 8000.0
+          }
+        ],
+        "missing_fields": []
+      },
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": true,
+        "blockers": []
+      },
+      "detail": null,
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.4"
+      }
+    },
+    {
+      "source": "evaluation-cases/TC-03.md",
+      "status": "ok",
+      "cache_key": "f6a03107686cadd218de9cfeceba37d3474092faf7e3122455c9af8875338fb1",
+      "cache_hit": false,
+      "attempts": 1,
+      "latency_s": 1.8065,
+      "record": {
+        "supplier_name": "Jinja Stationers",
+        "currency": "UGX",
+        "vat_treatment": "exclusive",
+        "vat_rate_percent": 18.0,
+        "delivery_cost": 25000.0,
+        "lead_time_days": 2.0,
+        "validity_date": null,
+        "items": [
+          {
+            "item_name": "Toner Cartridge 85A",
+            "quantity": 4.0,
+            "unit_of_measure": "Cartridge",
+            "unit_price": 245000.0
+          }
+        ],
+        "missing_fields": [
+          {
+            "field": "validity_date",
+            "reason": "The document does not specify a validity date for the quotation."
+          }
+        ]
+      },
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": true,
+        "blockers": []
+      },
+      "detail": null,
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.4"
+      }
+    },
+    {
+      "source": "evaluation-cases/TC-04.md",
+      "status": "ok",
+      "cache_key": "2b8ea1b9bf2430f2637a268b51580291d906760a2ffff2dd3d49f4bbcfbaa7be",
+      "cache_hit": false,
+      "attempts": 1,
+      "latency_s": 1.4273,
+      "record": {
+        "supplier_name": null,
+        "currency": null,
+        "vat_treatment": "inclusive",
+        "vat_rate_percent": 18.0,
+        "delivery_cost": 75000.0,
+        "lead_time_days": 7.0,
+        "validity_date": "2026-09-25",
+        "items": [
+          {
+            "item_name": "office chairs",
+            "quantity": 12.0,
+            "unit_of_measure": "each",
+            "unit_price": 185000.0
+          }
+        ],
+        "missing_fields": [
+          {
+            "field": "supplier_name",
+            "reason": "The document does not explicitly state the name of the supplier."
+          },
+          {
+            "field": "currency",
+            "reason": "The document does not specify the currency for the monetary values."
+          }
+        ]
+      },
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": false,
+        "blockers": [
+          {
+            "field": "currency",
+            "clause": "6.1",
+            "reason": "currency not stated, so it cannot be determined whether the Configured Exchange Rate applies"
+          }
+        ]
+      },
+      "detail": null,
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.4"
+      }
+    },
+    {
+      "source": "evaluation-cases/TC-05.md",
+      "status": "ok",
+      "cache_key": "ee00db32ec1bf424e203d9a18174ae182f6c933626a2f6c01f311e11b5a84b46",
+      "cache_hit": false,
+      "attempts": 1,
+      "latency_s": 1.5332,
+      "record": {
+        "supplier_name": "TECHHUB UGANDA",
+        "currency": "USD",
+        "vat_treatment": "exclusive",
+        "vat_rate_percent": 18.0,
+        "delivery_cost": 20.0,
+        "lead_time_days": 14.0,
+        "validity_date": "2026-10-01",
+        "items": [
+          {
+            "item_name": "USB Flash Drive",
+            "quantity": 25.0,
+            "unit_of_measure": "Unit",
+            "unit_price": 8.5
+          }
+        ],
+        "missing_fields": []
+      },
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": true,
+        "blockers": []
+      },
+      "detail": null,
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.4"
+      }
+    },
+    {
+      "source": "evaluation-cases/TC-06.md",
+      "status": "ok",
+      "cache_key": "90ed02cfec088dd96993500ddaf98252a11c19b891433585750d94f4a78efe4e",
+      "cache_hit": false,
+      "attempts": 1,
+      "latency_s": 1.7401,
+      "record": {
+        "supplier_name": "Mbarara Furniture Works",
+        "currency": "UGX",
+        "vat_treatment": "inclusive",
+        "vat_rate_percent": 18.0,
+        "delivery_cost": 0.0,
+        "lead_time_days": 10.0,
+        "validity_date": "2026-09-30",
+        "items": [
+          {
+            "item_name": "office desks",
+            "quantity": 10.0,
+            "unit_of_measure": "each",
+            "unit_price": null
+          }
+        ],
+        "missing_fields": [
+          {
+            "field": "unit_price",
+            "reason": "The document explicitly states that no price per individual desk is provided."
+          }
+        ]
+      },
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": false,
+        "blockers": [
+          {
+            "field": "unit_price",
+            "clause": "6.1",
+            "reason": "office desks: unit price not stated"
+          }
+        ]
+      },
+      "detail": null,
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.4"
+      }
+    },
+    {
+      "source": "evaluation-cases/TC-07.md",
+      "status": "ok",
+      "cache_key": "8eaddd4eac86adb8fe165b12d317b02818ff7a8209ad339b53fe2d7cb6264635",
+      "cache_hit": false,
+      "attempts": 1,
+      "latency_s": 2.0478,
+      "record": {
+        "supplier_name": "Eastern Supplies",
+        "currency": "UGX",
+        "vat_treatment": "exclusive",
+        "vat_rate_percent": 18.0,
+        "delivery_cost": 40000.0,
+        "lead_time_days": 4.0,
+        "validity_date": null,
+        "items": [
+          {
+            "item_name": "Filing Cabinet",
+            "quantity": 5.0,
+            "unit_of_measure": "Each",
+            "unit_price": 420000.0
+          }
+        ],
+        "missing_fields": [
+          {
+            "field": "validity_date",
+            "reason": "The source date 10/11/2026 is ambiguous."
+          }
+        ]
+      },
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": true,
+        "blockers": []
+      },
+      "detail": null,
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.4"
+      }
+    },
+    {
+      "source": "evaluation-cases/TC-08.md",
+      "status": "ok",
+      "cache_key": "5639eecc2617cb06b91d33d5142578b0e4ede8a7810b6db0beab6510ea937dbf",
+      "cache_hit": false,
+      "attempts": 1,
+      "latency_s": 2.1282,
+      "record": {
+        "supplier_name": "Gulu Business Centre",
+        "currency": "UGX",
+        "vat_treatment": "inclusive",
+        "vat_rate_percent": 18.0,
+        "delivery_cost": 30000.0,
+        "lead_time_days": 2.0,
+        "validity_date": "2026-09-28",
+        "items": [
+          {
+            "item_name": "Printer Ink cartridges",
+            "quantity": 6.0,
+            "unit_of_measure": "cartridge",
+            "unit_price": 95000.0
+          }
+        ],
+        "missing_fields": []
+      },
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": true,
+        "blockers": []
+      },
+      "detail": null,
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.4"
+      }
+    },
+    {
+      "source": "evaluation-cases/TC-09.md",
+      "status": "ok",
+      "cache_key": "9e18962adc52e5a9953742d6780541b1c6ea539c23e62d1890f496c0b6822d96",
+      "cache_hit": false,
+      "attempts": 1,
+      "latency_s": 1.8605,
+      "record": {
+        "supplier_name": "SAFESOURCE LTD.",
+        "currency": "UGX",
+        "vat_treatment": "exclusive",
+        "vat_rate_percent": 18.0,
+        "delivery_cost": 60000.0,
+        "lead_time_days": 6.0,
+        "validity_date": "2026-10-20",
+        "items": [
+          {
+            "item_name": "Laptop Bag",
+            "quantity": 15.0,
+            "unit_of_measure": "Each",
+            "unit_price": 75000.0
+          }
+        ],
+        "missing_fields": []
+      },
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": true,
+        "blockers": []
+      },
+      "detail": null,
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.4"
+      }
+    },
+    {
+      "source": "evaluation-cases/TC-10.md",
+      "status": "ok",
+      "cache_key": "10842da37b67912c895f698a6552f58bc219d347ca5887a454cd4ed60f55ac33",
+      "cache_hit": false,
+      "attempts": 1,
+      "latency_s": 2.1023,
+      "record": {
+        "supplier_name": null,
+        "currency": null,
+        "vat_treatment": null,
+        "vat_rate_percent": null,
+        "delivery_cost": null,
+        "lead_time_days": null,
+        "validity_date": null,
+        "items": [],
+        "missing_fields": [
+          {
+            "field": "supplier_name",
+            "reason": "The document does not state the name of the supplier."
+          },
+          {
+            "field": "currency",
+            "reason": "No pricing information is provided in the document."
+          },
+          {
+            "field": "vat_treatment",
+            "reason": "No pricing information is provided in the document."
+          },
+          {
+            "field": "vat_rate_percent",
+            "reason": "No pricing information is provided in the document."
+          },
+          {
+            "field": "delivery_cost",
+            "reason": "No pricing information is provided in the document."
+          },
+          {
+            "field": "lead_time_days",
+            "reason": "No lead time information is provided in the document."
+          },
+          {
+            "field": "validity_date",
+            "reason": "No validity date is provided in the document."
+          },
+          {
+            "field": "items",
+            "reason": "The document explicitly states it is not a quotation and contains no items or pricing."
+          }
+        ]
+      },
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": false,
+        "blockers": [
+          {
+            "field": "vat_treatment",
+            "clause": "6.3",
+            "reason": "VAT treatment not stated, so an inclusive price cannot be distinguished from an exclusive one"
+          },
+          {
+            "field": "delivery_cost",
+            "clause": "6.3",
+            "reason": "delivery or freight cost not stated, so it cannot be apportioned into landed cost"
+          },
+          {
+            "field": "currency",
+            "clause": "6.1",
+            "reason": "currency not stated, so it cannot be determined whether the Configured Exchange Rate applies"
+          },
+          {
+            "field": "unit_price",
+            "clause": "6.1",
+            "reason": "no line items were extracted, so there is no price"
+          },
+          {
+            "field": "unit_of_measure",
+            "clause": "6.3",
+            "reason": "no line items were extracted, so there is no unit"
+          }
+        ]
+      },
+      "detail": null,
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.4"
+      }
+    }
+  ],
+  "summary": {
+    "files": 10,
+    "cache_hits": 0,
+    "live_calls": 10,
+    "median_latency_s": 1.9133,
+    "worst_latency_s": 2.5667
+  }
+}

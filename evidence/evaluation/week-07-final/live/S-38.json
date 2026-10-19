@@ -1,0 +1,34 @@
+{
+  "results": [
+    {
+      "source": "fixtures/01-clean-table-ugx.md",
+      "status": "timeout",
+      "cache_key": "394d220b3cf5717b62f6c7d766d0fda8c9b2e5e3dc974ec38176f83af47c0923",
+      "cache_hit": false,
+      "attempts": 1,
+      "latency_s": 29.9502,
+      "record": null,
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": false,
+        "blockers": []
+      },
+      "detail": "model request could not complete within the 30s overall time budget (including attempts and retry waits)",
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.4"
+      }
+    }
+  ],
+  "summary": {
+    "files": 1,
+    "cache_hits": 0,
+    "live_calls": 1,
+    "median_latency_s": 29.9502,
+    "worst_latency_s": 29.9502
+  }
+}

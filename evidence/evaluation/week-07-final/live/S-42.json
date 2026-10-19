@@ -1,0 +1,123 @@
+{
+  "results": [
+    {
+      "source": "fixtures/04-minimal-missing-fields.md",
+      "status": "ok",
+      "cache_key": "4b49b3f42557719bf82bb0968e93e9975ef12c05b29c0929a953c2b0ec378e7f",
+      "cache_hit": false,
+      "attempts": 1,
+      "latency_s": 2.3845,
+      "record": {
+        "supplier_name": "Bugolobi Hardware Centre",
+        "currency": null,
+        "vat_treatment": null,
+        "vat_rate_percent": null,
+        "delivery_cost": null,
+        "lead_time_days": null,
+        "validity_date": null,
+        "items": [
+          {
+            "item_name": "Steel door frame, 900mm",
+            "quantity": 14.0,
+            "unit_of_measure": null,
+            "unit_price": 185000.0
+          },
+          {
+            "item_name": "Padlock, 60mm brass",
+            "quantity": 40.0,
+            "unit_of_measure": null,
+            "unit_price": 22500.0
+          },
+          {
+            "item_name": "Hinges, 100mm steel pair",
+            "quantity": 60.0,
+            "unit_of_measure": null,
+            "unit_price": 9800.0
+          }
+        ],
+        "missing_fields": [
+          {
+            "field": "currency",
+            "reason": "The currency is not specified in the document."
+          },
+          {
+            "field": "vat_treatment",
+            "reason": "VAT treatment is not mentioned."
+          },
+          {
+            "field": "vat_rate_percent",
+            "reason": "VAT rate is not mentioned."
+          },
+          {
+            "field": "delivery_cost",
+            "reason": "Delivery cost is not mentioned."
+          },
+          {
+            "field": "lead_time_days",
+            "reason": "Lead time is not mentioned."
+          },
+          {
+            "field": "validity_date",
+            "reason": "Validity date is not mentioned."
+          },
+          {
+            "field": "unit_of_measure",
+            "reason": "No unit of measure or price basis is stated for the items."
+          }
+        ]
+      },
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": false,
+        "blockers": [
+          {
+            "field": "vat_treatment",
+            "clause": "6.3",
+            "reason": "VAT treatment not stated, so an inclusive price cannot be distinguished from an exclusive one"
+          },
+          {
+            "field": "delivery_cost",
+            "clause": "6.3",
+            "reason": "delivery or freight cost not stated, so it cannot be apportioned into landed cost"
+          },
+          {
+            "field": "currency",
+            "clause": "6.1",
+            "reason": "currency not stated, so it cannot be determined whether the Configured Exchange Rate applies"
+          },
+          {
+            "field": "unit_of_measure",
+            "clause": "6.3",
+            "reason": "Steel door frame, 900mm: unit of measure not stated, so a per-carton price cannot be normalised against a per-piece price"
+          },
+          {
+            "field": "unit_of_measure",
+            "clause": "6.3",
+            "reason": "Padlock, 60mm brass: unit of measure not stated, so a per-carton price cannot be normalised against a per-piece price"
+          },
+          {
+            "field": "unit_of_measure",
+            "clause": "6.3",
+            "reason": "Hinges, 100mm steel pair: unit of measure not stated, so a per-carton price cannot be normalised against a per-piece price"
+          }
+        ]
+      },
+      "detail": null,
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.4"
+      }
+    }
+  ],
+  "summary": {
+    "files": 1,
+    "cache_hits": 0,
+    "live_calls": 1,
+    "median_latency_s": 2.3845,
+    "worst_latency_s": 2.3845
+  }
+}

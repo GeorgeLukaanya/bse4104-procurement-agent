@@ -1,0 +1,66 @@
+{
+  "results": [
+    {
+      "source": "evaluation-cases/TC-04.md",
+      "status": "ok",
+      "cache_key": "2b8ea1b9bf2430f2637a268b51580291d906760a2ffff2dd3d49f4bbcfbaa7be",
+      "cache_hit": false,
+      "attempts": 1,
+      "latency_s": 2.0595,
+      "record": {
+        "supplier_name": null,
+        "currency": null,
+        "vat_treatment": "inclusive",
+        "vat_rate_percent": 18.0,
+        "delivery_cost": 75000.0,
+        "lead_time_days": 7.0,
+        "validity_date": "2026-09-25",
+        "items": [
+          {
+            "item_name": "office chairs",
+            "quantity": 12.0,
+            "unit_of_measure": "each",
+            "unit_price": 185000.0
+          }
+        ],
+        "missing_fields": [
+          {
+            "field": "supplier_name",
+            "reason": "The document does not explicitly state the name of the supplier."
+          },
+          {
+            "field": "currency",
+            "reason": "The document does not specify the currency for the monetary values."
+          }
+        ]
+      },
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": false,
+        "blockers": [
+          {
+            "field": "currency",
+            "clause": "6.1",
+            "reason": "currency not stated, so it cannot be determined whether the Configured Exchange Rate applies"
+          }
+        ]
+      },
+      "detail": null,
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.4"
+      }
+    }
+  ],
+  "summary": {
+    "files": 1,
+    "cache_hits": 0,
+    "live_calls": 1,
+    "median_latency_s": 2.0595,
+    "worst_latency_s": 2.0595
+  }
+}

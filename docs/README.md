@@ -99,8 +99,8 @@ Due dates are the Friday of each teaching week.
 
 | Deliverable | Path | Owner | Status |
 |---|---|---|---|
-| 30+ scenario evaluation | [`docs/evaluation/scenarios.md`](evaluation/scenarios.md) | Lukaanya George | Complete, awaiting team review |
-| Observability / tracing evidence | [`docs/evaluation/observability.md`](evaluation/observability.md) | Beingana Jim Junior | Not started |
+| 30+ scenario evaluation | [`docs/evaluation/scenarios.md`](evaluation/scenarios.md) | Lukaanya George | Complete; final run 19 Oct |
+| Observability / tracing evidence | [`docs/evaluation/observability.md`](evaluation/observability.md) | Beingana Jim Junior | Complete, awaiting team review |
 | Guardrail implementation evidence | [`docs/evaluation/guardrails.md`](evaluation/guardrails.md) | Sekyeza Elroy Nunda | Complete, awaiting team review |
 | Failure catalogue | [`docs/evaluation/failure-catalogue.md`](evaluation/failure-catalogue.md) | Ainamani Jim Isaac | Complete, awaiting team review |
 | Week 7 progress report | [`docs/weekly-reports/week-07.md`](weekly-reports/week-07.md) | Nannyombi Shakiran | Not started |
@@ -163,7 +163,7 @@ Issues: [https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues](htt
 - 30+ scenario evaluation — Lukaanya George — `docs/evaluation/scenarios.md` — [#31](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/31)
 - Observability / tracing evidence — Beingana Jim Junior — `docs/evaluation/observability.md` — [#32](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/32)
 - Guardrail implementation evidence — Sekyeza Elroy Nunda — `docs/evaluation/guardrails.md` — [#33](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/33)
-- Failure catalogue — Lukaanya George — `docs/evaluation/failure-catalogue.md` — [#34](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/34)
+- Failure catalogue — Ainamani Jim Isaac — `docs/evaluation/failure-catalogue.md` — [#34](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/34)
 - Week 7 progress report — Nannyombi Shakiran — `docs/weekly-reports/week-07.md` — [#35](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues/35)
 
 ### Week 8 — due 23 Oct 2026

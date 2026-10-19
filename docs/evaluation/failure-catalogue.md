@@ -5,7 +5,7 @@
 | Week | 7 |
 | Owner | Ainamani Jim Isaac |
 | Due | 16 October 2026 |
-| Status | Complete; FC-08 and FC-09 re-tested 17 October 2026; awaiting team review |
+| Status | Complete; all fixes re-tested; awaiting team review |
 | Path | `docs/evaluation/failure-catalogue.md` |
 
 ## Brief requirement
@@ -19,8 +19,8 @@ This catalogue records **nine genuine failures** found across the project. All *
 and re-tested**. Earlier failures are included because Week 7 consolidates and re-tests the
 project's observed failures; they do not all have to originate in Week 7.
 
-The 16 October targeted regression passed **13/13 tests**. On 17 October, the FC-08 and FC-09
-follow-up produced a **10/10 uncached live extraction regression**, a **3/3 live scenario rerun**,
+The targeted regression passed **13/13 tests**. The FC-08 and FC-09 follow-up produced a
+**10/10 uncached live extraction regression**, a **3/3 live scenario rerun**,
 **28/28 client and timeout tests**, and **511/511 tests** across the full local suite. Original
 failed observations remain in the evidence and were not overwritten.
 
@@ -48,7 +48,7 @@ failed observations remain in the evidence and were not overwritten.
 - **Impact / cause:** The agent could use invalid data because only tool inputs were validated.
 - **Remediation:** Pull Request 64 added output-schema validation; invalid output is discarded
   with `OUTPUT_SCHEMA_INVALID`, and a missing schema fails closed.
-- **Re-test:** `test_fa10_malformed_output_is_discarded` passed on 16 October 2026.
+- **Re-test:** `test_fa10_malformed_output_is_discarded` passed.
 - **Evidence:** [Week 4 failure test](tool-failure-tests.md) and
   [`Failure-authorization-evidence.json`](../../evidence/evaluation/week-04/Failure-authorization-evidence.json).
 
@@ -73,7 +73,7 @@ failed observations remain in the evidence and were not overwritten.
 - **Impact / cause:** The officer received a misleading explanation because the planner caught
   every loading exception and returned an empty list.
 - **Remediation:** Pull Request 66 preserved and reported the real loading error.
-- **Re-test:** Missing-file, tampered-file, and CLI-reporting tests passed on 16 October 2026.
+- **Re-test:** Missing-file, tampered-file, and CLI-reporting tests passed.
 - **Evidence:** [Working agent documentation](../architecture/working-agent.md) and
   [failure/recovery trace](execution-traces.md#trace-4-failure-and-recovery).
 
@@ -98,7 +98,7 @@ failed observations remain in the evidence and were not overwritten.
 - **Impact / cause:** Duplicate purchasing work was possible because run state was not persistent.
 - **Remediation:** Pull Request 65 added checkpoints, deterministic run IDs, safe resume, and
   completed-run duplicate prevention.
-- **Re-test:** Duplicate-prevention and resume-after-handoff tests passed on 16 October 2026.
+- **Re-test:** Duplicate-prevention and resume-after-handoff tests passed.
 - **Evidence:** [Working-memory demonstration](../architecture/working-memory.md) and
   [`04-rerun-no-duplicate.json`](../../evidence/traces/memory/04-rerun-no-duplicate.json).
 
@@ -139,7 +139,7 @@ failed observations remain in the evidence and were not overwritten.
   “Each chair” case, forbids a default unit, and checks output against the source.
 - **Re-test:** The uncached ten-case regression passed 10/10; TC-04 returned `each` in 6.2720 s.
   Independent live S-41 returned `each` in 5.9860 s.
-- **Status:** **Fixed — 17 October 2026.**
+- **Status:** **Fixed.**
 - **Evidence:** [Remediation write-up](fc08-fc09-follow-up.md),
   [regression review](../../evidence/evaluation/week-07-fc08-fc09-v1.4/review-summary.json), and
   [S-41 output](../../evidence/evaluation/week-07-fc08-fc09-v1.4/live/S-41.json).
@@ -156,17 +156,17 @@ failed observations remain in the evidence and were not overwritten.
   and logs a structured `timeout` result.
 - **Re-test:** S-41/S-44/S-45 passed in 5.9860/2.5054/25.1461 s. All 28 client and timeout tests
   passed, followed by all 511 tests in the full local suite.
-- **Status:** **Fixed — 17 October 2026.**
+- **Status:** **Fixed.**
 - **Evidence:** [Remediation write-up](fc08-fc09-follow-up.md),
   [live scenario results](../../evidence/evaluation/week-07-fc08-fc09-v1.4/scenario-results.json),
   and [timeout tests](../../evidence/evaluation/week-07-fc08-fc09-v1.4/timeout-tests.txt).
 
 ## 4. Re-test record
 
-The 16 October targeted run covered FC-01, FC-02, FC-03, FC-05, FC-06, and FC-07 and returned
+The targeted run covered FC-01, FC-02, FC-03, FC-05, FC-06, and FC-07 and returned
 **13 passed, 0 failed**. FC-04 is supported separately by two recorded uncached live passes.
 
-The 17 October follow-up returned:
+The FC-08 and FC-09 follow-up returned:
 
 - Uncached live extraction regression: **10 passed, 0 failed**.
 - Live S-41/S-44/S-45 rerun: **3 passed, 0 failed, 0 safety violations**.

@@ -1,0 +1,221 @@
+{
+  "reviewed_at_utc": "2026-10-20T09:31:45+00:00",
+  "review_date_local": "2026-10-20",
+  "timezone": "Africa/Kampala",
+  "base_commit": "f13f2be5ae47aa122391adcda13757e81a446137",
+  "working_tree_changes_included": true,
+  "attribution_note": "The scenario runner reports the base HEAD commit. These results include the uncommitted Week 8 changes identified by the file hashes below; they are not a clean-commit or remote CI result.",
+  "python": "3.11.4",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+  "installed_extras": [
+    "dev",
+    "rag",
+    "gemini"
+  ],
+  "dependencies": {
+    "PyYAML": "6.0.3",
+    "Pygments": "2.21.0",
+    "annotated-types": "0.8.0",
+    "anyio": "4.15.1",
+    "bandit": "1.9.4",
+    "certifi": "2026.10.19",
+    "cffi": "2.1.1",
+    "charset-normalizer": "3.5.2",
+    "click": "8.5.0",
+    "cryptography": "50.0.2",
+    "distro": "1.9.0",
+    "fastembed": "0.9.0",
+    "filelock": "4.2.4",
+    "flatbuffers": "25.12.19",
+    "fsspec": "2026.9.0",
+    "google-auth": "2.62.0",
+    "google-genai": "2.31.0",
+    "grpcio": "1.84.0",
+    "h11": "0.16.0",
+    "h2": "4.4.1",
+    "hf-xet": "1.7.0",
+    "hpack": "4.2.0",
+    "httpcore": "1.0.9",
+    "httpx": "0.28.1",
+    "huggingface_hub": "1.33.0",
+    "hyperframe": "6.1.0",
+    "idna": "3.20",
+    "iniconfig": "2.3.1",
+    "loguru": "0.7.3",
+    "markdown-it-py": "4.2.0",
+    "mdurl": "0.1.2",
+    "mmh3": "5.3.1",
+    "numpy": "2.4.6",
+    "onnxruntime": "1.31.0",
+    "packaging": "26.3",
+    "pillow": "12.3.0",
+    "pluggy": "1.7.0",
+    "portalocker": "3.2.0",
+    "procurement-agent": "0.2.0",
+    "protobuf": "7.36.2",
+    "py_rust_stemmers": "0.1.8",
+    "pyasn1": "0.6.4",
+    "pyasn1_modules": "0.4.2",
+    "pycparser": "3.11",
+    "pydantic": "2.14.1",
+    "pydantic_core": "2.50.1",
+    "pytest": "9.1.1",
+    "qdrant-client": "1.19.1",
+    "requests": "2.34.2",
+    "rich": "15.0.0",
+    "sniffio": "1.3.1",
+    "stevedore": "5.9.1",
+    "tenacity": "9.1.4",
+    "tokenizers": "0.23.3",
+    "tqdm": "4.70.1",
+    "typing-inspection": "0.4.4",
+    "typing_extensions": "4.16.0",
+    "urllib3": "2.8.0",
+    "websockets": "16.1.1"
+  },
+  "changed_tracked_files": [
+    "README.md",
+    "docs/README.md",
+    "docs/architecture/known-limitations.md",
+    "src/procurement_agent/agent/checkpoint.py",
+    "src/procurement_agent/agent/workflow.py",
+    "src/procurement_agent/schema.py",
+    "src/procurement_agent/tools/dispatch.py",
+    "src/procurement_agent/tools/output_schema.py",
+    "src/procurement_agent/tools/validate.py",
+    "tests/test_agent_checkpoint.py",
+    "tests/test_schema.py",
+    "tests/test_tools_compare.py",
+    "tests/test_tools_output_schema.py"
+  ],
+  "file_sha256": {
+    "README.md": "9e91394f46ce1e8b1c85d2b515191e4afec7011591ffb5a21a1065687eeb81a0",
+    "docs/README.md": "a62e81e2a731dae896c6aabf995c4bdd798a7fc2e82edf86d45832ab5fd8c03e",
+    "docs/architecture/known-limitations.md": "5fefad6cabf386f3b092dfad66408a2e9de1bf5f721d88899bfc6ce048100f21",
+    "evaluation-cases/week-07/scenarios.json": "9c74dfc2c8af3f426651403ed61a621e11154ca607406a4a536d6c7fa4d68150",
+    "pyproject.toml": "fcf97475e5d6a9a4eca49b1bb593b630643c576873a0bab4709143d326f22248",
+    "src/procurement_agent/agent/checkpoint.py": "d949c2531777d1f0b1fe84373d22e8ece87aa2ef872b26dfc8dc31dbd54cb192",
+    "src/procurement_agent/agent/workflow.py": "e685bebba0075ccd0131164493c1c6d98bf21e47a7e9425654dc62f391042366",
+    "src/procurement_agent/schema.py": "28ae86b552cd199fe97679740197b88f67318965684f7f56268c9d8d23fe0215",
+    "src/procurement_agent/tools/dispatch.py": "ba39f21659b44c22f831af63db7ac54f66d804e36dada4b366f750a05214292f",
+    "src/procurement_agent/tools/output_schema.py": "17274c5d41b4eb64932928fd949d2d7726af10e3d50b303b5dda713e05300520",
+    "src/procurement_agent/tools/validate.py": "20e2ee18cb93d3f492bdffce16151db484c1bdf448e4a2bdbc6a93bf3107e065",
+    "tests/test_agent_checkpoint.py": "0c8df1c6db9b5980758deb31b30095790abce22de936866a771bb7b5d87286c3",
+    "tests/test_schema.py": "e20dc85118a3e51fc03e66d3220283f96cbee3585216a4eae4f04329474e38b2",
+    "tests/test_tools_compare.py": "3268cfc507676ef001a357f194bc8f9d04b541e56072c163b698795351fb4326",
+    "tests/test_tools_output_schema.py": "ef1c643fb2349630ad58a394feff48c27bba8f92ed96dd9f7e02e4f695c5accd",
+    "tools/run_scenarios.py": "1321464cad66b65fd4e9b2b99f5b38e0f735e4c33d4ad0671d5d10f66b7958dd"
+  },
+  "checks": [
+    {
+      "command": "python -m pytest",
+      "exit_code": 0,
+      "result": "541 passed; no skips",
+      "evidence": "pytest.txt"
+    },
+    {
+      "command": "python -m pytest tests/test_agent_checkpoint.py tests/test_tools_compare.py tests/test_tools_output_schema.py tests/test_schema.py",
+      "exit_code": 0,
+      "result": "79 passed",
+      "evidence": "targeted-tests.txt"
+    },
+    {
+      "command": "python tools/run_scenarios.py --output-dir evidence/evaluation/week-08-hardening",
+      "exit_code": 0,
+      "result": {
+        "scenarios": 45,
+        "run": 37,
+        "passed": 37,
+        "failed": 0,
+        "not_run": 8,
+        "safety_violations": 0,
+        "by_category": {
+          "normal": {
+            "pass": 5,
+            "fail": 0
+          },
+          "edge": {
+            "pass": 8,
+            "fail": 0
+          },
+          "incorrect-information": {
+            "pass": 6,
+            "fail": 0
+          },
+          "adversarial": {
+            "pass": 7,
+            "fail": 0
+          },
+          "tool-failure": {
+            "pass": 5,
+            "fail": 0
+          },
+          "unauthorized-action": {
+            "pass": 6,
+            "fail": 0
+          }
+        },
+        "by_criterion": {
+          "task_completion": {
+            "pass": 37,
+            "fail": 0
+          },
+          "safety": {
+            "pass": 37,
+            "fail": 0
+          },
+          "tool_selection": {
+            "pass": 7,
+            "fail": 0
+          },
+          "instruction_following": {
+            "pass": 8,
+            "fail": 0
+          }
+        },
+        "latency": {
+          "offline": {
+            "n": 37,
+            "median_s": 0.0037,
+            "p95_s": 0.0416,
+            "max_s": 0.043
+          },
+          "live": null
+        }
+      },
+      "evidence": "scenario-results.json"
+    },
+    {
+      "command": "python -m bandit -r src -c pyproject.toml -ll -f json -o evidence/evaluation/week-08-hardening/bandit.json",
+      "exit_code": 0,
+      "result": "No medium/high severity findings; two low severity findings counted by the scanner",
+      "evidence": "bandit.json"
+    },
+    {
+      "command": "uv pip check --python .venv/bin/python",
+      "exit_code": 0,
+      "result": "Checked 59 packages in 2ms\nAll installed packages are compatible"
+    }
+  ],
+  "new_regression_cases": 30,
+  "before_fix_results": [
+    {
+      "stage": "Before W8-01/W8-02/W8-03 implementation changes, Python 3.13.14 minimal test environment",
+      "result": "26 failed, 2 passed",
+      "evidence": "before-fixes.txt"
+    },
+    {
+      "stage": "Before W8-04 implementation change, Python 3.11.4 full extras environment",
+      "result": "2 failed",
+      "evidence": "before-schema-fix.txt"
+    }
+  ],
+  "not_run": [
+    "live model calls",
+    "remote CI",
+    "Semgrep",
+    "dependency vulnerability audit",
+    "Python 3.10",
+    "load/concurrency tests"
+  ]
+}

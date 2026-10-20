@@ -1,0 +1,68 @@
+Cannot read termcap database;
+using dumb terminal settings.
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+____________ test_unavailable_draft_schema_prevents_the_write[None] ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-junior/pytest-3/test_unavailable_draft_schema_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x707fd9005d90>
+schema_text = None
+
+    @pytest.mark.parametrize("schema_text", [None, "{not json"])
+    def test_unavailable_draft_schema_prevents_the_write(tmp_path, monkeypatch, schema_text):
+        schemas = tmp_path / "schemas"
+        schemas.mkdir()
+        if schema_text is not None:
+            (schemas / "create_requisition_draft.output.json").write_text(schema_text)
+        monkeypatch.setattr(output_schema, "SCHEMA_DIR", schemas)
+        store = tmp_path / "requisitions.jsonl"
+        result = invoke(
+            "create_requisition_draft",
+            json.loads(Path("fixtures/tools/cement-draft.json").read_text()),
+            caller_role="PROCUREMENT_OFFICER",
+            requisition_store=str(store),
+            run_log=str(tmp_path / "runs.jsonl"),
+        )
+        assert result["status"] == "failed"
+        assert result["data"] is None
+        assert result["errors"][0]["code"] == "OUTPUT_SCHEMA_INVALID"
+>       assert not store.exists()
+E       AssertionError: assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-junior/pytest-3/test_unavailable_draft_schema_0/requisitions.jsonl').exists
+
+tests/test_tools_output_schema.py:86: AssertionError
+_________ test_unavailable_draft_schema_prevents_the_write[{not json] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-junior/pytest-3/test_unavailable_draft_schema_1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x707fd9005150>
+schema_text = '{not json'
+
+    @pytest.mark.parametrize("schema_text", [None, "{not json"])
+    def test_unavailable_draft_schema_prevents_the_write(tmp_path, monkeypatch, schema_text):
+        schemas = tmp_path / "schemas"
+        schemas.mkdir()
+        if schema_text is not None:
+            (schemas / "create_requisition_draft.output.json").write_text(schema_text)
+        monkeypatch.setattr(output_schema, "SCHEMA_DIR", schemas)
+        store = tmp_path / "requisitions.jsonl"
+        result = invoke(
+            "create_requisition_draft",
+            json.loads(Path("fixtures/tools/cement-draft.json").read_text()),
+            caller_role="PROCUREMENT_OFFICER",
+            requisition_store=str(store),
+            run_log=str(tmp_path / "runs.jsonl"),
+        )
+        assert result["status"] == "failed"
+        assert result["data"] is None
+        assert result["errors"][0]["code"] == "OUTPUT_SCHEMA_INVALID"
+>       assert not store.exists()
+E       AssertionError: assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-junior/pytest-3/test_unavailable_draft_schema_1/requisitions.jsonl').exists
+
+tests/test_tools_output_schema.py:86: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_tools_output_schema.py::test_unavailable_draft_schema_prevents_the_write[None]
+FAILED tests/test_tools_output_schema.py::test_unavailable_draft_schema_prevents_the_write[{not json]
+2 failed, 21 deselected in 0.18s

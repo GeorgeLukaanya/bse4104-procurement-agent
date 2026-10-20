@@ -81,6 +81,18 @@ def test_non_conforming_values_are_rejected(overrides, expected_fragment):
     assert expected_fragment in str(exc.value)
 
 
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+@pytest.mark.parametrize(
+    "field", ["vat_rate_percent", "delivery_cost", "lead_time_days", "quantity", "unit_price"],
+)
+def test_non_finite_extracted_numbers_are_rejected(field, value):
+    payload = conforming_payload()
+    target = payload["items"][0] if field in {"quantity", "unit_price"} else payload
+    target[field] = value
+    with pytest.raises(schema.SchemaValidationError, match=field):
+        schema.validate_raw(json.dumps(payload))
+
+
 def test_missing_field_entry_without_a_reason_is_rejected():
     """Requirement 3.2 requires a stated reason, not merely an acknowledgement."""
     with pytest.raises(schema.SchemaValidationError) as exc:

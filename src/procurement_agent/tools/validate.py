@@ -6,6 +6,7 @@ Every applicable error is returned, never only the first.
 
 from __future__ import annotations
 
+import math
 import re
 from datetime import datetime
 from typing import Any
@@ -224,11 +225,14 @@ def validate_compare_input(payload: Any) -> list[dict[str, Any]]:
         )
     if "exchange_rate_ugx_per_usd" in payload:
         rate = payload["exchange_rate_ugx_per_usd"]
-        if not isinstance(rate, (int, float)) or isinstance(rate, bool) or rate <= 0:
+        if (
+            not isinstance(rate, (int, float)) or isinstance(rate, bool)
+            or (isinstance(rate, float) and not math.isfinite(rate)) or rate <= 0
+        ):
             errors.append(
                 error(
                     CODE_INVALID_PARAMETER,
-                    "exchange_rate_ugx_per_usd must be a number greater than zero.",
+                    "exchange_rate_ugx_per_usd must be a finite number greater than zero.",
                     field="exchange_rate_ugx_per_usd",
                 )
             )

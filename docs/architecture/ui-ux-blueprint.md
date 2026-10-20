@@ -6,6 +6,7 @@
 | Inspected at | `7802f56` on `main` |
 | Owner | Sekyeza Elroy Nunda |
 | Purpose | Agree the screens and the interaction rules in Figma before any frontend code is written. |
+| Prototype | [SME Procurement Agent UI](https://www.figma.com/design/FO3o2dUg2QfOS1o6DkOVI5) (Figma). Start on the Cover page. |
 
 ## 1. What the codebase actually gives a UI
 
@@ -183,7 +184,7 @@ anything that could read as an instruction or an approval.
 ## 5. Figma frames to build
 
 Eleven frames. Each one is a state the backend can actually produce, so each is testable
-against a real run.
+against a real run. All eleven are built, on the Officer screens page of the Figma file.
 
 1. **Sign in.** Two seeded roles. No registration, no password reset, no role picker.
 2. **Officer idle.** Review date chosen, scan not yet run. Empty queue, one primary action.
@@ -207,8 +208,12 @@ the step-wizard variant from section 3.
 
 ## 6. Figma components and variants
 
+Fourteen sets, sixty variants, all built on the Components page.
+
 | Component | Variants | Notes |
 |---|---|---|
+| `StatusPill` | the six envelope statuses | Nested inside `ToolCallTile`, so a status is drawn once and reused. |
+| `Button` | primary, secondary, danger | Primary confirms the gate. Danger rejects, which ends the run without writing anything. |
 | `ToolCallTile` | ok, no_result, invalid_input, unauthorized, unavailable, failed; collapsed and expanded | Exactly the six envelope statuses. `no_result` is neutral, not red. |
 | `StopBanner` | the nine stop reasons in `steps.py` | Each carries the detail string verbatim. |
 | `GateCard` | comparison, draft, exchange-rate; pending, confirmed, rejected | Confirmed shows who and when. |
@@ -222,10 +227,12 @@ the step-wizard variant from section 3.
 | `IdentityChip` | officer, manager | Role is visible on every screen because it changes what is allowed. |
 | `RunHeader` | running, stopped | Iterations against cap, contract path and version. |
 
-No colour palette, type scale or component library exists in the repo, so the Figma file
-starts the design system rather than inheriting one. Keep it small: one typeface, a four
-step type scale, a neutral ramp, and semantic colours that map one-to-one onto the six
-envelope statuses so a screenshot and a trace can be read side by side.
+No colour palette, type scale or component library exists in the repo, and no library is
+subscribed in Figma, so the file starts the design system rather than inheriting one. It is
+deliberately small: 56 variables in three collections, ten text styles, Inter for the
+interface and JetBrains Mono for anything copied verbatim out of the system. The semantic
+colours map one-to-one onto the six envelope statuses, so a screenshot and a trace can be
+read side by side. Light mode only for now.
 
 ## 7. What to ask the team when the Figma link goes out
 

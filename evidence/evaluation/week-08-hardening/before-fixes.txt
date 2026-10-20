@@ -1,0 +1,536 @@
+FFFFFFFFF.FF.FFFFFFFFFFFFFFF                                             [100%]
+=================================== FAILURES ===================================
+___________ test_completed_draft_survives_changed_sources[inventory] ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-junior/pytest-0/test_completed_draft_survives_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7479bc6f1350>
+source = 'inventory'
+
+    @pytest.mark.parametrize("source", ["inventory", "suppliers", "quotations"])
+    def test_completed_draft_survives_changed_sources(tmp_path, monkeypatch, source):
+        first = _run(tmp_path, confirm_comparison=True, confirm_draft=True)
+        real = workflow_mod.current_sources
+    
+        def changed(**kwargs):
+            found = real(**kwargs)
+            found[source] = "changed-fingerprint"
+            return found
+    
+        monkeypatch.setattr(workflow_mod, "current_sources", changed)
+        for _ in range(2):
+            again = _run(tmp_path, confirm_comparison=True, confirm_draft=True)
+            assert again.stop_reason == STOP_COMPLETED
+>           assert again.calls == []
+E           AssertionError: assert [{'tool': 'ch...', ...}, ...}] == []
+E             
+E             Left contains 4 more items, first extra item: {'tool': 'check_reorder_need', 'tool_version': '1.0', 'status': 'ok', 'data': {'review_date': '2026-09-25', 'evaluated_count': 1, 'flagged_count': 1, 'no_reorder_required': False, ...}, ...}
+E             Use -v to get more diff
+
+tests/test_agent_checkpoint.py:74: AssertionError
+___________ test_completed_draft_survives_changed_sources[suppliers] ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-junior/pytest-0/test_completed_draft_survives_1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7479bc9728b0>
+source = 'suppliers'
+
+    @pytest.mark.parametrize("source", ["inventory", "suppliers", "quotations"])
+    def test_completed_draft_survives_changed_sources(tmp_path, monkeypatch, source):
+        first = _run(tmp_path, confirm_comparison=True, confirm_draft=True)
+        real = workflow_mod.current_sources
+    
+        def changed(**kwargs):
+            found = real(**kwargs)
+            found[source] = "changed-fingerprint"
+            return found
+    
+        monkeypatch.setattr(workflow_mod, "current_sources", changed)
+        for _ in range(2):
+            again = _run(tmp_path, confirm_comparison=True, confirm_draft=True)
+            assert again.stop_reason == STOP_COMPLETED
+>           assert again.calls == []
+E           AssertionError: assert [{'tool': 'ch...', ...}, ...}] == []
+E             
+E             Left contains 3 more items, first extra item: {'tool': 'check_supplier_eligibility', 'tool_version': '1.0', 'status': 'ok', 'data': {'category': 'cement and masonry..., 'matched_by': 'supplier_id', 'supplier_id': 'SUP-006', 'registered_name': 'Kireka Steel and Cement Ltd', ...}]}, ...}
+E             Use -v to get more diff
+
+tests/test_agent_checkpoint.py:74: AssertionError
+__________ test_completed_draft_survives_changed_sources[quotations] ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-junior/pytest-0/test_completed_draft_survives_2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7479bc73f410>
+source = 'quotations'
+
+    @pytest.mark.parametrize("source", ["inventory", "suppliers", "quotations"])
+    def test_completed_draft_survives_changed_sources(tmp_path, monkeypatch, source):
+        first = _run(tmp_path, confirm_comparison=True, confirm_draft=True)
+        real = workflow_mod.current_sources
+    
+        def changed(**kwargs):
+            found = real(**kwargs)
+            found[source] = "changed-fingerprint"
+            return found
+    
+        monkeypatch.setattr(workflow_mod, "current_sources", changed)
+        for _ in range(2):
+            again = _run(tmp_path, confirm_comparison=True, confirm_draft=True)
+            assert again.stop_reason == STOP_COMPLETED
+>           assert again.calls == []
+E           AssertionError: assert [{'tool': 'ch...', ...}, ...}] == []
+E             
+E             Left contains 3 more items, first extra item: {'tool': 'check_supplier_eligibility', 'tool_version': '1.0', 'status': 'ok', 'data': {'category': 'cement and masonry..., 'matched_by': 'supplier_id', 'supplier_id': 'SUP-006', 'registered_name': 'Kireka Steel and Cement Ltd', ...}]}, ...}
+E             Use -v to get more diff
+
+tests/test_agent_checkpoint.py:74: AssertionError
+________ test_completed_draft_survives_changed_exchange_rate[3800-None] ________
+
+tmp_path = PosixPath('/tmp/pytest-of-junior/pytest-0/test_completed_draft_survives_3')
+rate = 3800, rate_date = None
+
+    @pytest.mark.parametrize("rate, rate_date", [(3800, None), (3700, "2026-09-26")])
+    def test_completed_draft_survives_changed_exchange_rate(tmp_path, rate, rate_date):
+        first = _run(
+            tmp_path, sku="AH-HT-001", exchange_rate_ugx_per_usd=3700,
+            confirm_comparison=True, confirm_draft=True,
+        )
+        assert first.stop_reason == STOP_COMPLETED
+        for _ in range(2):
+            again = _run(
+                tmp_path, sku="AH-HT-001", exchange_rate_ugx_per_usd=rate,
+                exchange_rate_effective_date=rate_date,
+                confirm_comparison=True, confirm_draft=True,
+            )
+            assert again.stop_reason == STOP_COMPLETED
+>           assert again.calls == []
+E           AssertionError: assert [{'tool': 'co...', ...}, ...}] == []
+E             
+E             Left contains 2 more items, first extra item: {'tool': 'compare_quotations', 'tool_version': '1.0', 'status': 'ok', 'data': {'sku': 'AH-HT-001', 'reorder_quantity': 40, 'comparison_date': '2026-09-25', 'currency': 'UGX', ...}, ...}
+E             Use -v to get more diff
+
+tests/test_agent_checkpoint.py:93: AssertionError
+_____ test_completed_draft_survives_changed_exchange_rate[3700-2026-09-26] _____
+
+tmp_path = PosixPath('/tmp/pytest-of-junior/pytest-0/test_completed_draft_survives_4')
+rate = 3700, rate_date = '2026-09-26'
+
+    @pytest.mark.parametrize("rate, rate_date", [(3800, None), (3700, "2026-09-26")])
+    def test_completed_draft_survives_changed_exchange_rate(tmp_path, rate, rate_date):
+        first = _run(
+            tmp_path, sku="AH-HT-001", exchange_rate_ugx_per_usd=3700,
+            confirm_comparison=True, confirm_draft=True,
+        )
+        assert first.stop_reason == STOP_COMPLETED
+        for _ in range(2):
+            again = _run(
+                tmp_path, sku="AH-HT-001", exchange_rate_ugx_per_usd=rate,
+                exchange_rate_effective_date=rate_date,
+                confirm_comparison=True, confirm_draft=True,
+            )
+            assert again.stop_reason == STOP_COMPLETED
+>           assert again.calls == []
+E           AssertionError: assert [{'tool': 'co...', ...}, ...}] == []
+E             
+E             Left contains 2 more items, first extra item: {'tool': 'compare_quotations', 'tool_version': '1.0', 'status': 'ok', 'data': {'sku': 'AH-HT-001', 'reorder_quantity': 40, 'comparison_date': '2026-09-25', 'currency': 'UGX', ...}, ...}
+E             Use -v to get more diff
+
+tests/test_agent_checkpoint.py:93: AssertionError
+_____ test_unknown_role_cannot_read_or_replace_completed_checkpoint[False] _____
+
+tmp_path = PosixPath('/tmp/pytest-of-junior/pytest-0/test_unknown_role_cannot_read_0')
+fresh = False
+
+    @pytest.mark.parametrize("fresh", [False, True])
+    def test_unknown_role_cannot_read_or_replace_completed_checkpoint(tmp_path, fresh):
+        _run(tmp_path, confirm_comparison=True, confirm_draft=True)
+        path = CheckpointStore(tmp_path / "state").path_for(RUN_ID)
+        before = path.read_bytes()
+        result = _run(tmp_path, caller_role="UNKNOWN", fresh=fresh)
+>       assert result.stop_reason == STOP_UNAUTHORIZED
+E       AssertionError: assert 'completed' == 'unauthorized'
+E         
+E         - unauthorized
+E         + completed
+
+tests/test_agent_checkpoint.py:104: AssertionError
+_____ test_unknown_role_cannot_read_or_replace_completed_checkpoint[True] ______
+
+tmp_path = PosixPath('/tmp/pytest-of-junior/pytest-0/test_unknown_role_cannot_read_1')
+fresh = True
+
+    @pytest.mark.parametrize("fresh", [False, True])
+    def test_unknown_role_cannot_read_or_replace_completed_checkpoint(tmp_path, fresh):
+        _run(tmp_path, confirm_comparison=True, confirm_draft=True)
+        path = CheckpointStore(tmp_path / "state").path_for(RUN_ID)
+        before = path.read_bytes()
+        result = _run(tmp_path, caller_role="UNKNOWN", fresh=fresh)
+        assert result.stop_reason == STOP_UNAUTHORIZED
+>       assert result.calls == []
+E       AssertionError: assert [{'tool': 'ch...': None, ...}] == []
+E         
+E         Left contains one more item: {'tool': 'check_reorder_need', 'tool_version': '1.0', 'status': 'unauthorized', 'data': None, ...}
+E         Use -v to get more diff
+
+tests/test_agent_checkpoint.py:105: AssertionError
+_______ test_non_finite_exchange_rate_is_refused_before_calculation[nan] _______
+
+tmp_path = PosixPath('/tmp/pytest-of-junior/pytest-0/test_non_finite_exchange_rate_0')
+rate = nan
+
+    @pytest.mark.parametrize("rate", [float("nan"), float("inf"), float("-inf")])
+    def test_non_finite_exchange_rate_is_refused_before_calculation(tmp_path, rate):
+        result = _call(
+            tmp_path,
+            {
+                "sku": "AH-HT-001", "reorder_quantity": 40,
+                "comparison_date": "2026-09-25", "exchange_rate_ugx_per_usd": rate,
+            },
+        )
+>       assert result["status"] == "invalid_input"
+E       AssertionError: assert 'ok' == 'invalid_input'
+E         
+E         - invalid_input
+E         + ok
+
+tests/test_tools_compare.py:73: AssertionError
+_______ test_non_finite_exchange_rate_is_refused_before_calculation[inf] _______
+
+tmp_path = PosixPath('/tmp/pytest-of-junior/pytest-0/test_non_finite_exchange_rate_1')
+rate = inf
+
+    @pytest.mark.parametrize("rate", [float("nan"), float("inf"), float("-inf")])
+    def test_non_finite_exchange_rate_is_refused_before_calculation(tmp_path, rate):
+>       result = _call(
+            tmp_path,
+            {
+                "sku": "AH-HT-001", "reorder_quantity": 40,
+                "comparison_date": "2026-09-25", "exchange_rate_ugx_per_usd": rate,
+            },
+        )
+
+tests/test_tools_compare.py:66: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_tools_compare.py:11: in _call
+    return invoke(
+src/procurement_agent/tools/dispatch.py:197: in invoke
+    status, data, errors, fingerprint = compare_mod.compare_quotations(
+src/procurement_agent/tools/compare.py:124: in compare_quotations
+    reasons, missing_fields, computed = _evaluate_offer(
+src/procurement_agent/tools/compare.py:304: in _evaluate_offer
+    extended = _money(net_unit * qty)
+               ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = Decimal('Infinity')
+
+    def _money(value: Decimal) -> Decimal:
+>       return value.quantize(TWOPLACES, rounding=ROUND_HALF_UP)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       decimal.InvalidOperation: [<class 'decimal.InvalidOperation'>]
+
+src/procurement_agent/tools/compare.py:338: InvalidOperation
+________________ test_non_finite_tool_numbers_are_rejected[nan] ________________
+
+value = nan
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+    def test_non_finite_tool_numbers_are_rejected(value):
+>       assert output_schema.errors(value, {"type": "number", "minimum": 0})
+E       AssertionError: assert []
+E        +  where [] = <function errors at 0x7479bc731c60>(nan, {'type': 'number', 'minimum': 0})
+E        +    where <function errors at 0x7479bc731c60> = output_schema.errors
+
+tests/test_tools_output_schema.py:94: AssertionError
+________________ test_non_finite_tool_numbers_are_rejected[inf] ________________
+
+value = inf
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+    def test_non_finite_tool_numbers_are_rejected(value):
+>       assert output_schema.errors(value, {"type": "number", "minimum": 0})
+E       AssertionError: assert []
+E        +  where [] = <function errors at 0x7479bc731c60>(inf, {'type': 'number', 'minimum': 0})
+E        +    where <function errors at 0x7479bc731c60> = output_schema.errors
+
+tests/test_tools_output_schema.py:94: AssertionError
+_____ test_non_finite_extracted_numbers_are_rejected[vat_rate_percent-nan] _____
+
+field = 'vat_rate_percent', value = nan
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+    @pytest.mark.parametrize(
+        "field", ["vat_rate_percent", "delivery_cost", "lead_time_days", "quantity", "unit_price"],
+    )
+    def test_non_finite_extracted_numbers_are_rejected(field, value):
+        payload = conforming_payload()
+        target = payload["items"][0] if field in {"quantity", "unit_price"} else payload
+        target[field] = value
+>       with pytest.raises(schema.SchemaValidationError, match=field):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE SchemaValidationError
+
+tests/test_schema.py:92: Failed
+_____ test_non_finite_extracted_numbers_are_rejected[vat_rate_percent-inf] _____
+
+field = 'vat_rate_percent', value = inf
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+    @pytest.mark.parametrize(
+        "field", ["vat_rate_percent", "delivery_cost", "lead_time_days", "quantity", "unit_price"],
+    )
+    def test_non_finite_extracted_numbers_are_rejected(field, value):
+        payload = conforming_payload()
+        target = payload["items"][0] if field in {"quantity", "unit_price"} else payload
+        target[field] = value
+>       with pytest.raises(schema.SchemaValidationError, match=field):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE SchemaValidationError
+
+tests/test_schema.py:92: Failed
+____ test_non_finite_extracted_numbers_are_rejected[vat_rate_percent--inf] _____
+
+field = 'vat_rate_percent', value = -inf
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+    @pytest.mark.parametrize(
+        "field", ["vat_rate_percent", "delivery_cost", "lead_time_days", "quantity", "unit_price"],
+    )
+    def test_non_finite_extracted_numbers_are_rejected(field, value):
+        payload = conforming_payload()
+        target = payload["items"][0] if field in {"quantity", "unit_price"} else payload
+        target[field] = value
+>       with pytest.raises(schema.SchemaValidationError, match=field):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE SchemaValidationError
+
+tests/test_schema.py:92: Failed
+______ test_non_finite_extracted_numbers_are_rejected[delivery_cost-nan] _______
+
+field = 'delivery_cost', value = nan
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+    @pytest.mark.parametrize(
+        "field", ["vat_rate_percent", "delivery_cost", "lead_time_days", "quantity", "unit_price"],
+    )
+    def test_non_finite_extracted_numbers_are_rejected(field, value):
+        payload = conforming_payload()
+        target = payload["items"][0] if field in {"quantity", "unit_price"} else payload
+        target[field] = value
+>       with pytest.raises(schema.SchemaValidationError, match=field):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE SchemaValidationError
+
+tests/test_schema.py:92: Failed
+______ test_non_finite_extracted_numbers_are_rejected[delivery_cost-inf] _______
+
+field = 'delivery_cost', value = inf
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+    @pytest.mark.parametrize(
+        "field", ["vat_rate_percent", "delivery_cost", "lead_time_days", "quantity", "unit_price"],
+    )
+    def test_non_finite_extracted_numbers_are_rejected(field, value):
+        payload = conforming_payload()
+        target = payload["items"][0] if field in {"quantity", "unit_price"} else payload
+        target[field] = value
+>       with pytest.raises(schema.SchemaValidationError, match=field):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE SchemaValidationError
+
+tests/test_schema.py:92: Failed
+______ test_non_finite_extracted_numbers_are_rejected[delivery_cost--inf] ______
+
+field = 'delivery_cost', value = -inf
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+    @pytest.mark.parametrize(
+        "field", ["vat_rate_percent", "delivery_cost", "lead_time_days", "quantity", "unit_price"],
+    )
+    def test_non_finite_extracted_numbers_are_rejected(field, value):
+        payload = conforming_payload()
+        target = payload["items"][0] if field in {"quantity", "unit_price"} else payload
+        target[field] = value
+>       with pytest.raises(schema.SchemaValidationError, match=field):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE SchemaValidationError
+
+tests/test_schema.py:92: Failed
+______ test_non_finite_extracted_numbers_are_rejected[lead_time_days-nan] ______
+
+field = 'lead_time_days', value = nan
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+    @pytest.mark.parametrize(
+        "field", ["vat_rate_percent", "delivery_cost", "lead_time_days", "quantity", "unit_price"],
+    )
+    def test_non_finite_extracted_numbers_are_rejected(field, value):
+        payload = conforming_payload()
+        target = payload["items"][0] if field in {"quantity", "unit_price"} else payload
+        target[field] = value
+>       with pytest.raises(schema.SchemaValidationError, match=field):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE SchemaValidationError
+
+tests/test_schema.py:92: Failed
+______ test_non_finite_extracted_numbers_are_rejected[lead_time_days-inf] ______
+
+field = 'lead_time_days', value = inf
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+    @pytest.mark.parametrize(
+        "field", ["vat_rate_percent", "delivery_cost", "lead_time_days", "quantity", "unit_price"],
+    )
+    def test_non_finite_extracted_numbers_are_rejected(field, value):
+        payload = conforming_payload()
+        target = payload["items"][0] if field in {"quantity", "unit_price"} else payload
+        target[field] = value
+>       with pytest.raises(schema.SchemaValidationError, match=field):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE SchemaValidationError
+
+tests/test_schema.py:92: Failed
+_____ test_non_finite_extracted_numbers_are_rejected[lead_time_days--inf] ______
+
+field = 'lead_time_days', value = -inf
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+    @pytest.mark.parametrize(
+        "field", ["vat_rate_percent", "delivery_cost", "lead_time_days", "quantity", "unit_price"],
+    )
+    def test_non_finite_extracted_numbers_are_rejected(field, value):
+        payload = conforming_payload()
+        target = payload["items"][0] if field in {"quantity", "unit_price"} else payload
+        target[field] = value
+>       with pytest.raises(schema.SchemaValidationError, match=field):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE SchemaValidationError
+
+tests/test_schema.py:92: Failed
+_________ test_non_finite_extracted_numbers_are_rejected[quantity-nan] _________
+
+field = 'quantity', value = nan
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+    @pytest.mark.parametrize(
+        "field", ["vat_rate_percent", "delivery_cost", "lead_time_days", "quantity", "unit_price"],
+    )
+    def test_non_finite_extracted_numbers_are_rejected(field, value):
+        payload = conforming_payload()
+        target = payload["items"][0] if field in {"quantity", "unit_price"} else payload
+        target[field] = value
+>       with pytest.raises(schema.SchemaValidationError, match=field):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE SchemaValidationError
+
+tests/test_schema.py:92: Failed
+_________ test_non_finite_extracted_numbers_are_rejected[quantity-inf] _________
+
+field = 'quantity', value = inf
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+    @pytest.mark.parametrize(
+        "field", ["vat_rate_percent", "delivery_cost", "lead_time_days", "quantity", "unit_price"],
+    )
+    def test_non_finite_extracted_numbers_are_rejected(field, value):
+        payload = conforming_payload()
+        target = payload["items"][0] if field in {"quantity", "unit_price"} else payload
+        target[field] = value
+>       with pytest.raises(schema.SchemaValidationError, match=field):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE SchemaValidationError
+
+tests/test_schema.py:92: Failed
+________ test_non_finite_extracted_numbers_are_rejected[quantity--inf] _________
+
+field = 'quantity', value = -inf
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+    @pytest.mark.parametrize(
+        "field", ["vat_rate_percent", "delivery_cost", "lead_time_days", "quantity", "unit_price"],
+    )
+    def test_non_finite_extracted_numbers_are_rejected(field, value):
+        payload = conforming_payload()
+        target = payload["items"][0] if field in {"quantity", "unit_price"} else payload
+        target[field] = value
+>       with pytest.raises(schema.SchemaValidationError, match=field):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE SchemaValidationError
+
+tests/test_schema.py:92: Failed
+________ test_non_finite_extracted_numbers_are_rejected[unit_price-nan] ________
+
+field = 'unit_price', value = nan
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+    @pytest.mark.parametrize(
+        "field", ["vat_rate_percent", "delivery_cost", "lead_time_days", "quantity", "unit_price"],
+    )
+    def test_non_finite_extracted_numbers_are_rejected(field, value):
+        payload = conforming_payload()
+        target = payload["items"][0] if field in {"quantity", "unit_price"} else payload
+        target[field] = value
+>       with pytest.raises(schema.SchemaValidationError, match=field):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE SchemaValidationError
+
+tests/test_schema.py:92: Failed
+________ test_non_finite_extracted_numbers_are_rejected[unit_price-inf] ________
+
+field = 'unit_price', value = inf
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+    @pytest.mark.parametrize(
+        "field", ["vat_rate_percent", "delivery_cost", "lead_time_days", "quantity", "unit_price"],
+    )
+    def test_non_finite_extracted_numbers_are_rejected(field, value):
+        payload = conforming_payload()
+        target = payload["items"][0] if field in {"quantity", "unit_price"} else payload
+        target[field] = value
+>       with pytest.raises(schema.SchemaValidationError, match=field):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE SchemaValidationError
+
+tests/test_schema.py:92: Failed
+_______ test_non_finite_extracted_numbers_are_rejected[unit_price--inf] ________
+
+field = 'unit_price', value = -inf
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+    @pytest.mark.parametrize(
+        "field", ["vat_rate_percent", "delivery_cost", "lead_time_days", "quantity", "unit_price"],
+    )
+    def test_non_finite_extracted_numbers_are_rejected(field, value):
+        payload = conforming_payload()
+        target = payload["items"][0] if field in {"quantity", "unit_price"} else payload
+        target[field] = value
+>       with pytest.raises(schema.SchemaValidationError, match=field):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE SchemaValidationError
+
+tests/test_schema.py:92: Failed
+=========================== short test summary info ============================
+FAILED tests/test_agent_checkpoint.py::test_completed_draft_survives_changed_sources[inventory]
+FAILED tests/test_agent_checkpoint.py::test_completed_draft_survives_changed_sources[suppliers]
+FAILED tests/test_agent_checkpoint.py::test_completed_draft_survives_changed_sources[quotations]
+FAILED tests/test_agent_checkpoint.py::test_completed_draft_survives_changed_exchange_rate[3800-None]
+FAILED tests/test_agent_checkpoint.py::test_completed_draft_survives_changed_exchange_rate[3700-2026-09-26]
+FAILED tests/test_agent_checkpoint.py::test_unknown_role_cannot_read_or_replace_completed_checkpoint[False]
+FAILED tests/test_agent_checkpoint.py::test_unknown_role_cannot_read_or_replace_completed_checkpoint[True]
+FAILED tests/test_tools_compare.py::test_non_finite_exchange_rate_is_refused_before_calculation[nan]
+FAILED tests/test_tools_compare.py::test_non_finite_exchange_rate_is_refused_before_calculation[inf]
+FAILED tests/test_tools_output_schema.py::test_non_finite_tool_numbers_are_rejected[nan]
+FAILED tests/test_tools_output_schema.py::test_non_finite_tool_numbers_are_rejected[inf]
+FAILED tests/test_schema.py::test_non_finite_extracted_numbers_are_rejected[vat_rate_percent-nan]
+FAILED tests/test_schema.py::test_non_finite_extracted_numbers_are_rejected[vat_rate_percent-inf]
+FAILED tests/test_schema.py::test_non_finite_extracted_numbers_are_rejected[vat_rate_percent--inf]
+FAILED tests/test_schema.py::test_non_finite_extracted_numbers_are_rejected[delivery_cost-nan]
+FAILED tests/test_schema.py::test_non_finite_extracted_numbers_are_rejected[delivery_cost-inf]
+FAILED tests/test_schema.py::test_non_finite_extracted_numbers_are_rejected[delivery_cost--inf]
+FAILED tests/test_schema.py::test_non_finite_extracted_numbers_are_rejected[lead_time_days-nan]
+FAILED tests/test_schema.py::test_non_finite_extracted_numbers_are_rejected[lead_time_days-inf]
+FAILED tests/test_schema.py::test_non_finite_extracted_numbers_are_rejected[lead_time_days--inf]
+FAILED tests/test_schema.py::test_non_finite_extracted_numbers_are_rejected[quantity-nan]
+FAILED tests/test_schema.py::test_non_finite_extracted_numbers_are_rejected[quantity-inf]
+FAILED tests/test_schema.py::test_non_finite_extracted_numbers_are_rejected[quantity--inf]
+FAILED tests/test_schema.py::test_non_finite_extracted_numbers_are_rejected[unit_price-nan]
+FAILED tests/test_schema.py::test_non_finite_extracted_numbers_are_rejected[unit_price-inf]
+FAILED tests/test_schema.py::test_non_finite_extracted_numbers_are_rejected[unit_price--inf]
+26 failed, 2 passed, 49 deselected in 1.09s

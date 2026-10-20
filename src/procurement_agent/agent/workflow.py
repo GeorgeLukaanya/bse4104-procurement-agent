@@ -14,6 +14,7 @@ from ..tools.contract import (
     CODE_EXCHANGE_RATE_REQUIRED,
     ROLE_MANAGER,
     ROLE_OFFICER,
+    ROLES,
     STATUS_FAILED,
     STATUS_NO_RESULT,
     STATUS_OK,
@@ -175,8 +176,16 @@ def run_workflow(
     def finish(reason: str, detail: str) -> AgentResult:
         return _finish(state, reason, detail, run=run)
 
+    if caller_role not in ROLES:
+        # Refuse before reading, deleting (--fresh), or saving a checkpoint.
+        # Dispatch's role check alone is too late when resume skips tools.
+        run.store = None
+        run.memory = None
+        return finish(STOP_UNAUTHORIZED, f"{caller_role!r} is not a seeded role.")
+
     if caller_role == ROLE_MANAGER:
         run.store = None  # no run starts, so nothing is saved
+        run.memory = None
         return finish(
             STOP_UNAUTHORIZED,
             "PROCUREMENT_MANAGER does not operate the agent loop. "
@@ -189,8 +198,6 @@ def run_workflow(
         saved = run.store.load(state.run_id)
         if saved is not None:
             state.resumed = restore(state, saved, current_sources(**sources))
-            _adopt_exchange_rate(state, saved)
-            _drop_comparison_if_rate_changed(state)
             if state.draft is not None:
                 # The requisition already exists. Running again must not
                 # compile a second one for the same review.
@@ -200,6 +207,8 @@ def run_workflow(
                     f"Already completed in an earlier run: {state.draft.get('requisition_id')} "
                     "is in DRAFT. No tool was called. Use --fresh to start a new run.",
                 )
+            _adopt_exchange_rate(state, saved)
+            _drop_comparison_if_rate_changed(state)
         # A gate passed in an earlier invocation stays passed for the same
         # comparison; restore() drops it if the comparison is recomputed.
         if "comparison" in state.confirmations:

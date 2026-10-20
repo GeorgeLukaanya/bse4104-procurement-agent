@@ -15,9 +15,9 @@ purchase order, contacts a supplier, commits funds or approves anything itself.
 
 ## Status
 
-**Week 5 of 8 — bounded agent workflow.**
+**Week 8 of 8 — hardening and known limitations.**
 
-Four command-line tools run today, still as separate entry points:
+The current command-line components are:
 
 - **Quotation extraction** (Week 2) — takes a Converted Quotation Document in
   Markdown and returns a validated eleven-field Normalised Quotation record.
@@ -29,12 +29,17 @@ Four command-line tools run today, still as separate entry points:
   `create_requisition_draft`) called through `dispatch.invoke`. No model is
   involved. Write-up: [`docs/architecture/working-tools.md`](docs/architecture/working-tools.md).
 - **Bounded agent** (Week 5) — sequences those tools for one weekly reorder
-  review, with a six-iteration cap and officer confirmation before a DRAFT is
+  review, with an eight-iteration default cap and officer confirmation before a DRAFT is
   written. Write-up: [`docs/architecture/working-agent.md`](docs/architecture/working-agent.md).
+- **Persistent state and advisory memory** (Week 6) — resumes interrupted reviews,
+  prevents ordinary completed-run duplicates and shows prior outcomes and supplier notes.
+  Write-up: [`docs/architecture/working-memory.md`](docs/architecture/working-memory.md).
 
-Not built yet: Week 5 agent-task contract (other owner), Week 6 persistent
-state, document conversion, and any user interface. The Sense/Plan/Act
-diagram is on main (`docs/architecture/agent-architecture.md`).
+The agent-task contract and persistent state are implemented. Policy retrieval and
+quotation extraction still run separately from the deterministic agent workflow;
+model-written justification, document conversion and a user interface remain unbuilt.
+See the [Week 8 hardening and limitations register](docs/architecture/known-limitations.md)
+for fixes, verification evidence and the remaining deployment constraints.
 
 There is deliberately **no application framework**. Django, FastAPI and Flask are
 all absent, because the charter has not chosen one. The package is importable and
@@ -42,8 +47,8 @@ will be consumed by whatever interface the team picks later.
 
 ## Quick start
 
-Requires Python 3.10 or newer. Verified on 3.13 and 3.14; 3.10 is the floor
-declared in `pyproject.toml` but has not been run here.
+Requires Python 3.10 or newer. Week 8 hardening was verified on 3.11; 3.10 is
+the floor declared in `pyproject.toml` but was not tested in this review.
 
 ```bash
 git clone https://github.com/GeorgeLukaanya/bse4104-procurement-agent.git
@@ -64,14 +69,10 @@ backend, so it consumes none of the free-tier daily quota.
 pytest
 ```
 
-```
-223 passed, 6 skipped in 0.28s
-```
-
-The six skips are the optional extras — install them to run those too:
+Tests that need optional extras are skipped unless those extras are installed:
 
 ```bash
-pip install -e ".[dev,rag,gemini]"   # then all 229 run
+pip install -e ".[dev,rag,gemini]"   # complete offline suite, including RAG and SDK checks
 ```
 
 ### See it run without a key

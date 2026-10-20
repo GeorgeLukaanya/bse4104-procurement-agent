@@ -19,6 +19,7 @@ weaken the check without someone noticing.
 from __future__ import annotations
 
 import json
+import math
 import re
 from functools import lru_cache
 from pathlib import Path
@@ -56,7 +57,10 @@ def _is_type(value: Any, name: str) -> bool:
             isinstance(value, float) and value.is_integer()
         )
     if name == "number":
-        return isinstance(value, (int, float)) and not isinstance(value, bool)
+        return (
+            isinstance(value, (int, float)) and not isinstance(value, bool)
+            and (not isinstance(value, float) or math.isfinite(value))
+        )
     if name == "string":
         return isinstance(value, str)
     if name == "array":

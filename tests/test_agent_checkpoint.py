@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from procurement_agent.agent import run_workflow
 from procurement_agent.agent import workflow as workflow_mod
 from procurement_agent.agent.checkpoint import CheckpointStore, run_id_for
@@ -12,6 +14,7 @@ from procurement_agent.agent.steps import (
     STOP_COMPLETED,
     STOP_FAILED,
     STOP_MAX_ITERATIONS,
+    STOP_UNAUTHORIZED,
 )
 
 RUN_ID = run_id_for("2026-09-25", "AH-CM-001", "a.nakato")
@@ -52,6 +55,57 @@ def test_a_completed_run_never_compiles_a_second_requisition(tmp_path):
     assert "Already completed" in again.stop_detail
     lines = (tmp_path / "requisitions.jsonl").read_text(encoding="utf-8").splitlines()
     assert len(lines) == 1
+
+
+@pytest.mark.parametrize("source", ["inventory", "suppliers", "quotations"])
+def test_completed_draft_survives_changed_sources(tmp_path, monkeypatch, source):
+    first = _run(tmp_path, confirm_comparison=True, confirm_draft=True)
+    real = workflow_mod.current_sources
+
+    def changed(**kwargs):
+        found = real(**kwargs)
+        found[source] = "changed-fingerprint"
+        return found
+
+    monkeypatch.setattr(workflow_mod, "current_sources", changed)
+    for _ in range(2):
+        again = _run(tmp_path, confirm_comparison=True, confirm_draft=True)
+        assert again.stop_reason == STOP_COMPLETED
+        assert again.calls == []
+        assert again.state.draft == first.state.draft
+        assert again.state.step == "draft"
+    assert len((tmp_path / "requisitions.jsonl").read_text().splitlines()) == 1
+
+
+@pytest.mark.parametrize("rate, rate_date", [(3800, None), (3700, "2026-09-26")])
+def test_completed_draft_survives_changed_exchange_rate(tmp_path, rate, rate_date):
+    first = _run(
+        tmp_path, sku="AH-HT-001", exchange_rate_ugx_per_usd=3700,
+        confirm_comparison=True, confirm_draft=True,
+    )
+    assert first.stop_reason == STOP_COMPLETED
+    for _ in range(2):
+        again = _run(
+            tmp_path, sku="AH-HT-001", exchange_rate_ugx_per_usd=rate,
+            exchange_rate_effective_date=rate_date,
+            confirm_comparison=True, confirm_draft=True,
+        )
+        assert again.stop_reason == STOP_COMPLETED
+        assert again.calls == []
+        assert again.state.draft == first.state.draft
+    assert len((tmp_path / "requisitions.jsonl").read_text().splitlines()) == 1
+
+
+@pytest.mark.parametrize("fresh", [False, True])
+def test_unknown_role_cannot_read_or_replace_completed_checkpoint(tmp_path, fresh):
+    _run(tmp_path, confirm_comparison=True, confirm_draft=True)
+    path = CheckpointStore(tmp_path / "state").path_for(RUN_ID)
+    before = path.read_bytes()
+    result = _run(tmp_path, caller_role="UNKNOWN", fresh=fresh)
+    assert result.stop_reason == STOP_UNAUTHORIZED
+    assert result.calls == []
+    assert result.state.draft is None
+    assert path.read_bytes() == before
 
 
 def test_a_rate_supplied_on_resume_reruns_only_the_comparison(tmp_path):

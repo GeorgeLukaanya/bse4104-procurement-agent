@@ -38,6 +38,7 @@ STATUS_EXTRACTION_FAILED = "extraction_failed"
 STATUS_SUPPRESSED = "suppressed"
 STATUS_RATE_LIMITED = "rate_limited"
 STATUS_CALL_FAILED = "call_failed"
+STATUS_TIMEOUT = "timeout"
 
 
 def _now() -> str:

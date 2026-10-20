@@ -436,10 +436,16 @@ def _git(*args: str) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
+    global OUT_DIR, LIVE_DIR
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--live", action="store_true", help="also run the live Gemini scenarios")
     parser.add_argument("--only", nargs="*", help="scenario ids to run")
+    parser.add_argument("--output-dir", type=Path,
+                        help="write retest evidence separately from the historical run")
     args = parser.parse_args(argv)
+    if args.output_dir is not None:
+        OUT_DIR = args.output_dir
+        LIVE_DIR = OUT_DIR / "live"
     outcome = run(live=args.live, only=args.only)
     results = outcome["results"]
     report = {

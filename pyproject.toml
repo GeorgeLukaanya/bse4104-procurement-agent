@@ -14,7 +14,8 @@ dependencies = []
 [project.optional-dependencies]
 # The provider SDK is optional so that the test suite installs and runs without
 # it, with no API key and no network.
-gemini = ["google-genai>=1.0"]
+# Includes per-request HttpOptions and HttpRetryOptions used by the deadline.
+gemini = ["google-genai>=2.23"]
 # Week 3 retrieval. Qdrant runs in local mode (no server) and FastEmbed runs the
 # embedding model locally. Neither needs network at test time: tests inject a
 # fake embedder, and FastEmbed only downloads its model when one is actually

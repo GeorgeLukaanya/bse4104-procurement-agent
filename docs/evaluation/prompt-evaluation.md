@@ -5,11 +5,18 @@
 | Week | 2 |
 | Owner | Sekyeza Elroy Nunda |
 | Due | 11 September 2026 |
-| Status | v1.3 evaluation complete — 9/10 pass; TC-04 follow-up |
+| Status | v1.4 evaluation complete — 10/10 pass; FC-08 fixed |
 | Recorded prompt | Quotation extraction prompt v1.1 |
-| Latest evaluated prompt | Quotation extraction prompt v1.3 (9 October 2026) |
+| Latest evaluated prompt | Quotation extraction prompt v1.4 (17 October 2026) |
 
 This evaluation tests the current eleven-field Normalised Quotation record: `supplier_name`, `currency`, `vat_treatment`, `vat_rate_percent`, `delivery_cost`, `lead_time_days`, `validity_date`, `item_name`, `quantity`, `unit_of_measure`, and `unit_price`. The `missing_fields` array is also checked because the prompt requires a reason for unavailable values.
+
+**17 October 2026 follow-up:** prompt **v1.4** passes the full uncached live
+regression **10/10**, with 10/10 schema-conforming responses, no suppressions
+or cache hits, median 3.2218 s and worst 15.6125 s. TC-04 and independent S-41
+both return exactly `each`. [FC-08 / FC-09 closure evidence](fc08-fc09-follow-up.md)
+includes the source-field review, timeout tests and combined S-41/S-44/S-45 rerun.
+The historical v1.1 and v1.3 runs below retain their original results.
 
 ## Evaluation Case Adjustment Note
 

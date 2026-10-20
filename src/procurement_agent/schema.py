@@ -22,6 +22,7 @@ a complete one downstream, which is exactly the failure this rule prevents.
 from __future__ import annotations
 
 import json
+import math
 import re
 from dataclasses import dataclass, field
 from typing import Any
@@ -208,7 +209,10 @@ def response_schema() -> dict[str, Any]:
 
 def _is_number(value: Any) -> bool:
     # bool is a subclass of int in Python; a JSON true is not a number here.
-    return isinstance(value, (int, float)) and not isinstance(value, bool)
+    return (
+        isinstance(value, (int, float)) and not isinstance(value, bool)
+        and (not isinstance(value, float) or math.isfinite(value))
+    )
 
 
 def _check_optional_string(
@@ -228,7 +232,7 @@ def _check_optional_number(
     if value is None:
         return None
     if not _is_number(value):
-        violations.append(f"{name}: expected number or null, got {type(value).__name__}")
+        violations.append(f"{name}: expected finite number or null, got {type(value).__name__}")
         return None
     return float(value)
 

@@ -2,15 +2,19 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Callable
+from typing import Any, Callable, Mapping
 
 from ..tools.contract import (
+    CODE_EXCHANGE_RATE_REQUIRED,
     ROLE_MANAGER,
     ROLE_OFFICER,
+    ROLES,
     STATUS_FAILED,
     STATUS_NO_RESULT,
     STATUS_OK,
@@ -35,6 +39,7 @@ from .steps import (
     STOP_FAILED,
     STOP_MAX_ITERATIONS,
     STOP_NO_REORDER,
+    STOP_NO_PROGRESS,
     STOP_REFUSED,
     STOP_TIMEOUT,
     STOP_UNAUTHORIZED,
@@ -100,6 +105,8 @@ def run_workflow(
     caller_role: str = ROLE_OFFICER,
     confirm_comparison: bool = False,
     confirm_draft: bool = False,
+    exchange_rate_ugx_per_usd: float | None = None,
+    exchange_rate_effective_date: str | None = None,
     max_iterations: int | None = None,
     timeout_s: float | None = None,
     planner: Planner | None = None,
@@ -134,6 +141,7 @@ def run_workflow(
     budget = timeout_s if timeout_s is not None else _env_float(
         "AGENT_TIMEOUT_SECONDS", active_contract.wall_clock_seconds
     )
+    repeat_limit = active_contract.repeated_identical_action
     started = time.perf_counter()
     state = AgentState(
         review_date=review_date,
@@ -142,6 +150,8 @@ def run_workflow(
         caller_role=caller_role,
         confirm_comparison=confirm_comparison,
         confirm_draft=confirm_draft,
+        exchange_rate_ugx_per_usd=exchange_rate_ugx_per_usd,
+        exchange_rate_effective_date=exchange_rate_effective_date,
         contract=active_contract,
     )
     active_planner = planner or DeterministicPlanner(
@@ -166,8 +176,16 @@ def run_workflow(
     def finish(reason: str, detail: str) -> AgentResult:
         return _finish(state, reason, detail, run=run)
 
+    if caller_role not in ROLES:
+        # Refuse before reading, deleting (--fresh), or saving a checkpoint.
+        # Dispatch's role check alone is too late when resume skips tools.
+        run.store = None
+        run.memory = None
+        return finish(STOP_UNAUTHORIZED, f"{caller_role!r} is not a seeded role.")
+
     if caller_role == ROLE_MANAGER:
         run.store = None  # no run starts, so nothing is saved
+        run.memory = None
         return finish(
             STOP_UNAUTHORIZED,
             "PROCUREMENT_MANAGER does not operate the agent loop. "
@@ -189,6 +207,8 @@ def run_workflow(
                     f"Already completed in an earlier run: {state.draft.get('requisition_id')} "
                     "is in DRAFT. No tool was called. Use --fresh to start a new run.",
                 )
+            _adopt_exchange_rate(state, saved)
+            _drop_comparison_if_rate_changed(state)
         # A gate passed in an earlier invocation stays passed for the same
         # comparison; restore() drops it if the comparison is recomputed.
         if "comparison" in state.confirmations:
@@ -198,12 +218,35 @@ def run_workflow(
 
     while state.iterations < limit:
         if time.perf_counter() - started > budget:
-            return finish(STOP_TIMEOUT, f"Stopped after {budget:.0f}s (AGENT_TIMEOUT_SECONDS).")
+            spent = time.perf_counter() - started
+            return finish(
+                STOP_TIMEOUT,
+                f"Stopped after {spent:.2f}s, over the {budget:.2f}s budget "
+                "(AGENT_TIMEOUT_SECONDS).",
+            )
         if state.step == STEP_DRAFT and state.comparison is not None:
             _record_confirmations(state, run)
         proposal = active_planner.propose(state)
         if proposal.kind == "stop":
             return finish(proposal.stop_reason or STOP_COMPLETED, proposal.detail or "")
+
+        # Loop prevention. A planner that proposes the same call twice in a row
+        # is not making progress, and left alone it would spend the whole
+        # iteration budget repeating itself. The threshold comes from the
+        # contract; when the contract does not enforce it, this is skipped.
+        signature = _action_signature(proposal.tool, proposal.payload)
+        if (repeat_limit is not None
+                and state.repeats_of_last_action >= repeat_limit
+                and signature == state.last_action):
+            return finish(
+                STOP_NO_PROGRESS,
+                f"{proposal.tool} was proposed twice in a row with the same arguments. "
+                f"The contract allows {repeat_limit} repeat(s). Nothing further was called.",
+            )
+        state.repeats_of_last_action = (
+            state.repeats_of_last_action + 1 if signature == state.last_action else 0
+        )
+        state.last_action = signature
 
         state.iterations += 1
         envelope = invoke(
@@ -231,6 +274,14 @@ def run_workflow(
         if status in {STATUS_UNAVAILABLE, STATUS_FAILED}:
             return finish(STOP_FAILED, _error_detail(envelope))
         if status not in {STATUS_OK, STATUS_NO_RESULT}:
+            # The contract classes a missing rate as NEEDS_HUMAN, not a refusal.
+            # The compare step is not advanced, so the next run repeats it.
+            if _error_code(envelope) == CODE_EXCHANGE_RATE_REQUIRED:
+                return finish(
+                    STOP_AWAITING_HUMAN,
+                    _error_detail(envelope)
+                    + " Re-run with --exchange-rate once the officer discloses one.",
+                )
             return finish(STOP_REFUSED, _error_detail(envelope))
 
         completed_step = state.step
@@ -370,6 +421,66 @@ def _remember_outcome(state: AgentState, memory: MemoryStore) -> None:
     except MemoryRefused:
         # Memory is advisory; failing to record it never fails the run.
         pass
+
+
+def _adopt_exchange_rate(state: AgentState, checkpoint: dict[str, Any]) -> None:
+    """Keep a rate the officer already disclosed, unless this run supplies one."""
+    if state.exchange_rate_ugx_per_usd is None and checkpoint.get("exchange_rate_ugx_per_usd") is not None:
+        state.exchange_rate_ugx_per_usd = checkpoint["exchange_rate_ugx_per_usd"]
+    if not state.exchange_rate_effective_date and checkpoint.get("exchange_rate_effective_date"):
+        state.exchange_rate_effective_date = checkpoint["exchange_rate_effective_date"]
+
+
+def _drop_comparison_if_rate_changed(state: AgentState) -> None:
+    """A saved comparison belongs to the rate it was computed with."""
+    comparison = state.comparison
+    if comparison is None or not _rate_changed(
+        comparison,
+        state.exchange_rate_ugx_per_usd,
+        state.exchange_rate_effective_date,
+    ):
+        return
+    state.comparison = None
+    state.draft = None
+    state.step_sources.pop(STEP_COMPARE, None)
+    state.step_sources.pop(STEP_DRAFT, None)
+    state.confirmations.pop("comparison", None)
+    state.confirmations.pop("draft", None)
+    state.step = STEP_COMPARE
+    if state.resumed is not None:
+        kept = [
+            step for step in (state.resumed.get("kept_steps") or [])
+            if step not in {STEP_COMPARE, STEP_DRAFT}
+        ]
+        state.resumed["kept_steps"] = kept
+        state.resumed["restored"] = bool(kept)
+        state.resumed["recomputed_from"] = STEP_COMPARE
+        state.resumed["changed_sources"] = ["exchange_rate"]
+
+
+def _rate_changed(comparison: dict[str, Any], rate: float | None, rate_date: str | None) -> bool:
+    exchange = comparison.get("exchange_rate") or None
+    saved = None if not exchange else exchange.get("ugx_per_usd")
+    if (saved is None) != (rate is None):
+        return True
+    if saved is not None and rate is not None and float(saved) != float(rate):
+        return True
+    if rate_date and exchange and exchange.get("effective_date") != rate_date:
+        return True
+    return False
+
+
+def _error_code(envelope: dict[str, Any]) -> str | None:
+    errors = envelope.get("errors") or []
+    if not errors:
+        return None
+    return errors[0].get("code")
+
+
+def _action_signature(tool: str | None, payload: Mapping[str, Any] | None) -> str:
+    """One string per proposed call: the tool and its arguments, order-independent."""
+    canonical = json.dumps(payload or {}, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha256(f"{tool}|{canonical}".encode("utf-8")).hexdigest()
 
 
 def _error_detail(envelope: dict[str, Any]) -> str:

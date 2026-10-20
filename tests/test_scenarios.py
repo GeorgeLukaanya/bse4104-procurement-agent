@@ -12,7 +12,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 DATASET = json.loads((ROOT / "evaluation-cases" / "week-07" / "scenarios.json").read_text(encoding="utf-8"))
 RECORDED = json.loads(
-    (ROOT / "evidence" / "evaluation" / "week-07" / "scenario-results.json").read_text(encoding="utf-8")
+    (ROOT / "evidence" / "evaluation" / "week-07-final" / "scenario-results.json").read_text(encoding="utf-8")
 )
 SCENARIOS = DATASET["scenarios"]
 

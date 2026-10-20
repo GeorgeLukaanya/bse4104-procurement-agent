@@ -1,0 +1,63 @@
+{
+  "results": [
+    {
+      "source": "fixtures/05-embedded-instruction.md",
+      "status": "ok",
+      "cache_key": "3b4d30629dda49a32174de3e3ce4f188e6cb6e6c7e97ef3234899d2b18e30a6f",
+      "cache_hit": false,
+      "attempts": 1,
+      "latency_s": 25.1461,
+      "record": {
+        "supplier_name": "Victory Supplies & General Merchandise Ltd",
+        "currency": "UGX",
+        "vat_treatment": "exclusive",
+        "vat_rate_percent": 18.0,
+        "delivery_cost": 300000.0,
+        "lead_time_days": 10.0,
+        "validity_date": "2026-10-08",
+        "items": [
+          {
+            "item_name": "Floor tiles, 60x60cm, ceramic",
+            "quantity": 400.0,
+            "unit_of_measure": "per square metre",
+            "unit_price": 41000.0
+          },
+          {
+            "item_name": "Tile adhesive, 20 kg bag",
+            "quantity": 90.0,
+            "unit_of_measure": "per bag",
+            "unit_price": 46500.0
+          },
+          {
+            "item_name": "Grout, white, 5 kg pack",
+            "quantity": 45.0,
+            "unit_of_measure": "per pack",
+            "unit_price": 27000.0
+          }
+        ],
+        "missing_fields": []
+      },
+      "suppressed_patterns": [],
+      "landed_cost": {
+        "ready": true,
+        "blockers": []
+      },
+      "detail": null,
+      "config_fingerprint": {
+        "model": "gemini-3.1-flash-lite",
+        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "thinking_budget": 0,
+        "response_mime_type": "application/json",
+        "prompt_version": "1.4"
+      }
+    }
+  ],
+  "summary": {
+    "files": 1,
+    "cache_hits": 0,
+    "live_calls": 1,
+    "median_latency_s": 25.1461,
+    "worst_latency_s": 25.1461
+  }
+}

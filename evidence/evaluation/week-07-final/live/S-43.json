@@ -1,0 +1,150 @@
+{
+  "timestamp": "2026-10-19T12:43:21.939+00:00",
+  "component": "RAG",
+  "status": "ok",
+  "item_count": 1,
+  "items_shown": 1,
+  "retrieval_settings": {
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "top_k": 5,
+    "min_score": 0.5,
+    "item_min_score": 0.58
+  },
+  "items": [
+    {
+      "ref": "1",
+      "status": "ok",
+      "shown": true,
+      "request": {
+        "item": "diesel for the delivery truck",
+        "category": "fuel",
+        "estimated_total": 1000000,
+        "currency": "UGX"
+      },
+      "retrieval": {
+        "query": "Purchase of diesel for the delivery truck, category fuel, estimated total UGX 1,000,000",
+        "general": [
+          {
+            "clause_id": "POL-001-C03",
+            "source_id": "POL-001",
+            "version": "1.0",
+            "title": "Competitive Quotation Policy",
+            "heading": "Higher value purchases",
+            "score": 0.6521
+          },
+          {
+            "clause_id": "POL-001-C02",
+            "source_id": "POL-001",
+            "version": "1.0",
+            "title": "Competitive Quotation Policy",
+            "heading": "Standard purchases",
+            "score": 0.636
+          },
+          {
+            "clause_id": "POL-001-C01",
+            "source_id": "POL-001",
+            "version": "1.0",
+            "title": "Competitive Quotation Policy",
+            "heading": "Low value purchases",
+            "score": 0.6213
+          },
+          {
+            "clause_id": "POL-003-C01",
+            "source_id": "POL-003",
+            "version": "1.0",
+            "title": "Quotation Evaluation Policy",
+            "heading": "Requisition currency",
+            "score": 0.6074
+          },
+          {
+            "clause_id": "PRO-001-C03",
+            "source_id": "PRO-001",
+            "version": "1.0",
+            "title": "Weekly Reorder Review Procedure",
+            "heading": "Collect current offers",
+            "score": 0.5827
+          }
+        ],
+        "item": [],
+        "below_cutoff": [
+          {
+            "clause_id": "SPEC-001-C01",
+            "source_id": "SPEC-001",
+            "version": "1.0",
+            "title": "Cement and Masonry Product Specifications",
+            "heading": "Cement",
+            "score": 0.5572
+          },
+          {
+            "clause_id": "SPEC-001-C03",
+            "source_id": "SPEC-001",
+            "version": "1.0",
+            "title": "Cement and Masonry Product Specifications",
+            "heading": "Substitution",
+            "score": 0.5471
+          },
+          {
+            "clause_id": "SPEC-002-C03",
+            "source_id": "SPEC-002",
+            "version": "1.0",
+            "title": "Hand Tools and Safety Equipment Specifications",
+            "heading": "Unstated attributes",
+            "score": 0.5403
+          },
+          {
+            "clause_id": "SPEC-003-C01",
+            "source_id": "SPEC-003",
+            "version": "1.0",
+            "title": "Electrical and Plumbing Product Specifications",
+            "heading": "Electrical cable",
+            "score": 0.5396
+          },
+          {
+            "clause_id": "SPEC-003-C02",
+            "source_id": "SPEC-003",
+            "version": "1.0",
+            "title": "Electrical and Plumbing Product Specifications",
+            "heading": "Lamps",
+            "score": 0.5343
+          }
+        ],
+        "absence_notes": [
+          "No product specification in the Policy Corpus was found for diesel for the delivery truck (fuel)."
+        ]
+      },
+      "answer": {
+        "summary": "This purchase falls within the range of UGX 500,000 to UGX 5,000,000, which requires at least three comparable written quotations from eligible suppliers [POL-001-C02]. No product specification policy was found for this item in the Policy Corpus. The officer must also ensure that current written offers are assembled from suppliers appropriate to the fuel category [PRO-001-C03].",
+        "applicable_clauses": [
+          {
+            "source_id": "POL-001",
+            "version": "1.0",
+            "clause_id": "POL-001-C02",
+            "reason": "The estimated total of UGX 1,000,000 falls within the range specified for standard purchases."
+          },
+          {
+            "source_id": "PRO-001",
+            "version": "1.0",
+            "clause_id": "PRO-001-C03",
+            "reason": "This clause outlines the procedural requirement to collect current offers for the product category."
+          }
+        ]
+      },
+      "citation_check": {
+        "valid": true,
+        "problems": []
+      },
+      "suppressed_patterns": [],
+      "detail": null
+    }
+  ],
+  "attempts": 1,
+  "latency_s": 13.6375,
+  "config_fingerprint": {
+    "model": "gemini-3.1-flash-lite",
+    "temperature": 0.0,
+    "max_output_tokens": 2048,
+    "thinking_budget": 0,
+    "response_mime_type": "application/json",
+    "prompt_version": "grounding-1.1"
+  }
+}

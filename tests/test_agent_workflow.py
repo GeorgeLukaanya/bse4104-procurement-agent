@@ -106,6 +106,42 @@ def test_missing_quotations_file_is_unavailable(tmp_path):
     assert not (tmp_path / "requisitions.jsonl").exists()
 
 
+def test_usd_quote_without_a_rate_hands_off(tmp_path):
+    result = _run(tmp_path, sku="AH-HT-001")
+    assert result.stop_reason == STOP_AWAITING_HUMAN
+    assert "EXCHANGE_RATE_REQUIRED" in result.stop_detail
+    assert result.state.comparison is None
+    assert result.state.draft is None
+    assert any(
+        error.get("code") == "EXCHANGE_RATE_REQUIRED"
+        for call in result.calls
+        for error in call.get("errors") or []
+    )
+    assert not (tmp_path / "requisitions.jsonl").exists()
+
+
+def test_a_disclosed_rate_is_applied_and_the_run_continues(tmp_path):
+    result = _run(tmp_path, sku="AH-HT-001", exchange_rate_ugx_per_usd=3700)
+    assert result.stop_reason == STOP_AWAITING_HUMAN
+    assert result.state.comparison is not None
+    assert result.state.comparison["exchange_rate"]["ugx_per_usd"] == 3700
+    assert result.state.draft is None
+    assert not (tmp_path / "requisitions.jsonl").exists()
+
+
+def test_no_eligible_supplier_halts_compilation(tmp_path):
+    result = _run(
+        tmp_path,
+        sku="AH-CM-002",
+        confirm_comparison=True,
+        confirm_draft=True,
+    )
+    assert result.stop_reason == STOP_AWAITING_HUMAN
+    assert result.stop_detail.startswith("MISSING_COMPONENT:")
+    assert result.state.draft is None
+    assert not (tmp_path / "requisitions.jsonl").exists()
+
+
 def test_tampered_quotations_file_is_integrity_failure(tmp_path):
     mutated = tmp_path / "quotations.json"
     mutated.write_text(

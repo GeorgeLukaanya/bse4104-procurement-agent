@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from procurement_agent.tools import invoke
 
 
@@ -57,6 +59,21 @@ def test_usd_offer_without_a_rate_is_refused(tmp_path):
     assert result["status"] == "invalid_input"
     assert result["errors"][0]["code"] == "EXCHANGE_RATE_REQUIRED"
     assert result["data"] is None
+
+
+@pytest.mark.parametrize("rate", [float("nan"), float("inf"), float("-inf")])
+def test_non_finite_exchange_rate_is_refused_before_calculation(tmp_path, rate):
+    result = _call(
+        tmp_path,
+        {
+            "sku": "AH-HT-001", "reorder_quantity": 40,
+            "comparison_date": "2026-09-25", "exchange_rate_ugx_per_usd": rate,
+        },
+    )
+    assert result["status"] == "invalid_input"
+    assert result["data"] is None
+    assert result["errors"][0]["code"] == "INVALID_PARAMETER"
+    assert result["errors"][0]["field"] == "exchange_rate_ugx_per_usd"
 
 
 def test_usd_offer_converts_when_the_rate_is_disclosed(tmp_path):

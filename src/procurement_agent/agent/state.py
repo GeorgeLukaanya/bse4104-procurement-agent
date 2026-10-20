@@ -23,6 +23,10 @@ class AgentState:
     caller_role: str
     confirm_comparison: bool = False
     confirm_draft: bool = False
+    # Set when the officer discloses a rate for a non-UGX quotation (POL-003-C01).
+    # None means the officer has not supplied one.
+    exchange_rate_ugx_per_usd: float | None = None
+    exchange_rate_effective_date: str | None = None
     step: str = STEP_SCAN
     iterations: int = 0
     stop_reason: str | None = None
@@ -32,6 +36,11 @@ class AgentState:
     comparison: dict[str, Any] | None = None
     draft: dict[str, Any] | None = None
     calls: list[dict[str, Any]] = field(default_factory=list)
+    # Loop prevention: the last proposed call, as a hash, and how many times in
+    # a row it has been proposed. Not checkpointed: a repeat only matters
+    # within one run of the loop.
+    last_action: str | None = None
+    repeats_of_last_action: int = 0
     # The contract this run was bound by, carried so the trace can name it.
     contract: AgentContract | None = None
     # Week 6 run state. run_id names the checkpoint; step_sources holds the

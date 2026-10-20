@@ -100,16 +100,29 @@ class DeterministicPlanner:
             item = state.flagged_item()
             if item is None:
                 return Proposal(kind="stop", stop_reason=STOP_FAILED, detail="No flagged SKU to compare.")
-            return Proposal(
-                kind="call",
-                tool="compare_quotations",
-                payload={
-                    "sku": item["sku"],
-                    "reorder_quantity": item["reorder_quantity"],
-                    "comparison_date": state.review_date,
-                },
-            )
+            payload = {
+                "sku": item["sku"],
+                "reorder_quantity": item["reorder_quantity"],
+                "comparison_date": state.review_date,
+            }
+            if state.exchange_rate_ugx_per_usd is not None:
+                payload["exchange_rate_ugx_per_usd"] = state.exchange_rate_ugx_per_usd
+            if state.exchange_rate_effective_date:
+                payload["exchange_rate_effective_date"] = state.exchange_rate_effective_date
+            return Proposal(kind="call", tool="compare_quotations", payload=payload)
         if state.step == STEP_DRAFT:
+            # Requirement 9.4: a required component is absent. The contract
+            # hands this off immediately, because there is nothing to confirm.
+            ranked = (state.comparison or {}).get("ranked") or []
+            if state.comparison is not None and not ranked:
+                return Proposal(
+                    kind="stop",
+                    stop_reason=STOP_AWAITING_HUMAN,
+                    detail=(
+                        "MISSING_COMPONENT: no eligible supplier remains after exclusions. "
+                        "Compilation is halted (Requirement 9.4). Nothing was written."
+                    ),
+                )
             if not state.confirm_comparison:
                 return Proposal(
                     kind="stop",

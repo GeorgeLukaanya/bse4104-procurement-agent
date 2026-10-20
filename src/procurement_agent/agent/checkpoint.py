@@ -11,8 +11,10 @@ results the run already has, who passed which gate, the iteration count and
 the stop reason. It holds no document text and nothing the run did not
 produce.
 
-A saved result is reused only while the data it was computed from is
-unchanged. Each step records the fingerprints of the files it read; on resume
+A saved decision is reused only while the data it was computed from is
+unchanged. A completed draft is retained as a record of an existing write,
+even when those inputs change, so a resume cannot repeat that write.
+Each step records the fingerprints of the files it read; on resume
 they are recomputed, and the first step whose inputs changed, with every step
 after it, runs again. A stale comparison is never carried forward, and a gate
 confirmation given for an old comparison does not carry over to a new one.
@@ -123,6 +125,8 @@ class CheckpointStore:
             },
             "step_sources": state.step_sources,
             "confirmations": state.confirmations,
+            "exchange_rate_ugx_per_usd": state.exchange_rate_ugx_per_usd,
+            "exchange_rate_effective_date": state.exchange_rate_effective_date,
             "saved_at": saved_at,
         }
         # Write then rename, so a crash mid-write leaves the previous
@@ -177,6 +181,12 @@ def restore(
         setattr(state, _RESULT_FIELD[step], results[step])
         state.step_sources[step] = dict(saved_sources.get(step) or {})
 
+    # Completion is a fact about a side effect, not a cached decision. Source
+    # changes invalidate calculations but cannot undo the requisition already
+    # written. Only an explicit fresh run may compile another draft.
+    if results.get(STEP_DRAFT) is not None:
+        state.draft = results[STEP_DRAFT]
+
     confirmations = dict(checkpoint.get("confirmations") or {})
     if STEP_COMPARE not in kept:
         # A confirmation belongs to the comparison the officer saw. If that
@@ -189,6 +199,8 @@ def restore(
         last = kept[-1]
         index = STEP_ORDER.index(last)
         state.step = STEP_ORDER[min(index + 1, len(STEP_ORDER) - 1)]
+    if state.draft is not None:
+        state.step = STEP_DRAFT
     # The iteration budget belongs to the run, not to one command. A resumed
     # run continues the count, even when nothing could be reused, so repeated
     # retries cannot reset the bound. --fresh starts a new run and a new count.

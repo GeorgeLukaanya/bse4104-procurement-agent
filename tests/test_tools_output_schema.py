@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 
@@ -64,6 +65,27 @@ def test_a_missing_schema_fails_closed(tmp_path, monkeypatch):
     assert result["errors"][0]["code"] == "OUTPUT_SCHEMA_INVALID"
 
 
+@pytest.mark.parametrize("schema_text", [None, "{not json"])
+def test_unavailable_draft_schema_prevents_the_write(tmp_path, monkeypatch, schema_text):
+    schemas = tmp_path / "schemas"
+    schemas.mkdir()
+    if schema_text is not None:
+        (schemas / "create_requisition_draft.output.json").write_text(schema_text)
+    monkeypatch.setattr(output_schema, "SCHEMA_DIR", schemas)
+    store = tmp_path / "requisitions.jsonl"
+    result = invoke(
+        "create_requisition_draft",
+        json.loads(Path("fixtures/tools/cement-draft.json").read_text()),
+        caller_role="PROCUREMENT_OFFICER",
+        requisition_store=str(store),
+        run_log=str(tmp_path / "runs.jsonl"),
+    )
+    assert result["status"] == "failed"
+    assert result["data"] is None
+    assert result["errors"][0]["code"] == "OUTPUT_SCHEMA_INVALID"
+    assert not store.exists()
+
+
 def test_a_real_call_still_conforms(tmp_path):
     result = invoke(
         "check_reorder_need",
@@ -87,6 +109,11 @@ def test_schema_error_vocabulary_matches_the_code(tool):
 def test_unsupported_schema_keywords_are_reported_not_ignored():
     problems = output_schema.errors({"a": 1}, {"type": "object", "maxProperties": 0})
     assert problems and "unsupported" in problems[0]
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+def test_non_finite_tool_numbers_are_rejected(value):
+    assert output_schema.errors(value, {"type": "number", "minimum": 0})
 
 
 @pytest.mark.parametrize(

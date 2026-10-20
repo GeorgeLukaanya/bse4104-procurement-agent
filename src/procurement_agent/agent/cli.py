@@ -13,7 +13,8 @@ advisory memory from var/memory/ is shown beside the result (--no-memory hides
 it). Memory never changes a decision.
 
 Exit 0 on completed / no_reorder_required.
-Exit 1 on awaiting_human (the officer must confirm and re-run).
+Exit 1 on awaiting_human (the officer must confirm, or disclose an exchange
+rate, and re-run).
 Exit 2 on max_iterations, timeout, failure, unauthorized, or usage error.
 """
 
@@ -64,6 +65,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             caller_role=args.role,
             confirm_comparison=args.confirm_comparison,
             confirm_draft=args.confirm_draft,
+            exchange_rate_ugx_per_usd=args.exchange_rate,
+            exchange_rate_effective_date=args.exchange_rate_date,
             contract_path=args.contract,
             max_iterations=args.max_iterations,
             timeout_s=args.timeout,
@@ -116,6 +119,17 @@ def _parser() -> argparse.ArgumentParser:
         "--confirm-draft",
         action="store_true",
         help="Officer has confirmed compilation of a DRAFT requisition (gate 3).",
+    )
+    parser.add_argument(
+        "--exchange-rate",
+        type=float,
+        default=None,
+        help="UGX per 1 USD, when a held quotation is in USD (POL-003-C01). The tool will not pick a rate.",
+    )
+    parser.add_argument(
+        "--exchange-rate-date",
+        default=None,
+        help="YYYY-MM-DD the exchange rate applies. Defaults to the comparison date.",
     )
     parser.add_argument("--max-iterations", type=int, default=None)
     parser.add_argument("--timeout", type=float, default=None)
@@ -181,9 +195,10 @@ def _report(result) -> str:
     if resumed is not None:
         if resumed.get("restored"):
             kept = ", ".join(resumed.get("kept_steps") or [])
+            carried = resumed.get("restored_iterations") or 0
             lines.append(
                 f"resumed:    {kept} restored from checkpoint "
-                f"({resumed.get('restored_iterations')} iterations carried over)"
+                f"({carried} iteration{'' if carried == 1 else 's'} carried over)"
             )
         else:
             lines.append(f"resumed:    no ({resumed.get('reason') or 'nothing reusable'})")
@@ -205,9 +220,20 @@ def _report(result) -> str:
         for record in records:
             lines.append(f"  - [{record.get('id')}] {_ascii(record.get('summary') or '')}")
     if result.stop_reason == STOP_AWAITING_HUMAN:
-        lines.append(
-            "Re-run with --confirm-comparison and/or --confirm-draft after the officer reviews."
-        )
+        detail = result.stop_detail or ""
+        if "EXCHANGE_RATE_REQUIRED" in detail:
+            lines.append(
+                "Re-run with --exchange-rate <ugx per 1 usd>. "
+                "Add --exchange-rate-date YYYY-MM-DD when that date is not the review date."
+            )
+        elif "MISSING_COMPONENT" in detail:
+            lines.append(
+                "No requisition was written. An eligible quotation is required before compilation."
+            )
+        else:
+            lines.append(
+                "Re-run with --confirm-comparison and/or --confirm-draft after the officer reviews."
+            )
     return "\n".join(lines)
 
 

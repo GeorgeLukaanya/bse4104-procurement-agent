@@ -27,6 +27,7 @@ STOP_TIMEOUT = "timeout"
 STOP_UNAUTHORIZED = "unauthorized"
 STOP_FAILED = "failed"
 STOP_REFUSED = "refused"
+STOP_NO_PROGRESS = "no_progress"
 
 # Fixed by the Agent Task Contract section 6: the happy path uses 5 and officer
 # clearance of a NAME_DISCREPANCY costs 2 re-checks, so 6 would stop with

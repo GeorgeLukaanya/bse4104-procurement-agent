@@ -180,6 +180,19 @@ def invoke(
     if input_errors:
         return finish(STATUS_INVALID_INPUT, None, input_errors, None, role=caller_role)
 
+    # Check availability before execution: the draft tool writes to disk, so
+    # discovering a missing schema only after its return would be too late.
+    try:
+        output_schema.load(tool_name)
+    except output_schema.SchemaUnavailable as exc:
+        return finish(
+            STATUS_FAILED,
+            None,
+            [error(CODE_OUTPUT_SCHEMA_INVALID, f"output schema unavailable: {exc}. No tool was called.")],
+            None,
+            role=caller_role,
+        )
+
     if tool_name == "check_reorder_need":
         status, data, errors, fingerprint = reorder_mod.check_reorder_need(
             request,

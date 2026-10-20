@@ -15,9 +15,9 @@ purchase order, contacts a supplier, commits funds or approves anything itself.
 
 ## Status
 
-**Week 5 of 8 — bounded agent workflow.**
+**Week 8 of 8 — hardening and known limitations.**
 
-Four command-line tools run today, still as separate entry points:
+The current command-line components are:
 
 - **Quotation extraction** (Week 2) — takes a Converted Quotation Document in
   Markdown and returns a validated eleven-field Normalised Quotation record.
@@ -29,12 +29,17 @@ Four command-line tools run today, still as separate entry points:
   `create_requisition_draft`) called through `dispatch.invoke`. No model is
   involved. Write-up: [`docs/architecture/working-tools.md`](docs/architecture/working-tools.md).
 - **Bounded agent** (Week 5) — sequences those tools for one weekly reorder
-  review, with a six-iteration cap and officer confirmation before a DRAFT is
+  review, with an eight-iteration default cap and officer confirmation before a DRAFT is
   written. Write-up: [`docs/architecture/working-agent.md`](docs/architecture/working-agent.md).
+- **Persistent state and advisory memory** (Week 6) — resumes interrupted reviews,
+  prevents ordinary completed-run duplicates and shows prior outcomes and supplier notes.
+  Write-up: [`docs/architecture/working-memory.md`](docs/architecture/working-memory.md).
 
-Not built yet: Week 5 agent-task contract (other owner), Week 6 persistent
-state, document conversion, and any user interface. The Sense/Plan/Act
-diagram is on main (`docs/architecture/agent-architecture.md`).
+The agent-task contract and persistent state are implemented. Policy retrieval and
+quotation extraction still run separately from the deterministic agent workflow;
+model-written justification, document conversion and a user interface remain unbuilt.
+See the [Week 8 hardening and limitations register](docs/architecture/known-limitations.md)
+for fixes, verification evidence and the remaining deployment constraints.
 
 There is deliberately **no application framework**. Django, FastAPI and Flask are
 all absent, because the charter has not chosen one. The package is importable and
@@ -42,8 +47,8 @@ will be consumed by whatever interface the team picks later.
 
 ## Quick start
 
-Requires Python 3.10 or newer. Verified on 3.13 and 3.14; 3.10 is the floor
-declared in `pyproject.toml` but has not been run here.
+Requires Python 3.10 or newer. Week 8 hardening was verified on 3.11; 3.10 is
+the floor declared in `pyproject.toml` but was not tested in this review.
 
 ```bash
 git clone https://github.com/GeorgeLukaanya/bse4104-procurement-agent.git
@@ -64,14 +69,10 @@ backend, so it consumes none of the free-tier daily quota.
 pytest
 ```
 
-```
-223 passed, 6 skipped in 0.28s
-```
-
-The six skips are the optional extras — install them to run those too:
+Tests that need optional extras are skipped unless those extras are installed:
 
 ```bash
-pip install -e ".[dev,rag,gemini]"   # then all 229 run
+pip install -e ".[dev,rag,gemini]"   # complete offline suite, including RAG and SDK checks
 ```
 
 ### See it run without a key
@@ -466,16 +467,19 @@ they govern:
 - Project Charter **v1.1** — `docs/requirements/project-charter.md`
 - Requirements Document **v1.2** — `docs/requirements/user-stories.md`
 - AI Boundary Matrix **v1.1** — `docs/requirements/ai-boundary-matrix.md`
-- Prompt Specification **v1.3** — `prompts/quotation-extraction-v1.md`
+- Prompt Specification **v1.4** — `prompts/quotation-extraction-v1.md`
 - Model Selection Note — `docs/architecture/model-selection-note.md`
 - Corpus Source Register **v1.0** — `knowledge/source-register.md`
 - RAG architecture — `docs/architecture/rag-architecture.md`
 - Tool Catalogue **v1.0** — `docs/architecture/tool-catalogue.md`
 - Week-by-week index — `docs/README.md`
 
-The prompt actually sent lives in `prompts.py` (eleven fields, version 1.3). The ten-case
-evaluation table at `docs/evaluation/prompt-evaluation.md` records the v1.1 run;
-the v1.3 live regression records 9/10 passes, with TC-07 fixed and TC-04 requiring unit-preservation follow-up.
+The prompt actually sent lives in `prompts.py` (eleven fields, version 1.4). The
+17 October live regression passes all ten cases, including TC-04 unit preservation.
+The shared Gemini client enforces a 30-second budget including retries, with a
+structured `timeout` result when it cannot complete. See the
+[FC-08 / FC-09 closure evidence](docs/evaluation/fc08-fc09-follow-up.md).
+Historical v1.1 and v1.3 runs remain in the evaluation report.
 
 ## Changing the prompt
 
@@ -508,19 +512,19 @@ Live calls have been made. These figures are recorded, not estimated:
 
 | Measure | Result | Source |
 |---|---|---|
-| Prompt case pass rate (v1.3) | 9 of 10 — 90% | `docs/evaluation/prompt-evaluation.md` |
+| Prompt case pass rate (v1.4) | 10 of 10 — 100% | `docs/evaluation/fc08-fc09-follow-up.md` |
 | Schema conformance | 10 of 10 — 100% | same |
-| Extraction latency (v1.3) | median 2.5455s, worst 16.9832s | same |
+| Extraction latency (v1.4) | median 3.2218s, worst 15.6125s | same |
 | RAG case pass rate | 13 of 15 | `docs/evaluation/rag-evaluation.md` |
 | RAG requisition latency | 42.01s on one Gemini call | `evidence/traces/rag-weekly-reorder-run.txt` |
 
-Two known failures carry forward. **TC-04 (v1.3)**: the model returned `unit`
-instead of the source/expected `each` for office chairs. TC-07's ambiguous date
-now correctly returns null with a reason in the dedicated retest and full regression.
-**Latency**: Requirement 7.1 allows 30
-seconds and the recorded requisition took 42.01s; an earlier run of the same file
-took 6.29s, so this is provider variance rather than retrieval cost, and needs more
-samples before it means anything.
+**FC-08 and FC-09 are fixed as of 17 October 2026.** TC-04 and S-41 both return
+exactly `each`. S-41, S-44 and S-45 passed together at 5.9860s, 2.5054s and
+25.1461s. The client now enforces the 30-second ceiling across attempts and waits;
+timeouts withhold the model result and retain the error and elapsed time in the
+logs. The full local suite passed 511 tests, including 28 client/timeout tests.
+The older RAG measurements above remain historical observations. A passing run
+does not establish repeated-run provider reliability.
 
 Still unknown:
 

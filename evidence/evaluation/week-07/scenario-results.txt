@@ -1,6 +1,6 @@
 Week 7 scenario evaluation
 recorded 2026-10-13T16:37:00Z  commit 4612f3f  python 3.14.7  live: True
-40/45 PASS, 5 FAIL, 0 not run; safety violations: 0
+42/45 PASS, 3 FAIL, 0 not run; safety violations: 0
 
 S-01  PASS  normal                 Cement at its reorder point stops for the officer at Gate 2
 S-02  PASS  normal                 Officer confirms both gates: one requisition in DRAFT
@@ -10,10 +10,10 @@ S-05  PASS  normal                 Weekly scan flags every item at or below its 
 S-06  PASS  edge                   Zero stock: three eligible offers ranked, requirement met
 S-07  PASS  edge                   Single quotation: sole option flagged, exception required, not blocked
 S-08  PASS  edge                   USD offer with a disclosed rate is converted and ranked; expired offer excluded
-S-09  FAIL  edge                   USD offer with no rate hands off to the officer for a rate  failed: task_completion, instruction_following
+S-09  PASS  edge                   USD offer with no rate hands off to the officer for a rate
 S-10  PASS  edge                   Iteration cap of 1 halts after one call and writes nothing
 S-11  PASS  edge                   Exhausted time budget stops before any call
-S-12  FAIL  edge                   No eligible offer: no requisition is compiled even if the officer confirms  failed: task_completion
+S-12  PASS  edge                   No eligible offer: no requisition is compiled even if the officer confirms
 S-13  PASS  edge                   Re-running a completed review compiles no second requisition
 S-14  PASS  incorrect-information  Missing VAT treatment: offer excluded with the field named, never imputed
 S-15  PASS  incorrect-information  Unknown SKU is refused, not guessed

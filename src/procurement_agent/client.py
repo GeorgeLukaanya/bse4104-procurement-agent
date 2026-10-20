@@ -14,7 +14,10 @@ succeed on a retry.
 
 from __future__ import annotations
 
+import math
+import queue
 import random
+import threading
 import time
 from dataclasses import dataclass
 from typing import Any, Callable, Protocol
@@ -50,6 +53,19 @@ class TimeoutError_(TransientError):
     """The request did not complete in time."""
 
 
+class DeadlineExceeded(TimeoutError_):
+    """The shared model-call/retry deadline was exhausted."""
+
+    def __init__(self, message: str, attempts: int, latency_s: float) -> None:
+        self.attempts = attempts
+        self.latency_s = latency_s
+        super().__init__(message)
+
+
+class _WallClockTimeout(TimeoutError_):
+    """The caller's wait ended; no further transport attempts may start."""
+
+
 class PermanentError(TransportError):
     """A failure no retry can fix. Fails immediately rather than burning budget."""
 
@@ -62,8 +78,10 @@ class RetryBudgetExhausted(TransportError):
     limiting rather than as a generic failure.
     """
 
-    def __init__(self, message: str, attempts: int, last_error: TransportError) -> None:
+    def __init__(self, message: str, attempts: int, last_error: TransportError,
+                 latency_s: float = 0.0) -> None:
         self.attempts = attempts
+        self.latency_s = latency_s
         self.last_error = last_error
         super().__init__(message, status_code=last_error.status_code)
 
@@ -89,6 +107,8 @@ class Backend(Protocol):
         system_instruction: str,
         user_message: str,
         config: ExtractionConfig,
+        *,
+        timeout_s: float = 30.0,
     ) -> str:
         """Return the raw response text, or raise a TransportError subclass."""
         ...
@@ -107,6 +127,7 @@ class RetryPolicy:
     base_delay_s: float = 0.5
     max_delay_s: float = 8.0
     jitter: bool = True
+    total_timeout_s: float = 30.0
 
     def __post_init__(self) -> None:
         if self.max_attempts < 1:
@@ -115,6 +136,8 @@ class RetryPolicy:
             raise ValueError("base_delay_s must not be negative")
         if self.max_delay_s < self.base_delay_s:
             raise ValueError("max_delay_s must not be below base_delay_s")
+        if not math.isfinite(self.total_timeout_s) or not 0 < self.total_timeout_s <= 30:
+            raise ValueError("total_timeout_s must be finite and in (0, 30]")
 
     def delay_for(self, attempt: int, rand: Callable[[], float] = random.random) -> float:
         """Delay before the attempt following `attempt` (1-based)."""
@@ -154,12 +177,15 @@ def classify_error(exc: BaseException) -> TransportError:
 
     if status == 429:
         return RateLimitError(message)
+    if status in (408, 504):
+        return TimeoutError_(message, status_code=status)
     if status in RETRYABLE_STATUS_CODES:
         return TransientError(message, status_code=status)
     if status is not None:
         return PermanentError(message, status_code=status)
 
-    lowered = str(exc).lower()
+    # httpx.ReadTimeout/ConnectTimeout can have an empty message.
+    lowered = message.lower()
     if "timed out" in lowered or "timeout" in lowered:
         return TimeoutError_(message)
     if "429" in lowered or "resource_exhausted" in lowered or "rate limit" in lowered:
@@ -172,6 +198,41 @@ def classify_error(exc: BaseException) -> TransportError:
     # Unknown shape. Treated as permanent so an unrecognised fault fails fast
     # instead of spending the retry budget on something a retry cannot fix.
     return PermanentError(message)
+
+
+def _generate_before_deadline(
+    backend: Backend, system_instruction: str, user_message: str,
+    config: ExtractionConfig, timeout_s: float,
+) -> str:
+    """Bound caller wait even if a transport ignores its HTTP timeout.
+
+    HTTP timeouts may apply separately to connect/read/write phases. A daemon
+    watchdog enforces wall time as well; a late response is discarded and can
+    never reach validation, caching or logging. Only the transport runs in the
+    worker. The SDK timeout bounds its network work independently.
+    """
+    result: queue.Queue[tuple[str | None, BaseException | None]] = queue.Queue(maxsize=1)
+
+    def generate() -> None:
+        try:
+            result.put((backend.generate(
+                system_instruction, user_message, config, timeout_s=timeout_s
+            ), None))
+        except BaseException as exc:
+            result.put((None, exc))
+
+    # Leave a small margin to construct and return the structured error before
+    # the external ceiling. Scheduling/serialization overhead is real latency.
+    deadline = time.monotonic() + timeout_s - min(0.05, timeout_s * 0.1)
+    threading.Thread(target=generate, daemon=True).start()
+    try:
+        text, error = result.get(timeout=max(0.0, deadline - time.monotonic()))
+    except queue.Empty as exc:
+        raise _WallClockTimeout("model request reached its wall-clock deadline") from exc
+    if error is not None:
+        raise error
+    assert text is not None
+    return text
 
 
 def call_with_retry(
@@ -195,13 +256,30 @@ def call_with_retry(
     """
     policy = policy or RetryPolicy()
     started = monotonic()
+    deadline = started + policy.total_timeout_s
     last_error: TransportError | None = None
 
+    def timed_out(attempts: int) -> DeadlineExceeded:
+        return DeadlineExceeded(
+            f"model request could not complete within the {policy.total_timeout_s:g}s overall time budget "
+            "(including attempts and retry waits)",
+            attempts=attempts, latency_s=monotonic() - started,
+        )
+
     for attempt in range(1, policy.max_attempts + 1):
+        remaining = deadline - monotonic()
+        if remaining <= 0:
+            raise timed_out(attempt - 1)
         try:
-            text = backend.generate(system_instruction, user_message, config)
-        except BaseException as exc:  # noqa: BLE001 - re-raised after classification
+            text = _generate_before_deadline(
+                backend, system_instruction, user_message, config, remaining
+            )
+        except Exception as exc:
+            if isinstance(exc, DeadlineExceeded):
+                raise
             error = classify_error(exc)
+            if isinstance(error, _WallClockTimeout) or monotonic() >= deadline:
+                raise timed_out(attempt) from exc
             if isinstance(error, PermanentError):
                 # Fail immediately. Retrying a bad API key or an unknown model
                 # spends requests that the free-tier daily quota cannot spare.
@@ -209,8 +287,13 @@ def call_with_retry(
             last_error = error
             if attempt == policy.max_attempts:
                 break
-            sleep(policy.delay_for(attempt, rand=rand))
+            delay = policy.delay_for(attempt, rand=rand)
+            if delay >= deadline - monotonic():
+                raise timed_out(attempt) from exc
+            sleep(delay)
             continue
+        if monotonic() >= deadline:
+            raise timed_out(attempt)
         return CallResult(
             text=text, attempts=attempt, latency_s=monotonic() - started
         )
@@ -222,6 +305,7 @@ def call_with_retry(
         f"{kind}: {last_error}",
         attempts=policy.max_attempts,
         last_error=last_error,
+        latency_s=monotonic() - started,
     )
 
 
@@ -260,6 +344,8 @@ class GeminiBackend:
         system_instruction: str,
         user_message: str,
         config: ExtractionConfig,
+        *,
+        timeout_s: float = 30.0,
     ) -> str:
         from google.genai import types  # type: ignore[import-not-found]
 
@@ -270,6 +356,11 @@ class GeminiBackend:
                 model=config.model,
                 contents=user_message,
                 config=types.GenerateContentConfig(
+                    http_options=types.HttpOptions(
+                        timeout=max(1, int(min(timeout_s, 30.0) * 1000)),
+                        # This module owns retries and the shared deadline.
+                        retry_options=types.HttpRetryOptions(attempts=1),
+                    ),
                     system_instruction=system_instruction,
                     temperature=config.temperature,
                     max_output_tokens=config.max_output_tokens,

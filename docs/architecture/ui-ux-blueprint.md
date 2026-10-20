@@ -70,16 +70,34 @@ So: desktop-first, 1440 wide, two roles, no admin screens, no phone layout.
 
 ## 4. The design
 
-A sidebar, one content column, and a decision band that appears only when the system needs
-an answer. No three-pane cockpit, no dashboard of tiles, no cards inside cards.
+An inbox, a detail drawer, and an approval chain. This is the shape intake-to-procure
+tools have settled on, and it is deliberately borrowed: procurement people already know
+it, and being novel here would cost us more than it wins.
 
-The sidebar is the only tinted region, which is what makes the rest of the screen read as
-paper. It carries the week's work at the top and the records underneath, so the product is
-visibly more than one workflow: Suppliers, Quotations, Policies and Activity are all
-first-class places, even though only Activity is drawn.
+**The inbox is the home screen.** Three tabs, Needs you, In progress and Done, with the
+count on the tab. Zip and Omnea both organise around a request queue, and Google's Gemini
+Enterprise agent inbox splits the same way into needs-input, errors and completed. The
+count is the product: it is the only number Agnes checks before deciding whether today
+involves the system at all.
 
-The content column is 880 wide against a 1440 frame. That asymmetry is deliberate: a
-measure you can actually read beats filling the glass.
+**The detail opens in a drawer over the list, not on its own page.** The list stays put
+while a request is read, which is what makes working through five of them bearable, and it
+is why the list condenses rather than disappearing.
+
+**An approval chain runs down the drawer.** A vertical stepper: who has acted, who it is
+sitting with now, who comes next. Every tool in this category has one, and the first pass
+of this design did not. It answers the only question a requester ever actually asks.
+
+**Filters and bulk select are visible even where they are not needed yet.** A review queue
+without them turns into an inbox people clear mechanically, which is the failure mode that
+makes a human-in-the-loop gate worthless.
+
+The sidebar is the only tinted region, which is what makes the rest read as paper. It
+carries the queue at the top and the records underneath, so the product is visibly more
+than one workflow.
+
+**The manager is not a separate product.** Ssali gets the same inbox, filtered to his rows
+and titled Approvals. One surface, two roles.
 
 ### 4.1 How it speaks
 
@@ -124,41 +142,42 @@ confirmations; screen 3 warns before she submits, in those words.
 
 ## 5. The screens
 
-**Workspace**, seven frames for the officer:
+Six, down from nine. The cut came from treating states as states rather than as screens:
+"ready to send" and "sent" are the same request at two points in its chain, not two pages.
 
-1. **This week.** What the assistant found, the three items that need ordering, and what
-   already happened today.
-2. **Comparing an item.** The offers, the recommendation carrying the weight, the one set
-   aside and why.
-3. **A rate is needed.** The dollar quotation, the rate form, and the warning about what
-   resubmitting costs.
-4. **Ready to send.** The requisition in plain language: what, from whom, how much, why,
-   and what is worth knowing.
-5. **Sent for approval.** Confirmation, and the record of what happened.
-6. **Activity.** Every decision kept, who made it, when. This is the database screen.
-7. **Something went wrong.** A failure written for a person, with the technical trail open
-   underneath for whoever fixes it.
+1. **Inbox.** Three tabs, filters, five rows. The home screen, and most days the only one
+   she opens.
+2. **Request open.** The drawer over the list: why it is waiting, the approval chain, the
+   price, and three folded sections.
+3. **All quotations.** The full comparison, reached from the drawer when she wants to see
+   the working.
+4. **A rate is needed.** The one place the system has to ask before it can go on, drawn as
+   an inline ask inside the drawer rather than a page of its own.
+5. **Activity.** Every decision kept as it was made, searchable and exportable.
+6. **Manager inbox.** The same surface as 1, Ssali's rows, titled Approvals.
 
-**Manager**, two frames: what is waiting for Ssali, and one requisition with Approve or
-Send back. Both carry a note on the canvas saying they are not wired, because no tool
-writes a status past DRAFT.
+Screen 6 is real but its Approve button is not, because no tool writes a status past
+DRAFT. That is recorded in section 10 rather than shouted on the frame.
 
 The v1 pages are kept in the file, prefixed `v1 ·`, for comparison. They can be deleted
 once the team has decided.
 
 ## 6. Components
 
-Eight sets. Each one reads a real field.
+Eleven sets. Each one reads a real field.
 
 | Component | Variants | Reads |
 |---|---|---|
+| `RequestRow` | needs you, waiting, blocked, done | One line of the inbox: what, who asked, how much, what it waits for, how long. The row that needs you carries a 3px rule and nothing else does. |
+| `TabItem` | active, default, empty | The queue split. The count never hides. |
+| `ChainStep` | done, current, waiting, returned | One step of the approval chain. |
 | `NavItem` | default, active, muted | Sidebar. The active row is a 2px rule and a tint, not a filled block. |
-| `AssistantNote` | neutral, attention, problem, done | How the system speaks. One short paragraph, a small square mark, never an avatar. |
-| `ItemRow` | needs review, in progress, waiting on you, ready, sent, issue | A flagged SKU, with the stock position written the way a person would say it. |
 | `OfferRow` | recommended, alternative, alternative two, set aside | One row of `compare_quotations.data.ranked`, or an excluded quotation and its reason. |
-| `DecisionBar` | waiting, done | The three decision moments. The only filled button in the interface. |
 | `ActivityRow` | you, assistant, manager | One row of the decisions table. |
 | `StatusPill` | draft, with the manager, approved, returned | Reserved for the requisition's own status and used nowhere else. |
+| `AssistantNote` | neutral, attention, problem, done | How the system speaks when it has something to say. Used once per screen at most. |
+| `DecisionBar` | waiting, done | Kept for the full-page decision; the drawer uses its own footer. |
+| `ItemRow` | six stock states | The stock view, which is not drawn yet. |
 | `MetaLine` | default, technical | Inside the "What I checked" disclosure. Where tool names and file paths live. |
 
 Colour: a pale blue canvas, a tinted sidebar, white surfaces, blue-tinted neutrals so

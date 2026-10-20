@@ -103,7 +103,7 @@ Due dates are the Friday of each teaching week.
 | Observability / tracing evidence | [`docs/evaluation/observability.md`](evaluation/observability.md) | Beingana Jim Junior | Complete, awaiting team review |
 | Guardrail implementation evidence | [`docs/evaluation/guardrails.md`](evaluation/guardrails.md) | Sekyeza Elroy Nunda | Complete, awaiting team review |
 | Failure catalogue | [`docs/evaluation/failure-catalogue.md`](evaluation/failure-catalogue.md) | Ainamani Jim Isaac | Complete, awaiting team review |
-| Week 7 progress report | [`docs/weekly-reports/week-07.md`](weekly-reports/week-07.md) | Nannyombi Shakiran | Not started |
+| Week 7 progress report | [`docs/weekly-reports/week-07.md`](weekly-reports/week-07.md) | Nannyombi Shakiran | Draft for review |
 
 ## Week 8 — 23 October 2026
 

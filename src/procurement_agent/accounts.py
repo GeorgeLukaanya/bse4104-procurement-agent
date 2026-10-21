@@ -1,0 +1,337 @@
+"""User accounts and sessions, from the standard library.
+
+Known limitation KL-02 says identity and confirmation are trusted command-line
+inputs: ``--role`` and ``--officer`` are whatever the person starting the
+process typed, with no login behind them, so an audit entry attributing a
+decision to an officer attributes it to a flag. The charter asks for "two
+seeded user roles with simple authentication, sufficient to attribute audit
+entries to an identity". This module is that, for the web path.
+
+What it is, in full, so nobody mistakes it for more than it is.
+
+Passwords are stored as scrypt hashes with a per-user salt, never in the clear
+and never reversibly. scrypt is in ``hashlib``, so this costs no dependency.
+The work factor is deliberately on the slow side for a login, which is the
+point of it.
+
+A session token is 32 random bytes from ``secrets``. The database stores only
+its SHA-256, so a copy of the file does not hand anyone a live session. The
+cookie is HttpOnly and SameSite=Strict; it is not marked Secure because the
+server runs on plain http on localhost, and that is the one place this is
+allowed to run.
+
+Failed logins are counted per username and the account refuses attempts for a
+short time after too many. That is a speed bump against guessing, not a defence
+against a serious attacker.
+
+What it is not: there is no password reset, no change of password, no account
+listing over HTTP, no lockout notification, no rate limit per source address,
+and no transport security. The roles are fixed to the two the charter names.
+This is enough to make an audit entry mean something on a single machine with
+synthetic data. It is not enough to put anything real behind.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import hmac
+import os
+import secrets
+import sqlite3
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from typing import Any, Callable, Mapping
+
+from .tools.contract import ROLE_MANAGER, ROLE_OFFICER
+
+DEFAULT_ACCOUNTS_PATH = Path("var") / "accounts.sqlite3"
+
+# Only the two roles the charter seeds. A third is a charter change.
+ACCOUNT_ROLES = (ROLE_OFFICER, ROLE_MANAGER)
+
+SESSION_HOURS = 12
+MIN_PASSWORD = 10
+
+# scrypt. n is the work factor; 2**14 keeps a login around a tenth of a second
+# on a laptop, which is slow enough to matter when guessing and fast enough not
+# to be felt once.
+SCRYPT_N = 2 ** 14
+SCRYPT_R = 8
+SCRYPT_P = 1
+SCRYPT_DKLEN = 32
+
+MAX_FAILURES = 5
+LOCKOUT_MINUTES = 5
+
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS users (
+  username      TEXT PRIMARY KEY,
+  display_name  TEXT NOT NULL,
+  role          TEXT NOT NULL,
+  salt          BLOB NOT NULL,
+  password_hash BLOB NOT NULL,
+  created_at    TEXT NOT NULL,
+  failures      INTEGER NOT NULL DEFAULT 0,
+  locked_until  TEXT
+);
+CREATE TABLE IF NOT EXISTS sessions (
+  token_hash  TEXT PRIMARY KEY,
+  username    TEXT NOT NULL REFERENCES users(username),
+  created_at  TEXT NOT NULL,
+  expires_at  TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS sessions_user ON sessions (username);
+"""
+
+Clock = Callable[[], datetime]
+
+
+class AccountError(Exception):
+    """Something was wrong with the account, and the caller may be told why."""
+
+
+class SignInRefused(Exception):
+    """The sign-in did not succeed.
+
+    The message is deliberately the same whatever went wrong, because telling
+    the person which half they got right is telling an attacker the same.
+    """
+
+    def __init__(self, message: str = "That username and password do not match.") -> None:
+        super().__init__(message)
+
+
+def _now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _stamp(moment: datetime) -> str:
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=timezone.utc)
+    return moment.astimezone(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _parse(stamp: str | None) -> datetime | None:
+    if not stamp:
+        return None
+    try:
+        return datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def hash_password(password: str, salt: bytes) -> bytes:
+    return hashlib.scrypt(
+        password.encode("utf-8"), salt=salt,
+        n=SCRYPT_N, r=SCRYPT_R, p=SCRYPT_P, dklen=SCRYPT_DKLEN,
+    )
+
+
+def generate_password() -> str:
+    """A password for a seeded account, shown once and never stored in the clear."""
+    return secrets.token_urlsafe(12)
+
+
+class Accounts:
+    """The two seeded roles, their passwords and their sessions."""
+
+    def __init__(
+        self,
+        path: str | os.PathLike[str] | None = None,
+        *,
+        clock: Clock | None = None,
+    ) -> None:
+        self.path = Path(path) if path is not None else DEFAULT_ACCOUNTS_PATH
+        self._clock = clock or _now
+        self._ready = False
+
+    def _connect(self) -> sqlite3.Connection:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        connection = sqlite3.connect(self.path, timeout=5.0)
+        connection.row_factory = sqlite3.Row
+        connection.execute("PRAGMA foreign_keys = ON")
+        if not self._ready:
+            connection.executescript(SCHEMA)
+            connection.commit()
+            self._ready = True
+        return connection
+
+    # -- accounts ---------------------------------------------------------
+
+    def create(self, *, username: str, display_name: str, role: str, password: str) -> dict[str, Any]:
+        username = username.strip()
+        if not username:
+            raise AccountError("A username is required.")
+        if role not in ACCOUNT_ROLES:
+            raise AccountError(f"{role!r} is not one of the two seeded roles.")
+        if len(password) < MIN_PASSWORD:
+            raise AccountError(f"The password must be at least {MIN_PASSWORD} characters.")
+        salt = secrets.token_bytes(16)
+        connection = self._connect()
+        try:
+            with connection:
+                connection.execute(
+                    "INSERT INTO users (username, display_name, role, salt, password_hash, created_at) "
+                    "VALUES (?, ?, ?, ?, ?, ?)",
+                    (username, display_name or username, role, salt,
+                     hash_password(password, salt), _stamp(self._clock())),
+                )
+        except sqlite3.IntegrityError as exc:
+            raise AccountError(f"{username!r} already has an account.") from exc
+        finally:
+            connection.close()
+        return {"username": username, "display_name": display_name or username, "role": role}
+
+    def count(self) -> int:
+        connection = self._connect()
+        try:
+            return int(connection.execute("SELECT COUNT(*) FROM users").fetchone()[0])
+        finally:
+            connection.close()
+
+    def get(self, username: str) -> dict[str, Any] | None:
+        connection = self._connect()
+        try:
+            row = connection.execute(
+                "SELECT username, display_name, role FROM users WHERE username = ?", (username,)
+            ).fetchone()
+        finally:
+            connection.close()
+        return dict(row) if row else None
+
+    # -- signing in -------------------------------------------------------
+
+    def sign_in(self, username: str, password: str) -> tuple[str, dict[str, Any]]:
+        """Check the password and open a session. Returns (token, user)."""
+        now = self._clock()
+        connection = self._connect()
+        try:
+            row = connection.execute(
+                "SELECT * FROM users WHERE username = ?", (str(username).strip(),)
+            ).fetchone()
+
+            if row is None:
+                # Spend the time anyway, so a missing account does not answer
+                # faster than a wrong password and give itself away.
+                hash_password(str(password), b"absent-account-salt")
+                raise SignInRefused()
+
+            locked_until = _parse(row["locked_until"])
+            if locked_until and locked_until > now:
+                raise SignInRefused(
+                    "Too many wrong attempts. Try again in a few minutes."
+                )
+
+            candidate = hash_password(str(password), row["salt"])
+            if not hmac.compare_digest(candidate, row["password_hash"]):
+                failures = int(row["failures"]) + 1
+                locked = _stamp(now + timedelta(minutes=LOCKOUT_MINUTES)) if failures >= MAX_FAILURES else None
+                with connection:
+                    connection.execute(
+                        "UPDATE users SET failures = ?, locked_until = ? WHERE username = ?",
+                        (0 if locked else failures, locked, row["username"]),
+                    )
+                raise SignInRefused()
+
+            token = secrets.token_urlsafe(32)
+            expires = now + timedelta(hours=SESSION_HOURS)
+            with connection:
+                connection.execute(
+                    "UPDATE users SET failures = 0, locked_until = NULL WHERE username = ?",
+                    (row["username"],),
+                )
+                connection.execute(
+                    "INSERT INTO sessions (token_hash, username, created_at, expires_at) "
+                    "VALUES (?, ?, ?, ?)",
+                    (_token_hash(token), row["username"], _stamp(now), _stamp(expires)),
+                )
+            user = {
+                "username": row["username"],
+                "display_name": row["display_name"],
+                "role": row["role"],
+                "expires_at": _stamp(expires),
+            }
+        finally:
+            connection.close()
+        return token, user
+
+    def session(self, token: str | None) -> dict[str, Any] | None:
+        """Who this token belongs to, or None. Expired sessions are removed."""
+        if not token:
+            return None
+        now = self._clock()
+        connection = self._connect()
+        try:
+            row = connection.execute(
+                "SELECT s.token_hash, s.expires_at, u.username, u.display_name, u.role "
+                "FROM sessions s JOIN users u ON u.username = s.username "
+                "WHERE s.token_hash = ?",
+                (_token_hash(token),),
+            ).fetchone()
+            if row is None:
+                return None
+            expires = _parse(row["expires_at"])
+            if expires is None or expires <= now:
+                with connection:
+                    connection.execute("DELETE FROM sessions WHERE token_hash = ?", (row["token_hash"],))
+                return None
+            return {
+                "username": row["username"],
+                "display_name": row["display_name"],
+                "role": row["role"],
+                "expires_at": row["expires_at"],
+            }
+        finally:
+            connection.close()
+
+    def sign_out(self, token: str | None) -> None:
+        if not token:
+            return
+        connection = self._connect()
+        try:
+            with connection:
+                connection.execute("DELETE FROM sessions WHERE token_hash = ?", (_token_hash(token),))
+        finally:
+            connection.close()
+
+    def purge_expired(self) -> int:
+        connection = self._connect()
+        try:
+            with connection:
+                cursor = connection.execute(
+                    "DELETE FROM sessions WHERE expires_at <= ?", (_stamp(self._clock()),)
+                )
+            return cursor.rowcount or 0
+        finally:
+            connection.close()
+
+    # -- seeding ----------------------------------------------------------
+
+    def seed(self, people: Mapping[str, tuple[str, str]] | None = None) -> list[dict[str, Any]]:
+        """Create the charter's two roles with generated passwords.
+
+        The passwords are returned once so the caller can print them. They are
+        not written anywhere in the clear, which means nobody can recover one:
+        losing it means seeding a new account, and for synthetic data that is
+        the right trade.
+        """
+        wanted = people or {
+            "a.nakato": ("Agnes Nakato", ROLE_OFFICER),
+            "k.ssali": ("Kenneth Ssali", ROLE_MANAGER),
+        }
+        created: list[dict[str, Any]] = []
+        for username, (display_name, role) in wanted.items():
+            if self.get(username):
+                continue
+            password = generate_password()
+            account = self.create(
+                username=username, display_name=display_name, role=role, password=password,
+            )
+            account["password"] = password
+            created.append(account)
+        return created
+
+
+def _token_hash(token: str) -> str:
+    """Only the hash is stored, so the file never holds a usable token."""
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()

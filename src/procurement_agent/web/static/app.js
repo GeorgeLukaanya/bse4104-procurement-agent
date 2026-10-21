@@ -18,7 +18,7 @@
 "use strict";
 
 const state = {
-  session: null,
+  user: null,
   inbox: null,
   tab: "needs_you",
   view: "requests",
@@ -79,6 +79,11 @@ function clockTime(iso) {
 async function api(path, options) {
   const response = await fetch(path, Object.assign({ headers: { "Content-Type": "application/json" } }, options));
   const payload = await response.json().catch(() => ({}));
+  if (response.status === 401) {
+    const expired = new Error(payload.error || "Sign in first.");
+    expired.unauthenticated = true;
+    throw expired;
+  }
   if (!response.ok) throw new Error(payload.error || "The server said no and did not say why.");
   return payload;
 }
@@ -137,6 +142,70 @@ function headline(request) {
   return { tone: "neutral", text: "Working on it." };
 }
 
+/* ------------------------------------------------------------ sign in */
+
+function renderSignIn() {
+  document.querySelector(".sidebar").hidden = true;
+  document.getElementById("drawer").hidden = true;
+  const main = document.getElementById("main");
+  clear(main);
+
+  const username = el("input", { type: "text", id: "username", name: "username", autocomplete: "username", autofocus: true });
+  const password = el("input", { type: "password", id: "password", name: "password", autocomplete: "current-password" });
+
+  const form = el("form", { class: "signin" }, [
+    el("h1", { text: "Procurement requests" }),
+    el("p", { class: "muted small", text: "Ahumuza Hardware, Nakawa and Kireka" }),
+    el("label", {}, [el("span", { text: "Username" }), username]),
+    el("label", {}, [el("span", { text: "Password" }), password]),
+    state.error ? el("div", { class: "signin-error", text: state.error }) : null,
+    el("button", { class: "btn", "data-kind": "primary", type: "submit", disabled: state.busy,
+      text: state.busy ? "Signing in…" : "Sign in" }),
+    el("p", { class: "muted small", text: "Accounts are seeded on the server the first time it starts, and the passwords are printed there once." }),
+  ]);
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (state.busy) return;
+    state.busy = true;
+    state.error = null;
+    render();
+    try {
+      const payload = await api("/api/login", {
+        method: "POST",
+        body: JSON.stringify({ username: username.value, password: password.value }),
+      });
+      state.user = payload.user;
+      state.busy = false;
+      state.error = null;
+      document.querySelector(".sidebar").hidden = false;
+      await loadInbox();
+      return;
+    } catch (error) {
+      state.error = error.message;
+    }
+    state.busy = false;
+    render();
+  });
+
+  main.appendChild(form);
+}
+
+async function signOut() {
+  try {
+    await api("/api/logout", { method: "POST", body: "{}" });
+  } catch (error) {
+    // Signing out locally matters more than the server agreeing.
+  }
+  state.user = null;
+  state.inbox = null;
+  state.request = null;
+  state.activity = null;
+  state.tabChosen = false;
+  state.error = null;
+  render();
+}
+
 /* ------------------------------------------------------------ sidebar */
 
 function renderNav() {
@@ -174,11 +243,17 @@ function renderNav() {
     nav.appendChild(el("li", {}, [button]));
   }
 
-  if (state.session) {
-    document.querySelector("#who .avatar").textContent = initials(state.session.officer);
-    document.getElementById("who-name").textContent = state.session.officer;
-    document.getElementById("who-role").textContent = state.session.role === "PROCUREMENT_MANAGER"
+  if (state.user) {
+    const who = document.getElementById("who");
+    document.querySelector("#who .avatar").textContent = initials(state.user.display_name);
+    document.getElementById("who-name").textContent = state.user.display_name;
+    document.getElementById("who-role").textContent = state.user.role === "PROCUREMENT_MANAGER"
       ? "Approves spending" : "Buys for the store";
+    let out = document.getElementById("sign-out");
+    if (!out) {
+      out = el("button", { class: "btn", "data-kind": "quiet", id: "sign-out", type: "button", text: "Sign out", onClick: signOut });
+      who.appendChild(out);
+    }
   }
 }
 
@@ -511,6 +586,11 @@ function describeDecision(row) {
 /* -------------------------------------------------------------- flow */
 
 function render() {
+  if (!state.user) {
+    renderSignIn();
+    return;
+  }
+  document.querySelector(".sidebar").hidden = false;
   renderNav();
   if (state.view === "activity") renderActivity();
   else renderRequests();
@@ -533,7 +613,12 @@ async function loadInbox() {
     state.inbox = await api("/api/requests");
     chooseOpeningTab();
   } catch (error) {
-    state.error = error.message;
+    if (error.unauthenticated) {
+      state.user = null;
+      state.error = "Your session has ended. Sign in again.";
+    } else {
+      state.error = error.message;
+    }
   }
   render();
 }
@@ -627,9 +712,13 @@ async function submitRate() {
 
 async function boot() {
   try {
-    state.session = await api("/api/session");
+    const payload = await api("/api/session");
+    state.user = payload.user;
   } catch (error) {
-    state.error = error.message;
+    // Not signed in is the ordinary first visit, not something to report.
+    if (!error.unauthenticated) state.error = error.message;
+    render();
+    return;
   }
   await loadInbox();
 }

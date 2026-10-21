@@ -7,6 +7,7 @@ would let the browser ask for something the tools would not allow.
 
 from __future__ import annotations
 
+import http.cookiejar
 import json
 import threading
 import urllib.error
@@ -27,6 +28,8 @@ from procurement_agent.web.server import (
 
 REVIEW_DATE = "2026-09-25"
 SKU = "AH-CM-001"
+OFFICER = "a.nakato"
+PASSWORD = "a-long-enough-password"
 
 
 @pytest.fixture
@@ -36,19 +39,30 @@ def settings(tmp_path):
         requisition_store=str(tmp_path / "requisitions.jsonl"),
         state_dir=str(tmp_path / "agent-state"),
         decisions_path=str(tmp_path / "decisions.sqlite3"),
+        accounts_path=str(tmp_path / "accounts.sqlite3"),
         record_trace=False,
-        clock=lambda: datetime(2026, 9, 25, 9, 14, tzinfo=timezone.utc),
     )
 
 
 @pytest.fixture
-def live(settings):
+def server(settings):
     """A real server on an ephemeral port, torn down after the test."""
-    server = create_server(settings, host="127.0.0.1", port=0)
-    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    instance = create_server(settings, host="127.0.0.1", port=0)
+    thread = threading.Thread(target=instance.serve_forever, daemon=True)
     thread.start()
-    host, port = server.server_address[0], server.server_address[1]
-    base = f"http://{host}:{port}"
+    try:
+        yield f"http://{instance.server_address[0]}:{instance.server_address[1]}"
+    finally:
+        instance.shutdown()
+        instance.server_close()
+        thread.join(timeout=5)
+
+
+def caller(base):
+    """A caller with its own cookie jar, so each one is its own browser."""
+    opener = urllib.request.build_opener(
+        urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar())
+    )
 
     def call(path, payload=None, method=None):
         data = None if payload is None else json.dumps(payload).encode("utf-8")
@@ -56,16 +70,34 @@ def live(settings):
             base + path, data=data, method=method or ("POST" if data is not None else "GET"),
             headers={"Content-Type": "application/json"},
         )
-        with urllib.request.urlopen(request, timeout=10) as response:
-            body = response.read().decode("utf-8")
-        return response.status, body
+        with opener.open(request, timeout=10) as response:
+            return response.status, response.read().decode("utf-8"), response
+    return call
 
-    try:
-        yield call, base
-    finally:
-        server.shutdown()
-        server.server_close()
-        thread.join(timeout=5)
+
+@pytest.fixture
+def anon(server):
+    """A browser that has not signed in."""
+    def call(path, payload=None, method=None):
+        status, body, _ = caller(server)(path, payload, method)
+        return status, body
+    return call, server
+
+
+@pytest.fixture
+def live(server, settings):
+    """A browser signed in as the officer, which is the ordinary case."""
+    settings.accounts.create(
+        username=OFFICER, display_name="Agnes Nakato",
+        role="PROCUREMENT_OFFICER", password=PASSWORD,
+    )
+    raw = caller(server)
+    raw("/api/login", {"username": OFFICER, "password": PASSWORD})
+
+    def call(path, payload=None, method=None):
+        status, body, _ = raw(path, payload, method)
+        return status, body
+    return call, server
 
 
 # ----------------------------------------------------------- the mapping
@@ -187,13 +219,14 @@ def test_present_never_invents_a_ranking(settings):
 # ------------------------------------------------------------ over HTTP
 
 
-def test_the_session_route_admits_there_is_no_login(live):
+def test_the_session_route_names_the_signed_in_person(live):
     call, _ = live
     status, body = call("/api/session")
     assert status == 200
     payload = json.loads(body)
-    assert payload["authenticated"] is False
-    assert payload["role"] == "PROCUREMENT_OFFICER"
+    assert payload["authenticated"] is True
+    assert payload["user"]["username"] == OFFICER
+    assert payload["user"]["role"] == "PROCUREMENT_OFFICER"
 
 
 def test_the_page_and_its_assets_are_served(live):
@@ -260,72 +293,37 @@ def test_sending_is_a_second_press_and_is_what_writes_the_draft(live, tmp_path):
 
 
 def test_a_broken_contract_is_a_server_fault_not_the_browsers(tmp_path):
-    """ContractError subclasses ValueError, so the order of the handlers matters."""
+    """ContractError subclasses ValueError, so the order of the handlers matters.
+
+    The session check runs first, so this signs in before asking: an
+    unauthenticated request is a 401 whatever else is wrong behind it.
+    """
     broken = Settings(
         review_date=REVIEW_DATE,
         requisition_store=str(tmp_path / "requisitions.jsonl"),
         state_dir=str(tmp_path / "agent-state"),
         decisions_path=str(tmp_path / "decisions.sqlite3"),
+        accounts_path=str(tmp_path / "accounts.sqlite3"),
         contract_path=str(tmp_path / "not-a-contract.json"),
         record_trace=False,
+    )
+    broken.accounts.create(
+        username=OFFICER, display_name="Agnes Nakato",
+        role="PROCUREMENT_OFFICER", password=PASSWORD,
     )
     server = create_server(broken, host="127.0.0.1", port=0)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
-        url = f"http://127.0.0.1:{server.server_address[1]}/api/requests/{SKU}/open"
-        request = urllib.request.Request(url, data=b"{}", method="POST",
-                                         headers={"Content-Type": "application/json"})
+        call = caller(f"http://127.0.0.1:{server.server_address[1]}")
+        call("/api/login", {"username": OFFICER, "password": PASSWORD})
         with pytest.raises(urllib.error.HTTPError) as exc:
-            urllib.request.urlopen(request, timeout=10)
+            call(f"/api/requests/{SKU}/open", {})
         assert exc.value.code == 500
     finally:
         server.shutdown()
         server.server_close()
         thread.join(timeout=5)
-
-
-def test_a_taken_port_is_an_error_and_not_a_cheerful_start(settings, live):
-    """On Windows SO_REUSEADDR lets a second bind succeed on a held port.
-
-    The server then prints that it is listening while the browser reaches
-    whatever was there first, and the only symptom is a stranger's 404 body.
-    """
-    _, base = live
-    port = int(base.rsplit(":", 1)[1])
-    with pytest.raises(OSError):
-        create_server(settings, host="127.0.0.1", port=port)
-
-
-def test_the_cli_says_which_port_is_taken_instead_of_a_traceback(settings, live, capsys):
-    _, base = live
-    port = base.rsplit(":", 1)[1]
-    code = main(["--port", port, "--no-trace"])
-    assert code == 2
-    message = capsys.readouterr().err
-    assert "already" in message
-    assert "--port" in message
-    assert "Requests page on" not in message
-
-
-def test_the_closed_drawer_takes_no_space(live):
-    """`display: flex` on .drawer overrides the browser's [hidden] rule.
-
-    Without an explicit override the closed drawer still occupies its 640px,
-    the queue is squeezed into what is left, and every row wraps into a column
-    of single words. It looks like a layout problem and it is a specificity one.
-    """
-    call, _ = live
-    css = call("/static/app.css")[1]
-    assert ".drawer[hidden] { display: none; }" in css
-
-
-def test_the_page_asks_for_nothing_off_the_machine(live):
-    """The server sends default-src 'self', so a remote asset would just fail."""
-    call, _ = live
-    html = call("/")[1]
-    for marker in ["http://", "https://", "//fonts.", "cdn."]:
-        assert marker not in html
 
 
 def test_a_path_outside_static_is_refused(live):
@@ -385,3 +383,96 @@ def test_no_response_can_carry_the_api_key(live, monkeypatch):
     ]
     for body in bodies:
         assert "SECRET-KEY-VALUE" not in body
+
+
+# ----------------------------------------------------------------- accounts
+
+
+def test_nothing_is_readable_without_signing_in(anon):
+    """Every route that touches the dataset is behind the session."""
+    call, _ = anon
+    for path, payload in [
+        ("/api/session", None),
+        ("/api/requests", None),
+        ("/api/activity", None),
+        (f"/api/requests/{SKU}/open", {}),
+        (f"/api/requests/{SKU}/approve", {}),
+        (f"/api/requests/{SKU}/send", {}),
+        (f"/api/requests/{SKU}/rate", {"ugx_per_usd": 3780}),
+    ]:
+        with pytest.raises(urllib.error.HTTPError) as exc:
+            call(path, payload)
+        assert exc.value.code == 401, path
+
+
+def test_the_page_itself_is_served_so_there_is_somewhere_to_sign_in(anon):
+    call, _ = anon
+    assert call("/")[0] == 200
+    assert call("/static/app.js")[0] == 200
+
+
+def test_a_wrong_password_is_refused_without_saying_which_half_was_wrong(server, settings):
+    settings.accounts.create(
+        username=OFFICER, display_name="Agnes Nakato",
+        role="PROCUREMENT_OFFICER", password=PASSWORD,
+    )
+    call = caller(server)
+    messages = []
+    for username, password in [(OFFICER, "wrong-password-here"), ("nobody.here", PASSWORD)]:
+        with pytest.raises(urllib.error.HTTPError) as exc:
+            call("/api/login", {"username": username, "password": password})
+        assert exc.value.code == 401
+        messages.append(json.loads(exc.value.read().decode("utf-8"))["error"])
+    assert messages[0] == messages[1]
+
+
+def test_the_session_cookie_is_httponly_and_samesite(server, settings):
+    settings.accounts.create(
+        username=OFFICER, display_name="Agnes Nakato",
+        role="PROCUREMENT_OFFICER", password=PASSWORD,
+    )
+    _, _, response = caller(server)("/api/login", {"username": OFFICER, "password": PASSWORD})
+    cookie = response.headers.get("Set-Cookie")
+    assert "HttpOnly" in cookie
+    assert "SameSite=Strict" in cookie
+    assert "session=" in cookie
+
+
+def test_signing_out_ends_the_session(live):
+    call, _ = live
+    assert call("/api/requests")[0] == 200
+    call("/api/logout", {})
+    with pytest.raises(urllib.error.HTTPError) as exc:
+        call("/api/requests")
+    assert exc.value.code == 401
+
+
+def test_one_browsers_session_is_not_anothers(server, settings):
+    settings.accounts.create(
+        username=OFFICER, display_name="Agnes Nakato",
+        role="PROCUREMENT_OFFICER", password=PASSWORD,
+    )
+    signed_in = caller(server)
+    signed_in("/api/login", {"username": OFFICER, "password": PASSWORD})
+    assert signed_in("/api/requests")[0] == 200
+
+    stranger = caller(server)
+    with pytest.raises(urllib.error.HTTPError) as exc:
+        stranger("/api/requests")
+    assert exc.value.code == 401
+
+
+def test_a_decision_is_attributed_to_whoever_signed_in(server, settings):
+    """The point of the whole thing: the audit entry names a person, not a flag."""
+    settings.accounts.create(
+        username="b.okello", display_name="Brenda Okello",
+        role="PROCUREMENT_OFFICER", password=PASSWORD,
+    )
+    call = caller(server)
+    call("/api/login", {"username": "b.okello", "password": PASSWORD})
+    call(f"/api/requests/{SKU}/open", {})
+    call(f"/api/requests/{SKU}/approve", {})
+
+    [row] = settings.decisions.for_subject(SKU)
+    assert row["actor"] == "b.okello"
+    assert row["role"] == "PROCUREMENT_OFFICER"

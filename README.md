@@ -353,10 +353,21 @@ is waiting for. Approving the price and sending it to the manager are two
 separate presses, because the task contract has two gates and nothing is
 written until the second one.
 
-There is no login. The officer and the role come from the command line, exactly
-as they do for `agent.cli`, which is known limitation KL-02. The server binds to
-`127.0.0.1` and prints that warning at startup. Keep it on localhost and on the
-synthetic dataset.
+You sign in. The first time the server starts it creates the charter's two
+roles, `a.nakato` (officer) and `k.ssali` (manager), with generated passwords
+printed once to the terminal. They are stored as scrypt hashes with a per-user
+salt, so nobody can recover one: if you lose it, delete `var/accounts.sqlite3`
+and start again, or add an account with
+`--add-user USERNAME "Display Name" ROLE`.
+
+The session is a random token in an HttpOnly, SameSite=Strict cookie, and the
+database stores only its hash. Every route that touches the dataset refuses a
+request without one, and a decision is recorded against whoever signed in
+rather than against a command-line flag, which is what KL-02 asked for.
+
+What this is not: there is no password reset, no rate limit per source address,
+and no transport security. It is plain http on `127.0.0.1`. Keep it there and on
+the synthetic dataset.
 
 Decisions are kept in `var/decisions.sqlite3`: who decided what, when, and the
 figures as they stood at the time. The table is append only and the database
@@ -368,7 +379,8 @@ copy.
 |---|---|---|
 | `--port` | `8000` | |
 | `--review-date` | today | The Monday you are reviewing |
-| `--officer`, `--role` | `a.nakato`, `PROCUREMENT_OFFICER` | Trusted inputs, see KL-02 |
+| `--accounts` | `var/accounts.sqlite3` | Users and sessions |
+| `--add-user` | | `USERNAME "Display Name" ROLE`, asks for the password, then exits |
 | `--state-dir` | `var/agent-state` | Where runs resume from |
 | `--decisions` | `var/decisions.sqlite3` | The decision record |
 | `--run-log`, `--tool-log` | the shared evidence traces | Point these at a scratch file so a demo does not write into committed evidence |

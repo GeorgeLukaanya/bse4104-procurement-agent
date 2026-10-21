@@ -315,3 +315,29 @@ button.btn:disabled { opacity: 0.5; cursor: default; }
 .entry[data-superseded="true"] .text { color: var(--color-text-muted); text-decoration: line-through; }
 
 .banner { margin: var(--spacing-md) var(--spacing-lg); padding: var(--spacing-sm); border-radius: var(--radius-sm); background: var(--color-problem-bg); color: var(--color-problem-fg); font-size: 13px; }
+
+/* ------------------------------------------------------------ sign in */
+
+.signin {
+  width: 380px;
+  margin: 10vh auto 0;
+  display: flex; flex-direction: column; gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+.signin h1 { margin: 0; font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: -0.2px; }
+.signin p { margin: 0; }
+.signin label { display: flex; flex-direction: column; gap: var(--spacing-2xs); font-size: 13px; color: var(--color-text-secondary); }
+.signin input {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--color-border-strong); border-radius: var(--radius-sm);
+  background: var(--color-bg-inset); font: inherit; font-size: 15px; color: var(--color-text-primary);
+}
+.signin input:focus { outline: 2px solid var(--color-accent-fg); outline-offset: -1px; background: var(--color-bg-surface); }
+.signin-error {
+  padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm);
+  background: var(--color-problem-bg); color: var(--color-problem-fg); font-size: 13px;
+}
+.who #sign-out { margin-left: auto; font-size: 13px; padding: var(--spacing-2xs) var(--spacing-xs); }

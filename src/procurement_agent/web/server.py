@@ -34,6 +34,7 @@ a decision.
 from __future__ import annotations
 
 import argparse
+import getpass
 import json
 import mimetypes
 import os
@@ -43,11 +44,19 @@ import sys
 import threading
 from datetime import datetime, timezone
 from http import HTTPStatus
+from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 from urllib.parse import parse_qs, urlparse
 
+from ..accounts import (
+    DEFAULT_ACCOUNTS_PATH,
+    SESSION_HOURS,
+    AccountError,
+    Accounts,
+    SignInRefused,
+)
 from ..agent.checkpoint import DEFAULT_STATE_DIR, CheckpointStore, run_id_for
 from ..agent.contract import ContractError
 from ..agent.steps import (
@@ -85,6 +94,23 @@ STATE_DONE = "done"
 STATE_NOT_STARTED = "not_started"
 
 
+SESSION_COOKIE = "session"
+
+
+class Actor:
+    """Who a request is from. Comes from the session, never from a flag."""
+
+    __slots__ = ("username", "role", "display_name")
+
+    def __init__(self, username: str, role: str, display_name: str | None = None) -> None:
+        self.username = username
+        self.role = role
+        self.display_name = display_name or username
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"username": self.username, "role": self.role, "display_name": self.display_name}
+
+
 class Settings:
     """Everything the handler needs that is not in the request itself."""
 
@@ -101,6 +127,7 @@ class Settings:
         requisition_store: str | None = None,
         state_dir: str | None = None,
         decisions_path: str | None = None,
+        accounts_path: str | None = None,
         run_log: str | None = None,
         tool_log: str | None = None,
         contract_path: str | None = None,
@@ -123,6 +150,10 @@ class Settings:
         self.contract_path = contract_path
         self.record_trace = record_trace
         self.clock = clock
+        self.accounts = Accounts(
+            accounts_path if accounts_path is not None else DEFAULT_ACCOUNTS_PATH,
+            clock=clock,
+        )
         self.decisions = DecisionStore(
             decisions_path if decisions_path is not None else DEFAULT_DECISIONS_PATH,
             clock=clock,
@@ -134,11 +165,15 @@ class Settings:
         now = self.clock() if self.clock else datetime.now(timezone.utc)
         return now.date().isoformat()
 
-    def run_kwargs(self, sku: str | None) -> dict[str, Any]:
+    def default_actor(self) -> Actor:
+        """Used by the library and the tests. Over HTTP the session wins."""
+        return Actor(self.officer, self.role)
+
+    def run_kwargs(self, sku: str | None, actor: Actor) -> dict[str, Any]:
         return dict(
             sku=sku,
-            officer_username=self.officer,
-            caller_role=self.role,
+            officer_username=actor.username,
+            caller_role=actor.role,
             inventory_path=self.inventory_path,
             suppliers_path=self.suppliers_path,
             quotations_path=self.quotations_path,
@@ -156,12 +191,12 @@ class Settings:
 # ---------------------------------------------------------------- the scan
 
 
-def scan_items(settings: Settings, review_date: str) -> dict[str, Any]:
+def scan_items(settings: Settings, review_date: str, actor: Actor) -> dict[str, Any]:
     """The flagged items, read only. One catalogue call, no loop, no writes."""
     envelope = invoke(
         "check_reorder_need",
         {"review_date": review_date},
-        caller_role=settings.role,
+        caller_role=actor.role,
         allowed_tools=("check_reorder_need",),
         inventory_path=settings.inventory_path,
         suppliers_path=settings.suppliers_path,
@@ -173,10 +208,10 @@ def scan_items(settings: Settings, review_date: str) -> dict[str, Any]:
     return envelope
 
 
-def saved_state(settings: Settings, review_date: str, sku: str) -> dict[str, Any] | None:
+def saved_state(settings: Settings, review_date: str, sku: str, actor: Actor) -> dict[str, Any] | None:
     """What a previous run left behind for this item, without resuming it."""
     store = CheckpointStore(settings.state_dir)
-    return store.load(run_id_for(review_date, sku, settings.officer))
+    return store.load(run_id_for(review_date, sku, actor.username))
 
 
 def request_state(saved: Mapping[str, Any] | None) -> tuple[str, str]:
@@ -210,8 +245,9 @@ def request_state(saved: Mapping[str, Any] | None) -> tuple[str, str]:
     return STATE_WAITING, "Working on it"
 
 
-def inbox(settings: Settings, review_date: str) -> dict[str, Any]:
-    envelope = scan_items(settings, review_date)
+def inbox(settings: Settings, review_date: str, actor: Actor | None = None) -> dict[str, Any]:
+    actor = actor or settings.default_actor()
+    envelope = scan_items(settings, review_date, actor)
     if envelope.get("status") not in {"ok", "no_result"}:
         return {
             "review_date": review_date,
@@ -223,7 +259,7 @@ def inbox(settings: Settings, review_date: str) -> dict[str, Any]:
     items = []
     for item in data.get("items") or []:
         sku = item.get("sku")
-        saved = saved_state(settings, review_date, sku) if sku else None
+        saved = saved_state(settings, review_date, sku, actor) if sku else None
         state, label = request_state(saved)
         items.append({
             "sku": sku,
@@ -254,7 +290,7 @@ def inbox(settings: Settings, review_date: str) -> dict[str, Any]:
 # ------------------------------------------------------------ one request
 
 
-def chain_for(result_dict: Mapping[str, Any], officer: str) -> list[dict[str, Any]]:
+def chain_for(result_dict: Mapping[str, Any], officer: str) -> list[dict[str, Any]]:  # noqa: D401
     """The approval chain, derived from the run and nothing else.
 
     Three steps, because the loop has three: the agent compares, the officer
@@ -288,8 +324,9 @@ def chain_for(result_dict: Mapping[str, Any], officer: str) -> list[dict[str, An
     return steps
 
 
-def present(result_dict: Mapping[str, Any], settings: Settings) -> dict[str, Any]:
+def present(result_dict: Mapping[str, Any], settings: Settings, actor: Actor | None = None) -> dict[str, Any]:
     """The payload the page reads. A view of the run, never a second opinion."""
+    actor = actor or settings.default_actor()
     comparison = result_dict.get("comparison") or {}
     ranked = comparison.get("ranked") or []
     top = ranked[0] if ranked else None
@@ -306,7 +343,7 @@ def present(result_dict: Mapping[str, Any], settings: Settings) -> dict[str, Any
         "contract": result_dict.get("contract"),
         "resumed": result_dict.get("resumed"),
         "confirmations": result_dict.get("confirmations"),
-        "chain": chain_for(result_dict, settings.officer),
+        "chain": chain_for(result_dict, actor.display_name),
         "ranked": ranked,
         "excluded": comparison.get("excluded") or [],
         "requirement": comparison.get("quotation_requirement"),
@@ -318,12 +355,16 @@ def present(result_dict: Mapping[str, Any], settings: Settings) -> dict[str, Any
     }
 
 
-def open_request(settings: Settings, review_date: str, sku: str, **overrides: Any) -> dict[str, Any]:
+def open_request(
+    settings: Settings, review_date: str, sku: str,
+    actor: Actor | None = None, **overrides: Any,
+) -> dict[str, Any]:
     """Resume this item's run to wherever it stops, and present the result."""
-    kwargs = settings.run_kwargs(sku)
+    actor = actor or settings.default_actor()
+    kwargs = settings.run_kwargs(sku, actor)
     kwargs.update(overrides)
     result = run_workflow(review_date=review_date, **kwargs)
-    payload = present(result.to_dict(), settings)
+    payload = present(result.to_dict(), settings, actor)
     _record_stop(settings, result, sku)
     return payload
 
@@ -349,6 +390,10 @@ def _record_stop(settings: Settings, result: Any, sku: str) -> None:
 # -------------------------------------------------------------- the server
 
 
+class Unauthorized(Exception):
+    """No session, or one that has expired."""
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "procurement-agent"
     sys_version = ""
@@ -359,10 +404,15 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt: str, *args: Any) -> None:  # noqa: A003
         sys.stderr.write("%s %s\n" % (self.address_string(), fmt % args))
 
-    def _send(self, status: HTTPStatus, body: bytes, content_type: str) -> None:
+    def _send(
+        self, status: HTTPStatus, body: bytes, content_type: str,
+        extra: Sequence[tuple[str, str]] = (),
+    ) -> None:
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
+        for name, value in extra:
+            self.send_header(name, value)
         # The page loads nothing from anywhere else, so say so.
         self.send_header("Content-Security-Policy", "default-src 'self'")
         self.send_header("X-Content-Type-Options", "nosniff")
@@ -370,9 +420,12 @@ class Handler(BaseHTTPRequestHandler):
         if self.command != "HEAD":
             self.wfile.write(body)
 
-    def _json(self, payload: Any, status: HTTPStatus = HTTPStatus.OK) -> None:
+    def _json(
+        self, payload: Any, status: HTTPStatus = HTTPStatus.OK,
+        extra: Sequence[tuple[str, str]] = (),
+    ) -> None:
         body = json.dumps(payload, ensure_ascii=False, indent=None).encode("utf-8")
-        self._send(status, body, "application/json; charset=utf-8")
+        self._send(status, body, "application/json; charset=utf-8", extra)
 
     def _error(self, status: HTTPStatus, message: str) -> None:
         self._json({"error": message}, status)
@@ -397,6 +450,45 @@ class Handler(BaseHTTPRequestHandler):
         if not ISO_DATE.match(value):
             raise ValueError("review_date must be YYYY-MM-DD")
         return value
+
+    # -- who is asking ----------------------------------------------------
+
+    def _token(self) -> str | None:
+        raw = self.headers.get("Cookie")
+        if not raw:
+            return None
+        try:
+            jar = SimpleCookie()
+            jar.load(raw)
+        except Exception:
+            return None
+        morsel = jar.get(SESSION_COOKIE)
+        return morsel.value if morsel else None
+
+    def _user(self) -> Actor | None:
+        found = self.settings.accounts.session(self._token())
+        if not found:
+            return None
+        return Actor(found["username"], found["role"], found["display_name"])
+
+    def _require_user(self) -> Actor:
+        actor = self._user()
+        if actor is None:
+            raise Unauthorized()
+        return actor
+
+    @staticmethod
+    def _cookie(token: str, seconds: int) -> tuple[str, str]:
+        """HttpOnly so script cannot read it, Strict so it is not sent off site.
+
+        Not marked Secure: this runs on plain http on localhost, which is the
+        only place it is allowed to run. Putting it behind https means adding
+        that flag.
+        """
+        return (
+            "Set-Cookie",
+            f"{SESSION_COOKIE}={token}; Path=/; HttpOnly; SameSite=Strict; Max-Age={seconds}",
+        )
 
     # -- static -----------------------------------------------------------
 
@@ -439,17 +531,19 @@ class Handler(BaseHTTPRequestHandler):
                 self._static(route)
                 return
             if route == "/api/session":
+                actor = self._require_user()
                 self._json({
-                    "officer": self.settings.officer,
-                    "role": self.settings.role,
+                    "user": actor.to_dict(),
                     "review_date": self.settings.today(),
-                    "authenticated": False,
+                    "authenticated": True,
                 })
                 return
             if route == "/api/requests":
-                self._json(inbox(self.settings, self._review_date(query)))
+                actor = self._require_user()
+                self._json(inbox(self.settings, self._review_date(query), actor))
                 return
             if route == "/api/activity":
+                self._require_user()
                 limit = int((query.get("limit") or ["100"])[0])
                 decisions = self.settings.decisions.recent(limit=limit)
                 superseded = self.settings.decisions.superseded_ids()
@@ -458,12 +552,36 @@ class Handler(BaseHTTPRequestHandler):
                 self._json({"decisions": decisions})
                 return
             self._error(HTTPStatus.NOT_FOUND, "no such route")
+        except Unauthorized:
+            self._error(HTTPStatus.UNAUTHORIZED, "Sign in first.")
         except ContractError as exc:
             self._error(HTTPStatus.INTERNAL_SERVER_ERROR, str(exc))
         except ValueError as exc:
             self._error(HTTPStatus.BAD_REQUEST, str(exc))
 
     def do_POST(self) -> None:  # noqa: N802
+        route = urlparse(self.path).path
+        if route in {"/api/login", "/api/logout"}:
+            try:
+                if route == "/api/logout":
+                    self.settings.accounts.sign_out(self._token())
+                    self._json({"authenticated": False}, extra=[self._cookie("", 0)])
+                    return
+                body = self._body()
+                token, user = self.settings.accounts.sign_in(
+                    str(body.get("username") or ""), str(body.get("password") or ""),
+                )
+                self._json(
+                    {"user": {k: user[k] for k in ("username", "role", "display_name")},
+                     "review_date": self.settings.today(), "authenticated": True},
+                    extra=[self._cookie(token, SESSION_HOURS * 3600)],
+                )
+            except SignInRefused as exc:
+                self._error(HTTPStatus.UNAUTHORIZED, str(exc))
+            except ValueError as exc:
+                self._error(HTTPStatus.BAD_REQUEST, str(exc))
+            return
+
         match = re.match(
             r"^/api/requests/([A-Za-z0-9-]+)/(open|approve|send|rate)$", urlparse(self.path).path
         )
@@ -481,11 +599,14 @@ class Handler(BaseHTTPRequestHandler):
             "rate": self._rate,
         }
         try:
+            actor = self._require_user()
             body = self._body()
             review_date = str(body.get("review_date") or self.settings.today())
             if not ISO_DATE.match(review_date):
                 raise ValueError("review_date must be YYYY-MM-DD")
-            self._json(actions[action](sku, review_date, body))
+            self._json(actions[action](sku, review_date, body, actor))
+        except Unauthorized:
+            self._error(HTTPStatus.UNAUTHORIZED, "Sign in first.")
         except ContractError as exc:
             # A missing or malformed contract is our fault, not the browser's.
             self._error(HTTPStatus.INTERNAL_SERVER_ERROR, str(exc))
@@ -494,14 +615,14 @@ class Handler(BaseHTTPRequestHandler):
 
     # -- actions ----------------------------------------------------------
 
-    def _open(self, sku: str, review_date: str, body: Mapping[str, Any]) -> dict[str, Any]:
-        return open_request(self.settings, review_date, sku)
+    def _open(self, sku: str, review_date: str, body: Mapping[str, Any], actor: Actor) -> dict[str, Any]:
+        return open_request(self.settings, review_date, sku, actor)
 
-    def _approve(self, sku: str, review_date: str, body: Mapping[str, Any]) -> dict[str, Any]:
+    def _approve(self, sku: str, review_date: str, body: Mapping[str, Any], actor: Actor) -> dict[str, Any]:
         """Gate 2. The officer accepts the comparison; nothing is written yet."""
-        payload = open_request(self.settings, review_date, sku, confirm_comparison=True)
+        payload = open_request(self.settings, review_date, sku, actor, confirm_comparison=True)
         recommended = payload.get("recommended") or {}
-        self._record(sku, payload, KIND_COMPARISON_APPROVED, {
+        self._record(sku, payload, KIND_COMPARISON_APPROVED, actor=actor, detail={
             "supplier_id": recommended.get("supplier_id"),
             "supplier_name": recommended.get("supplier_name"),
             "quotation_id": recommended.get("quotation_id"),
@@ -511,7 +632,7 @@ class Handler(BaseHTTPRequestHandler):
         })
         return payload
 
-    def _send_to_manager(self, sku: str, review_date: str, body: Mapping[str, Any]) -> dict[str, Any]:
+    def _send_to_manager(self, sku: str, review_date: str, body: Mapping[str, Any], actor: Actor) -> dict[str, Any]:
         """Gate 3, and the only call here that writes anything.
 
         Both confirmations are passed because the loop checks both, and a run
@@ -520,19 +641,19 @@ class Handler(BaseHTTPRequestHandler):
         collapsing them in the interface would misreport the state model.
         """
         payload = open_request(
-            self.settings, review_date, sku,
+            self.settings, review_date, sku, actor,
             confirm_comparison=True, confirm_draft=True,
         )
         draft = payload.get("draft") or {}
         if draft.get("requisition_id"):
-            self._record(sku, payload, KIND_REQUISITION_SENT, {
+            self._record(sku, payload, KIND_REQUISITION_SENT, actor=actor, detail={
                 "requisition_id": draft.get("requisition_id"),
                 "status": draft.get("status"),
                 "landed_cost_ugx": (payload.get("recommended") or {}).get("landed_cost_ugx"),
             })
         return payload
 
-    def _rate(self, sku: str, review_date: str, body: Mapping[str, Any]) -> dict[str, Any]:
+    def _rate(self, sku: str, review_date: str, body: Mapping[str, Any], actor: Actor) -> dict[str, Any]:
         rate = body.get("ugx_per_usd")
         effective = str(body.get("effective_date") or review_date)
         if isinstance(rate, bool) or not isinstance(rate, (int, float)) or rate <= 0:
@@ -540,21 +661,21 @@ class Handler(BaseHTTPRequestHandler):
         if not ISO_DATE.match(effective):
             raise ValueError("effective_date must be YYYY-MM-DD")
         payload = open_request(
-            self.settings, review_date, sku,
+            self.settings, review_date, sku, actor,
             exchange_rate_ugx_per_usd=float(rate),
             exchange_rate_effective_date=effective,
         )
-        self._record(sku, payload, KIND_RATE_GIVEN, {
+        self._record(sku, payload, KIND_RATE_GIVEN, actor=actor, detail={
             "ugx_per_usd": float(rate), "effective_date": effective,
         })
         return payload
 
-    def _record(self, sku: str, payload: Mapping[str, Any], kind: str, detail: dict[str, Any]) -> None:
+    def _record(self, sku: str, payload: Mapping[str, Any], kind: str, detail: dict[str, Any], actor: Actor) -> None:
         """Write the decision row, then put it back on the response."""
         row = self.settings.decisions.record(
             run_id=payload.get("run_id") or "",
-            actor=self.settings.officer,
-            role=self.settings.role,
+            actor=actor.username,
+            role=actor.role,
             kind=kind,
             subject=sku,
             detail={k: v for k, v in detail.items() if v is not None},
@@ -598,8 +719,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--review-date", default=None, help="YYYY-MM-DD, defaults to today")
-    parser.add_argument("--officer", default="a.nakato")
-    parser.add_argument("--role", choices=ROLES, default=ROLE_OFFICER)
+    parser.add_argument("--accounts", default=str(DEFAULT_ACCOUNTS_PATH))
+    parser.add_argument(
+        "--add-user", nargs=3, metavar=("USERNAME", "NAME", "ROLE"),
+        help="create one account, read the password from the terminal, and exit",
+    )
     parser.add_argument("--inventory")
     parser.add_argument("--suppliers")
     parser.add_argument("--quotations")
@@ -616,8 +740,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     settings = Settings(
-        officer=args.officer,
-        role=args.role,
         review_date=args.review_date,
         inventory_path=args.inventory,
         suppliers_path=args.suppliers,
@@ -626,11 +748,39 @@ def main(argv: Sequence[str] | None = None) -> int:
         requisition_store=args.store,
         state_dir=args.state_dir,
         decisions_path=args.decisions,
+        accounts_path=args.accounts,
         contract_path=args.contract,
         run_log=args.run_log,
         tool_log=args.tool_log,
         record_trace=not args.no_trace,
     )
+    if args.add_user:
+        username, display_name, role = args.add_user
+        password = getpass.getpass(f"Password for {username}: ")
+        if password != getpass.getpass("Again: "):
+            print("Those did not match.", file=sys.stderr)
+            return 2
+        try:
+            settings.accounts.create(
+                username=username, display_name=display_name, role=role, password=password,
+            )
+        except AccountError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 2
+        print(f"Created {username} ({role}).", file=sys.stderr)
+        return 0
+
+    # First run on a machine: create the two roles the charter seeds and show
+    # their passwords once. They are stored only as scrypt hashes, so this is
+    # the only time anyone sees them, and losing one means seeding again.
+    for account in settings.accounts.seed():
+        print(
+            f"Created {account['username']} ({account['role']}) "
+            f"with password: {account['password']}",
+            file=sys.stderr,
+        )
+    settings.accounts.purge_expired()
+
     try:
         server = create_server(settings, host=args.host, port=args.port)
     except OSError as exc:
@@ -642,8 +792,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
     print(f"Requests page on http://{args.host}:{args.port}", file=sys.stderr)
     print(
-        f"Signed in as {settings.officer} ({settings.role}) because the command line says so. "
-        "There is no login yet (KL-02), so keep this on localhost and on synthetic data.",
+        "Sign in on the page. Accounts live in "
+        f"{settings.accounts.path}; add one with --add-user. "
+        "The session cookie is HttpOnly and SameSite=Strict, but this is plain "
+        "http on localhost, so keep it there and on synthetic data.",
         file=sys.stderr,
     )
     try:

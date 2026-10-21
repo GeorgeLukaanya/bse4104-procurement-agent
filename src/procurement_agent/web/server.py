@@ -38,6 +38,7 @@ import json
 import mimetypes
 import os
 import re
+import socket
 import sys
 import threading
 from datetime import datetime, timezone
@@ -562,9 +563,31 @@ class Handler(BaseHTTPRequestHandler):
             payload.setdefault("decisions", []).append(row)
 
 
+class _Server(ThreadingHTTPServer):
+    """A server that refuses to start on a port somebody else already holds.
+
+    ``http.server`` sets SO_REUSEADDR, which on Windows does not mean what it
+    means on Unix: a second process may bind an address another process is
+    already listening on, and which of them receives a given connection is
+    undefined. The effect is worse than a crash. The server prints a cheerful
+    "listening on 8000", the browser reaches the other program, and the only
+    symptom is somebody else's 404 body.
+
+    So reuse is off on Windows and the exclusive flag is set, which turns a
+    port clash back into an error at bind time where it belongs.
+    """
+
+    allow_reuse_address = os.name != "nt"
+
+    def server_bind(self) -> None:
+        if os.name == "nt" and hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        super().server_bind()
+
+
 def create_server(settings: Settings, *, host: str = "127.0.0.1", port: int = 8000) -> ThreadingHTTPServer:
     handler = type("BoundHandler", (Handler,), {"settings": settings})
-    return ThreadingHTTPServer((host, port), handler)
+    return _Server((host, port), handler)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -608,7 +631,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         tool_log=args.tool_log,
         record_trace=not args.no_trace,
     )
-    server = create_server(settings, host=args.host, port=args.port)
+    try:
+        server = create_server(settings, host=args.host, port=args.port)
+    except OSError as exc:
+        print(
+            f"Could not start on {args.host}:{args.port}. Something else is already "
+            f"using that port ({exc.strerror or exc}). Pick another with --port 8010.",
+            file=sys.stderr,
+        )
+        return 2
     print(f"Requests page on http://{args.host}:{args.port}", file=sys.stderr)
     print(
         f"Signed in as {settings.officer} ({settings.role}) because the command line says so. "

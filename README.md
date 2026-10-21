@@ -380,6 +380,7 @@ Design write-up:
 
 | Symptom | Cause and fix |
 |---|---|
+| `Could not start on 127.0.0.1:8000...` | Something else holds that port. On Windows a WSL service forwarded by `wslrelay.exe` is a common one, and until this check existed the server would appear to start while the browser reached the other program. Use `--port 8010`. |
 | `error: No API key found...` | Expected without a key. Either `export GEMINI_API_KEY=...`, or use `python tools/offline_demo.py` to run with no key at all. |
 | `google-genai is not installed` | The SDK is an optional extra, so the tests can run without it. `pip install -e ".[gemini]"`. |
 | `No module named procurement_agent` | The package was not installed, or the wrong virtualenv is active. Run `pip install -e ".[dev]"` from the repo root with `.venv` activated. |

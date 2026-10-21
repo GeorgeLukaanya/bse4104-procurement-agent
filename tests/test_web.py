@@ -18,6 +18,7 @@ import pytest
 from procurement_agent.web.server import (
     Settings,
     create_server,
+    main,
     inbox,
     open_request,
     present,
@@ -282,6 +283,29 @@ def test_a_broken_contract_is_a_server_fault_not_the_browsers(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join(timeout=5)
+
+
+def test_a_taken_port_is_an_error_and_not_a_cheerful_start(settings, live):
+    """On Windows SO_REUSEADDR lets a second bind succeed on a held port.
+
+    The server then prints that it is listening while the browser reaches
+    whatever was there first, and the only symptom is a stranger's 404 body.
+    """
+    _, base = live
+    port = int(base.rsplit(":", 1)[1])
+    with pytest.raises(OSError):
+        create_server(settings, host="127.0.0.1", port=port)
+
+
+def test_the_cli_says_which_port_is_taken_instead_of_a_traceback(settings, live, capsys):
+    _, base = live
+    port = base.rsplit(":", 1)[1]
+    code = main(["--port", port, "--no-trace"])
+    assert code == 2
+    message = capsys.readouterr().err
+    assert "already" in message
+    assert "--port" in message
+    assert "Requests page on" not in message
 
 
 def test_a_path_outside_static_is_refused(live):

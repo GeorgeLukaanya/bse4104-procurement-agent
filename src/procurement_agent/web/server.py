@@ -399,15 +399,39 @@ class Handler(BaseHTTPRequestHandler):
     sys_version = ""
     settings: Settings
 
+    def handle_one_request(self) -> None:
+        self._drained = False
+        super().handle_one_request()
+
     # -- plumbing ---------------------------------------------------------
 
     def log_message(self, fmt: str, *args: Any) -> None:  # noqa: A003
         sys.stderr.write("%s %s\n" % (self.address_string(), fmt % args))
 
+    def _drain(self) -> None:
+        """Read any request body we are not going to use.
+
+        Replying to a POST without consuming its body leaves the unread bytes
+        in the socket, and the next request on that keep-alive connection is
+        parsed starting from them. The client sees the connection drop. It
+        showed up as soon as a route could refuse before reading: the whole
+        point of the session check is that it runs first.
+        """
+        if self._drained:
+            return
+        self._drained = True
+        remaining = int(self.headers.get("Content-Length") or 0)
+        while remaining > 0:
+            chunk = self.rfile.read(min(remaining, 8192))
+            if not chunk:
+                break
+            remaining -= len(chunk)
+
     def _send(
         self, status: HTTPStatus, body: bytes, content_type: str,
         extra: Sequence[tuple[str, str]] = (),
     ) -> None:
+        self._drain()
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
@@ -431,6 +455,7 @@ class Handler(BaseHTTPRequestHandler):
         self._json({"error": message}, status)
 
     def _body(self) -> dict[str, Any]:
+        self._drained = True
         length = int(self.headers.get("Content-Length") or 0)
         if length <= 0:
             return {}

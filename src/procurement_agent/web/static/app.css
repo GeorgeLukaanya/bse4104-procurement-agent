@@ -55,6 +55,13 @@
 
 * { box-sizing: border-box; }
 
+/* Any `display` declaration beats the browser's own `[hidden] { display: none }`,
+   because a class or element rule is more specific than the UA stylesheet's.
+   Every flex container in here would quietly ignore the hidden attribute
+   without this, which it did: first the drawer kept its 640px, then the
+   sidebar stayed up behind the sign-in screen. One rule, not one per element. */
+[hidden] { display: none !important; }
+
 html, body { height: 100%; }
 
 body {
@@ -207,10 +214,6 @@ body {
   display: flex; flex-direction: column; overflow: auto;
 }
 
-/* `display: flex` above beats the browser's own `[hidden] { display: none }`,
-   so without this the closed drawer still takes its 640px and the queue is
-   squeezed into whatever is left. */
-.drawer[hidden] { display: none; }
 .drawer-head { padding: var(--spacing-lg); display: flex; flex-direction: column; gap: var(--spacing-sm); }
 .drawer-head .top { display: flex; align-items: center; gap: var(--spacing-sm); }
 .drawer-head .top .spacer { flex: 1; }

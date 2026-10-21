@@ -405,6 +405,21 @@ def test_nothing_is_readable_without_signing_in(anon):
         assert exc.value.code == 401, path
 
 
+def test_a_refused_post_leaves_the_connection_usable(anon):
+    """Replying without reading the body desynchronises a keep-alive socket.
+
+    The session check runs before the body is read, which is correct, so the
+    reply has to drain what it is not going to use or the next request on that
+    connection is parsed from the leftover bytes and the client sees a drop.
+    """
+    call, _ = anon
+    for _ in range(3):
+        with pytest.raises(urllib.error.HTTPError) as exc:
+            call(f"/api/requests/{SKU}/approve", {"review_date": REVIEW_DATE, "padding": "x" * 2000})
+        assert exc.value.code == 401
+    assert call("/")[0] == 200
+
+
 def test_the_page_itself_is_served_so_there_is_somewhere_to_sign_in(anon):
     call, _ = anon
     assert call("/")[0] == 200

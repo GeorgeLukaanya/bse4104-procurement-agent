@@ -29,6 +29,7 @@ from procurement_agent.web.server import (
 REVIEW_DATE = "2026-09-25"
 SKU = "AH-CM-001"
 OFFICER = "a.nakato"
+MANAGER = "k.ssali"
 PASSWORD = "a-long-enough-password"
 
 
@@ -96,8 +97,13 @@ def live(server, settings):
     """A browser signed in as the officer, which is the ordinary case."""
     settings.accounts.set_up(
         organisation_name="Kigo Builders Ltd", locations="Kigo, Entebbe Road",
-        username=OFFICER, display_name="Agnes Nakato",
-        role="PROCUREMENT_OFFICER", password=PASSWORD,
+        people=[
+            {"username": OFFICER, "display_name": "Agnes Nakato",
+             "role": "PROCUREMENT_OFFICER", "password": PASSWORD},
+            {"username": MANAGER, "display_name": "Kenneth Ssali",
+             "role": "PROCUREMENT_MANAGER", "password": PASSWORD},
+        ],
+        you=OFFICER,
     )
     raw = caller(server)
     raw("/api/login", {"username": OFFICER, "password": PASSWORD})
@@ -519,15 +525,22 @@ def test_setting_up_names_the_business_and_signs_the_owner_in(anon, settings):
     status, body = call("/api/setup", {
         "organisation": "Kigo Builders Ltd",
         "locations": "Kigo, Entebbe Road",
-        "username": "j.mugisha",
-        "display_name": "Joseph Mugisha",
-        "role": "PROCUREMENT_MANAGER",
-        "password": PASSWORD,
+        "people": [
+            {"username": "p.akello", "display_name": "Pamela Akello",
+             "role": "PROCUREMENT_OFFICER", "password": PASSWORD},
+            {"username": "j.mugisha", "display_name": "Joseph Mugisha",
+             "role": "PROCUREMENT_MANAGER", "password": PASSWORD},
+        ],
+        "you": "j.mugisha",
     })
     assert status == 200
     payload = json.loads(body)
     assert payload["organisation"]["name"] == "Kigo Builders Ltd"
+    assert payload["user"]["username"] == "j.mugisha"
     assert payload["user"]["is_owner"] is True
+    assert {p["role"] for p in payload["people"]} == {
+        "PROCUREMENT_OFFICER", "PROCUREMENT_MANAGER"
+    }
     # the same browser is now signed in, without a second round trip
     assert call("/api/session")[0] == 200
     assert json.loads(call("/api/bootstrap")[1])["needs_setup"] is False
@@ -538,33 +551,36 @@ def test_setup_is_refused_once_a_workspace_exists(live, server):
     stranger = caller(server)
     with pytest.raises(urllib.error.HTTPError) as exc:
         stranger("/api/setup", {
-            "organisation": "Somebody Else Ltd", "username": "intruder",
-            "display_name": "Intruder", "role": "PROCUREMENT_MANAGER", "password": PASSWORD,
+            "organisation": "Somebody Else Ltd",
+            "people": [
+                {"username": "intruder", "display_name": "Intruder",
+                 "role": "PROCUREMENT_OFFICER", "password": PASSWORD},
+                {"username": "intruder2", "display_name": "Intruder Two",
+                 "role": "PROCUREMENT_MANAGER", "password": PASSWORD},
+            ],
+            "you": "intruder",
         })
     assert exc.value.code == 400
     assert "already been set up" in exc.value.read().decode("utf-8")
 
 
-def test_the_owner_can_add_the_rest_of_the_people(live, settings):
+def test_the_owner_can_add_more_people_later(live, settings):
     call, _ = live
     status, _ = call("/api/people", {
-        "username": "k.ssali", "display_name": "Kenneth Ssali",
-        "role": "PROCUREMENT_MANAGER", "password": PASSWORD,
+        "username": "p.akello", "display_name": "Pamela Akello",
+        "role": "PROCUREMENT_OFFICER", "password": PASSWORD,
     })
     assert status == 200
     people = json.loads(call("/api/people")[1])["people"]
-    assert [person["username"] for person in people] == [OFFICER, "k.ssali"]
+    assert [person["username"] for person in people] == [OFFICER, MANAGER, "p.akello"]
     assert people[0]["is_owner"] is True
+    assert people[1]["is_owner"] is False
 
 
 def test_somebody_who_is_not_the_owner_cannot_add_people(live, server, settings):
     call, _ = live
-    call("/api/people", {
-        "username": "k.ssali", "display_name": "Kenneth Ssali",
-        "role": "PROCUREMENT_MANAGER", "password": PASSWORD,
-    })
     theirs = caller(server)
-    theirs("/api/login", {"username": "k.ssali", "password": PASSWORD})
+    theirs("/api/login", {"username": MANAGER, "password": PASSWORD})
     assert theirs("/api/people")[0] == 200, "they may still see who is here"
     with pytest.raises(urllib.error.HTTPError) as exc:
         theirs("/api/people", {

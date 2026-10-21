@@ -20,6 +20,13 @@ PASSWORD = "a-long-enough-password"
 OFFICER = "PROCUREMENT_OFFICER"
 MANAGER = "PROCUREMENT_MANAGER"
 
+TEAM = [
+    {"username": "p.akello", "display_name": "Pamela Akello",
+     "role": OFFICER, "password": PASSWORD},
+    {"username": "j.mugisha", "display_name": "Joseph Mugisha",
+     "role": MANAGER, "password": PASSWORD},
+]
+
 
 class Ticker:
     """A clock the test moves on purpose."""
@@ -176,34 +183,32 @@ def test_setting_up_names_the_business_and_creates_its_owner(tmp_path, clock):
     created = store.set_up(
         organisation_name="Kigo Builders Ltd",
         locations="Kigo, Entebbe Road",
-        username="j.mugisha",
-        display_name="Joseph Mugisha",
-        role=MANAGER,
-        password=PASSWORD,
+        people=TEAM,
+        you="j.mugisha",
     )
     assert created["organisation"]["name"] == "Kigo Builders Ltd"
     assert store.needs_setup() is False
     assert store.organisation()["locations"] == "Kigo, Entebbe Road"
     assert store.owns_workspace("j.mugisha") is True
+    assert store.owns_workspace("p.akello") is False, "only one account owns it"
     token, user = store.sign_in("j.mugisha", PASSWORD)
     assert user["role"] == MANAGER
     assert token
+    assert store.sign_in("p.akello", PASSWORD)[0], "the whole team can sign in"
 
 
 def test_a_workspace_is_set_up_once(tmp_path, clock):
     """The route behind this must not become a way to add a second owner."""
     store = Accounts(tmp_path / "accounts.sqlite3", clock=clock)
     store.set_up(
-        organisation_name="Kigo Builders Ltd", username="j.mugisha",
-        display_name="Joseph Mugisha", role=MANAGER, password=PASSWORD,
-    )
+            organisation_name="Kigo Builders Ltd", people=TEAM, you="j.mugisha",
+        )
     with pytest.raises(AccountError) as exc:
         store.set_up(
-            organisation_name="Somebody Else Ltd", username="intruder",
-            display_name="Intruder", role=MANAGER, password=PASSWORD,
+            organisation_name="Somebody Else Ltd", people=TEAM, you="j.mugisha",
         )
     assert "already been set up" in str(exc.value)
-    assert store.count() == 1
+    assert store.count() == len(TEAM), "the refused attempt added nobody"
     assert store.organisation()["name"] == "Kigo Builders Ltd"
 
 
@@ -211,8 +216,7 @@ def test_a_business_needs_a_name(tmp_path, clock):
     store = Accounts(tmp_path / "accounts.sqlite3", clock=clock)
     with pytest.raises(AccountError):
         store.set_up(
-            organisation_name="   ", username="j.mugisha",
-            display_name="Joseph", role=MANAGER, password=PASSWORD,
+            organisation_name="   ", people=TEAM, you="j.mugisha",
         )
     assert store.needs_setup() is True, "a refused setup must leave nothing behind"
 
@@ -220,14 +224,14 @@ def test_a_business_needs_a_name(tmp_path, clock):
 def test_the_people_list_names_the_owner(tmp_path, clock):
     store = Accounts(tmp_path / "accounts.sqlite3", clock=clock)
     store.set_up(
-        organisation_name="Kigo Builders Ltd", username="j.mugisha",
-        display_name="Joseph Mugisha", role=MANAGER, password=PASSWORD,
-    )
-    store.create(username="p.akello", display_name="Pamela Akello", role=OFFICER, password=PASSWORD)
+            organisation_name="Kigo Builders Ltd", people=TEAM, you="j.mugisha",
+        )
+    store.create(username="c.tumwine", display_name="Carol Tumwine", role=OFFICER, password=PASSWORD)
     people = store.people()
-    assert [person["username"] for person in people] == ["j.mugisha", "p.akello"]
+    assert people[0]["username"] == "j.mugisha", "the owner is listed first"
     assert people[0]["is_owner"] is True
-    assert people[1]["is_owner"] is False
+    assert {person["username"] for person in people} == {"j.mugisha", "p.akello", "c.tumwine"}
+    assert all(not person["is_owner"] for person in people[1:])
     assert store.owns_workspace("p.akello") is False
     assert "password_hash" not in people[0]
     assert "salt" not in people[0]
@@ -236,9 +240,8 @@ def test_the_people_list_names_the_owner(tmp_path, clock):
 def test_the_business_can_be_renamed(tmp_path, clock):
     store = Accounts(tmp_path / "accounts.sqlite3", clock=clock)
     store.set_up(
-        organisation_name="Kigo Builders", username="j.mugisha",
-        display_name="Joseph", role=MANAGER, password=PASSWORD,
-    )
+            organisation_name="Kigo Builders", people=TEAM, you="j.mugisha",
+        )
     store.rename_organisation("Kigo Builders Limited", "Kigo, Entebbe Road")
     assert store.organisation()["name"] == "Kigo Builders Limited"
 
@@ -265,3 +268,39 @@ def test_purge_removes_only_what_has_expired(accounts, clock):
     assert accounts.purge_expired() == 1
     assert accounts.session(old) is None
     assert accounts.session(fresh) is not None
+
+
+def test_a_business_needs_somebody_to_buy_and_somebody_to_approve(tmp_path, clock):
+    """One account doing both would make the approval gate decoration."""
+    store = Accounts(tmp_path / "accounts.sqlite3", clock=clock)
+    only_officer = [TEAM[0]]
+    with pytest.raises(AccountError) as exc:
+        store.set_up(organisation_name="Kigo Builders", people=only_officer, you="p.akello")
+    assert "somebody who approves" in str(exc.value)
+    assert store.needs_setup() is True
+
+
+def test_one_bad_password_leaves_nobody_created(tmp_path, clock):
+    """All of the business and its people, or none of it."""
+    store = Accounts(tmp_path / "accounts.sqlite3", clock=clock)
+    team = [dict(TEAM[0]), dict(TEAM[1], password="short")]
+    with pytest.raises(AccountError) as exc:
+        store.set_up(organisation_name="Kigo Builders", people=team, you="p.akello")
+    assert "j.mugisha" in str(exc.value)
+    assert store.needs_setup() is True
+    assert store.organisation() is None
+
+
+def test_the_same_username_twice_is_refused(tmp_path, clock):
+    store = Accounts(tmp_path / "accounts.sqlite3", clock=clock)
+    team = [dict(TEAM[0]), dict(TEAM[1], username="p.akello")]
+    with pytest.raises(AccountError) as exc:
+        store.set_up(organisation_name="Kigo Builders", people=team, you="p.akello")
+    assert "listed twice" in str(exc.value)
+
+
+def test_you_have_to_say_which_account_is_yours(tmp_path, clock):
+    store = Accounts(tmp_path / "accounts.sqlite3", clock=clock)
+    with pytest.raises(AccountError) as exc:
+        store.set_up(organisation_name="Kigo Builders", people=TEAM, you="somebody.else")
+    assert "which of these accounts is yours" in str(exc.value)

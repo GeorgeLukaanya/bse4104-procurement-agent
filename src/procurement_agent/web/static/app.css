@@ -386,3 +386,6 @@ button.btn:disabled { opacity: 0.5; cursor: default; }
 }
 .add-person input:focus, .add-person select:focus { outline: 2px solid var(--color-accent-fg); outline-offset: -1px; background: var(--color-bg-surface); }
 .row .avatar { flex: 0 0 24px; }
+.is-me { flex-direction: row !important; align-items: center; gap: var(--spacing-xs) !important; cursor: pointer; }
+.is-me input { accent-color: var(--color-accent-deep); }
+.setup .group > .hint { margin: -4px 0 var(--spacing-2xs); }

@@ -159,6 +159,23 @@ function field(label, input, hint) {
   ]);
 }
 
+function personFields(key, heading, blurb) {
+  const displayName = el("input", { type: "text", id: key + "-name", autocomplete: "off" });
+  const username = el("input", { type: "text", id: key + "-username", autocomplete: "off" });
+  const password = el("input", { type: "password", id: key + "-password", autocomplete: "new-password" });
+  const mine = el("input", { type: "radio", name: "you", id: key + "-mine", value: key });
+
+  const block = el("div", { class: "group" }, [
+    el("h2", { text: heading }),
+    el("p", { class: "hint", text: blurb }),
+    field("Their name", displayName),
+    field("Username", username),
+    field("First password", password, "At least 10 characters. You will need to tell it to them."),
+    el("label", { class: "is-me" }, [mine, el("span", { text: "This one is me" })]),
+  ]);
+  return { block, displayName, username, password, mine };
+}
+
 function renderSetup() {
   document.querySelector(".sidebar").hidden = true;
   document.getElementById("drawer").hidden = true;
@@ -167,49 +184,47 @@ function renderSetup() {
 
   const organisation = el("input", { type: "text", id: "organisation", autocomplete: "organization", autofocus: true });
   const locations = el("input", { type: "text", id: "locations", autocomplete: "off" });
-  const displayName = el("input", { type: "text", id: "display_name", autocomplete: "name" });
-  const username = el("input", { type: "text", id: "username", autocomplete: "username" });
-  const password = el("input", { type: "password", id: "password", autocomplete: "new-password" });
 
-  const roleChoice = el("div", { class: "roles" });
-  let chosenRole = ROLES[0][0];
-  for (const [value, label, blurb] of ROLES) {
-    const radio = el("input", { type: "radio", name: "role", value: value, id: "role-" + value });
-    if (value === chosenRole) radio.checked = true;
-    radio.addEventListener("change", () => { chosenRole = value; });
-    roleChoice.appendChild(el("label", { class: "role" }, [
-      radio,
-      el("span", {}, [el("strong", { text: label }), el("span", { class: "hint", text: blurb })]),
-    ]));
-  }
+  const buyer = personFields(
+    "officer", "Who buys for the business",
+    "They run the weekly reorder review, compare the quotations and prepare the requisition.",
+  );
+  const approver = personFields(
+    "manager", "Who approves the spending",
+    "They sign off what the buyer prepared. It has to be a second person, or the approval means nothing.",
+  );
+  buyer.mine.checked = true;
 
   const form = el("form", { class: "signin setup" }, [
-    el("h1", { text: "Set up your workspace" }),
+    el("h1", { text: "Set up your business" }),
     el("p", { class: "muted small", text: "This runs on this machine only. Nothing is sent anywhere." }),
 
     el("div", { class: "group" }, [
-      el("h2", { text: "Your business" }),
+      el("h2", { text: "The business" }),
       field("Name", organisation, "What you would write at the top of a requisition."),
       field("Branches", locations, "Optional. Separate them with commas."),
     ]),
 
-    el("div", { class: "group" }, [
-      el("h2", { text: "Your account" }),
-      field("Your name", displayName),
-      field("Username", username, "What you will sign in with."),
-      field("Password", password, "At least 10 characters. It cannot be recovered, only replaced."),
-      el("div", { class: "group-sub" }, [el("span", { class: "label-ish", text: "What you do here" }), roleChoice]),
-    ]),
+    buyer.block,
+    approver.block,
 
     state.error ? el("div", { class: "signin-error", text: state.error }) : null,
     el("button", { class: "btn", "data-kind": "primary", type: "submit", disabled: state.busy,
-      text: state.busy ? "Setting up…" : "Create the workspace" }),
-    el("p", { class: "muted small", text: "You can add the rest of your people afterwards." }),
+      text: state.busy ? "Setting it up…" : "Create the business" }),
+    el("p", { class: "muted small", text: "You will be signed in as whichever account you marked as yours. You can add more people later." }),
   ]);
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (state.busy) return;
+    const people = [
+      { username: buyer.username.value.trim(), display_name: buyer.displayName.value,
+        role: "PROCUREMENT_OFFICER", password: buyer.password.value },
+      { username: approver.username.value.trim(), display_name: approver.displayName.value,
+        role: "PROCUREMENT_MANAGER", password: approver.password.value },
+    ];
+    const you = buyer.mine.checked ? people[0].username : people[1].username;
+
     state.busy = true;
     state.error = null;
     render();
@@ -219,10 +234,8 @@ function renderSetup() {
         body: JSON.stringify({
           organisation: organisation.value,
           locations: locations.value,
-          display_name: displayName.value,
-          username: username.value,
-          password: password.value,
-          role: chosenRole,
+          people: people,
+          you: you,
         }),
       });
       state.user = payload.user;

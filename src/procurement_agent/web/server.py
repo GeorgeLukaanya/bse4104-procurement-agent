@@ -610,25 +610,36 @@ class Handler(BaseHTTPRequestHandler):
         if route == "/api/setup":
             try:
                 body = self._body()
+                people = body.get("people")
+                if not isinstance(people, list):
+                    raise ValueError("people must be a list of accounts")
+                you = str(body.get("you") or "")
                 created = self.settings.accounts.set_up(
                     organisation_name=str(body.get("organisation") or ""),
                     locations=str(body.get("locations") or "") or None,
-                    username=str(body.get("username") or ""),
-                    display_name=str(body.get("display_name") or ""),
-                    role=str(body.get("role") or ""),
-                    password=str(body.get("password") or ""),
+                    people=people,
+                    you=you,
                 )
-                token, user = self.settings.accounts.sign_in(
-                    created["user"]["username"], str(body.get("password") or ""),
+                # Whoever onboarded the business is signed in as the account
+                # they marked as theirs. The rest sign in with what they were
+                # given, which is why those passwords are set here and not
+                # generated: somebody has to be able to pass them on.
+                password = next(
+                    (str(person.get("password") or "") for person in people
+                     if str(person.get("username") or "").strip() == you),
+                    "",
                 )
+                token, _ = self.settings.accounts.sign_in(you, password)
+                mine = next(p for p in created["people"] if p["username"] == you)
                 self._json(
-                    {"user": {**created["user"]}, "organisation": created["organisation"],
+                    {"user": mine, "organisation": created["organisation"],
+                     "people": created["people"],
                      "review_date": self.settings.today(), "authenticated": True},
                     extra=[self._cookie(token, SESSION_HOURS * 3600)],
                 )
             except AccountError as exc:
                 self._error(HTTPStatus.BAD_REQUEST, str(exc))
-            except ValueError as exc:
+            except (SignInRefused, ValueError) as exc:
                 self._error(HTTPStatus.BAD_REQUEST, str(exc))
             return
 

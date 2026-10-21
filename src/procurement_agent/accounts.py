@@ -45,7 +45,7 @@ import secrets
 import sqlite3
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Callable, Mapping
+from typing import Any, Callable, Mapping, Sequence
 
 from .tools.contract import ROLE_MANAGER, ROLE_OFFICER
 
@@ -349,56 +349,100 @@ class Accounts:
         self,
         *,
         organisation_name: str,
-        username: str,
-        display_name: str,
-        role: str,
-        password: str,
+        people: Sequence[Mapping[str, str]],
+        you: str,
         locations: str | None = None,
     ) -> dict[str, Any]:
-        """Name the business and create the account that owns it.
+        """Onboard a business: name it and provision its whole team at once.
 
-        Refused once anybody has an account, so the route behind it cannot be
-        used to add a second owner later. The check and the insert share one
-        transaction, so two browsers racing on first run cannot both win.
+        A reorder review needs somebody to prepare it and somebody to approve
+        it, and the two must not be the same account, or the approval gate is
+        decoration. So both roles are required here rather than left to be
+        added later and forgotten.
+
+        Refused once anybody has an account, so the route behind this cannot
+        be used to add a second owner afterwards. The check and every insert
+        share one transaction: either the business and all of its people
+        exist, or none of them do, and two browsers racing on a first visit
+        cannot both win.
         """
         organisation_name = organisation_name.strip()
         if not organisation_name:
             raise AccountError("The business needs a name.")
-        if role not in ACCOUNT_ROLES:
-            raise AccountError(f"{role!r} is not one of the two roles.")
-        if len(password) < MIN_PASSWORD:
-            raise AccountError(f"The password must be at least {MIN_PASSWORD} characters.")
-        username = username.strip()
-        if not username:
-            raise AccountError("A username is required.")
+        if not people:
+            raise AccountError("A business needs at least one person.")
 
-        salt = secrets.token_bytes(16)
+        prepared: list[dict[str, Any]] = []
+        seen: set[str] = set()
+        for person in people:
+            username = str(person.get("username") or "").strip()
+            role = str(person.get("role") or "")
+            password = str(person.get("password") or "")
+            display_name = str(person.get("display_name") or "").strip()
+            if not username:
+                raise AccountError("Everyone needs a username.")
+            if username in seen:
+                raise AccountError(f"{username!r} is listed twice.")
+            seen.add(username)
+            if role not in ACCOUNT_ROLES:
+                raise AccountError(f"{role!r} is not one of the two roles.")
+            if len(password) < MIN_PASSWORD:
+                raise AccountError(
+                    f"{username}: the password must be at least {MIN_PASSWORD} characters."
+                )
+            salt = secrets.token_bytes(16)
+            prepared.append({
+                "username": username,
+                "display_name": display_name or username,
+                "role": role,
+                "salt": salt,
+                "password_hash": hash_password(password, salt),
+            })
+
+        roles = {person["role"] for person in prepared}
+        missing = [role for role in ACCOUNT_ROLES if role not in roles]
+        if missing:
+            raise AccountError(
+                "A business needs somebody who buys and somebody who approves. "
+                f"Missing: {', '.join(missing)}."
+            )
+        if you not in seen:
+            raise AccountError("Say which of these accounts is yours.")
+
         now = _stamp(self._clock())
         connection = self._connect()
         try:
             with connection:
-                existing = connection.execute("SELECT COUNT(*) FROM users").fetchone()[0]
-                if existing:
+                if connection.execute("SELECT COUNT(*) FROM users").fetchone()[0]:
                     raise AccountError("This workspace has already been set up.")
                 connection.execute(
                     "INSERT INTO organisation (id, name, locations, created_at) VALUES (1, ?, ?, ?)",
                     (organisation_name, (locations or "").strip() or None, now),
                 )
-                connection.execute(
+                connection.executemany(
                     "INSERT INTO users "
                     "(username, display_name, role, salt, password_hash, created_at, is_owner) "
-                    "VALUES (?, ?, ?, ?, ?, ?, 1)",
-                    (username, display_name.strip() or username, role, salt,
-                     hash_password(password, salt), now),
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    [
+                        (person["username"], person["display_name"], person["role"],
+                         person["salt"], person["password_hash"], now,
+                         1 if person["username"] == you else 0)
+                        for person in prepared
+                    ],
                 )
         except sqlite3.IntegrityError as exc:
             raise AccountError("This workspace has already been set up.") from exc
         finally:
             connection.close()
+
         return {
             "organisation": {"name": organisation_name, "locations": locations or None},
-            "user": {"username": username, "display_name": display_name or username,
-                     "role": role, "is_owner": True},
+            "people": [
+                {"username": person["username"], "display_name": person["display_name"],
+                 "role": person["role"], "is_owner": person["username"] == you}
+                for person in prepared
+            ],
+            "you": you,
         }
 
     def rename_organisation(self, name: str, locations: str | None = None) -> dict[str, Any]:

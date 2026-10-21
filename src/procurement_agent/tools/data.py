@@ -30,6 +30,10 @@ REGISTER_ID_QUOTATIONS = "DAT-003"
 
 FINGERPRINT_LENGTH = 16
 
+# A stock system is somebody else's process: bound the wait and the payload.
+SERVICE_TIMEOUT_S = 5.0
+MAX_SERVICE_BYTES = 4 * 1024 * 1024
+
 INVENTORY_FIELDS = (
     "sku",
     "item_name",
@@ -125,7 +129,24 @@ def _registered_checksum(
 def load_inventory(
     path: str | os.PathLike[str] | None = None,
     register_path: str | os.PathLike[str] | None = None,
+    as_of: str | None = None,
 ) -> tuple[list[dict[str, Any]], str]:
+    """The stock position, from the registered snapshot or from a stock system.
+
+    When `path` is an http or https URL it is treated as a stock system to ask
+    rather than a file to read, and `as_of` is the date to ask about. Both
+    routes return the same rows and the same kind of fingerprint, so nothing
+    downstream knows or cares which was used.
+
+    The two are not equally trustworthy and the difference is worth stating. A
+    registered file is checked against a checksum held in the source register,
+    which the file's author does not control, so an edited file is caught. A
+    service's checksum travels with its own payload, so it catches a mangled
+    response and nothing else. Asking a system instead of reading a file buys
+    realism and a stock position that moves, and it costs that guarantee.
+    """
+    if _is_url(path):
+        return _load_inventory_from_service(str(path), as_of)
     loaded = read_registered_file(
         path or DEFAULT_INVENTORY,
         REGISTER_ID_INVENTORY,
@@ -154,6 +175,75 @@ def load_inventory(
     if len(skus) != len(set(skus)):
         raise DataIntegrityError(f"{loaded.path}: duplicate SKU in the snapshot")
     return rows, loaded.fingerprint
+
+
+def _is_url(path: Any) -> bool:
+    return isinstance(path, str) and path.lower().startswith(("http://", "https://"))
+
+
+def _load_inventory_from_service(
+    url: str,
+    as_of: str | None,
+) -> tuple[list[dict[str, Any]], str]:
+    """Ask a stock system for its position, and check what comes back."""
+    import json
+    import urllib.error
+    import urllib.parse
+    import urllib.request
+
+    target = url
+    if as_of:
+        joiner = "&" if urllib.parse.urlparse(url).query else "?"
+        target = f"{url}{joiner}as_of={urllib.parse.quote(as_of)}"
+
+    request = urllib.request.Request(target, headers={"Accept": "application/json"})
+    try:
+        with urllib.request.urlopen(request, timeout=SERVICE_TIMEOUT_S) as response:
+            raw = response.read(MAX_SERVICE_BYTES + 1)
+    except urllib.error.HTTPError as exc:
+        raise DataUnavailable(f"{url} answered {exc.code}") from exc
+    except (urllib.error.URLError, OSError) as exc:
+        raise DataUnavailable(f"{url} could not be reached: {exc}") from exc
+
+    if len(raw) > MAX_SERVICE_BYTES:
+        raise DataIntegrityError(f"{url} returned more than {MAX_SERVICE_BYTES} bytes")
+    try:
+        payload = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise DataIntegrityError(f"{url} did not return JSON") from exc
+    if not isinstance(payload, dict) or not isinstance(payload.get("items"), list):
+        raise DataIntegrityError(f"{url} did not return a stock position")
+
+    rows: list[dict[str, Any]] = []
+    for index, item in enumerate(payload["items"], start=1):
+        if not isinstance(item, dict):
+            raise DataIntegrityError(f"{url} item {index} is not a record")
+        try:
+            rows.append(_parse_inventory_row({
+                name: str(item.get(name, "")) for name in INVENTORY_FIELDS
+            }))
+        except DataIntegrityError as exc:
+            raise DataIntegrityError(f"{url} item {index}: {exc}") from exc
+
+    if not rows:
+        raise DataIntegrityError(f"{url}: the stock position is empty")
+    skus = [row["sku"] for row in rows]
+    if len(skus) != len(set(skus)):
+        raise DataIntegrityError(f"{url}: the same SKU twice in one position")
+
+    # The service states a checksum of its own payload. Recomputing it catches
+    # a truncated or rewritten response in transit. It cannot catch a service
+    # that is wrong about its own stock, and nothing here pretends otherwise.
+    from ..inventory.ledger import checksum as snapshot_checksum
+
+    computed = snapshot_checksum(rows)
+    stated = str(payload.get("checksum") or "")
+    if stated and stated != computed:
+        raise DataIntegrityError(
+            f"{url}: the position does not match the checksum it came with. "
+            "Refuse rather than use a figure that arrived damaged."
+        )
+    return rows, computed[:FINGERPRINT_LENGTH]
 
 
 def _parse_inventory_row(raw: dict[str, str]) -> dict[str, Any]:

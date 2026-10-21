@@ -384,11 +384,68 @@ copy.
 | `--accounts` | `var/accounts.sqlite3` | Users and sessions |
 | `--add-user` | | `USERNAME "Display Name" ROLE`, asks for the password, then exits. The People screen is the usual way. |
 | `--state-dir` | `var/agent-state` | Where runs resume from |
+| `--inventory` | the registered snapshot | A path, or a stock system's URL |
 | `--decisions` | `var/decisions.sqlite3` | The decision record |
 | `--run-log`, `--tool-log` | the shared evidence traces | Point these at a scratch file so a demo does not write into committed evidence |
 
 Design write-up:
 [`docs/architecture/ui-ux-blueprint.md`](docs/architecture/ui-ux-blueprint.md).
+
+## A stock system to call (simulated)
+
+The registered snapshot in `knowledge/data/inventory.csv` never moves. That is
+right for evaluation, because every run sees the same figures, and wrong for a
+demonstration, because the agent is reading a fixture rather than asking a
+system.
+
+`procurement_agent.inventory` is the other half: a stock position held as an
+opening balance plus an append-only ledger of movements, served over HTTP as
+its own process.
+
+```bash
+python -m procurement_agent.inventory --port 8020 --as-of 2026-09-25 --rebuild
+python -m procurement_agent.web --port 8010 --review-date 2026-09-25 \
+    --inventory http://127.0.0.1:8020/api/stock
+```
+
+The simulator takes its opening balances from the registered snapshot and
+trades forward: items sell at a rate derived from their target stock level,
+trade is heavier at the end of the week and absent on Sunday, a physical count
+each month disagrees with the book by a little, and the business reorders when
+an item crosses its reorder point but takes a few days to notice and a few more
+to receive. Nothing is drawn at random. Every movement comes from a SHA-256 of
+the seed, the SKU and the date, so the same seed gives the same business on
+every machine, and `--seed` gives a different but equally repeatable one.
+
+A quarter of trading from 1 July to 25 September leaves nine of forty-eight
+items at or below their reorder point, which is the same shape as the
+registered dataset.
+
+| Route | What it does |
+|---|---|
+| `GET /api/stock?as_of=YYYY-MM-DD` | The whole position on a date, with a checksum |
+| `GET /api/stock/{sku}?as_of=...` | One item, and the movements behind its figure |
+| `POST /api/movements` | Record a sale, a delivery or a count |
+
+The last one is what makes a demonstration rather than another fixture:
+
+```bash
+curl -X POST http://127.0.0.1:8020/api/movements \
+  -H 'Content-Type: application/json' \
+  -d '{"sku":"AH-CM-008","kind":"issue","quantity":11,"reference":"counter sales"}'
+```
+
+Sell eleven roofing nails and the next review picks the item up, with no
+restart on either side.
+
+**What a remote source costs.** A registered file is checked against a checksum
+held in the source register, somewhere its author does not control, so an
+edited file is caught. A service's checksum travels with its own payload, so
+recomputing it catches a mangled or truncated response and nothing else:
+anything able to forge the rows can forge the checksum with them. Pointing
+`--inventory` at a URL trades that guarantee for a stock position that moves.
+Both routes produce the same rows and the same kind of fingerprint, and the
+tool envelope records which was used.
 
 ## Troubleshooting
 

@@ -20,7 +20,11 @@ from .contract import (
     STATUS_UNAVAILABLE,
     error,
 )
+import re
+
 from .data import DataIntegrityError, DataUnavailable, load_inventory
+
+ISO_DATE_ONLY = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
 def check_reorder_need(
@@ -29,8 +33,14 @@ def check_reorder_need(
     inventory_path: str | None = None,
     register_path: str | None = None,
 ) -> tuple[str, dict[str, Any] | None, list[dict[str, Any]], str | None]:
+    # The payload is validated below, so the date is not trustworthy yet.
+    # Pass it on only when it is shaped like one: a stock system is asked for a
+    # position "as at" a date, and sending it rubbish would turn a bad request
+    # from this caller into an unavailable-source error from that one.
+    asked_for = payload.get("review_date") if isinstance(payload, dict) else None
+    as_of = asked_for if isinstance(asked_for, str) and ISO_DATE_ONLY.match(asked_for) else None
     try:
-        rows, fingerprint = load_inventory(inventory_path, register_path)
+        rows, fingerprint = load_inventory(inventory_path, register_path, as_of=as_of)
     except DataUnavailable as exc:
         return (
             STATUS_UNAVAILABLE,

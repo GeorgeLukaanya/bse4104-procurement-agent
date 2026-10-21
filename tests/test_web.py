@@ -77,9 +77,16 @@ def caller(base):
 
 @pytest.fixture
 def anon(server):
-    """A browser that has not signed in."""
+    """A browser that has not signed in, keeping one cookie jar throughout.
+
+    One jar, not one per call: setting the workspace up signs the owner in by
+    handing back a cookie, and a fixture that threw it away would report that
+    as a broken server.
+    """
+    raw = caller(server)
+
     def call(path, payload=None, method=None):
-        status, body, _ = caller(server)(path, payload, method)
+        status, body, _ = raw(path, payload, method)
         return status, body
     return call, server
 
@@ -87,7 +94,8 @@ def anon(server):
 @pytest.fixture
 def live(server, settings):
     """A browser signed in as the officer, which is the ordinary case."""
-    settings.accounts.create(
+    settings.accounts.set_up(
+        organisation_name="Kigo Builders Ltd", locations="Kigo, Entebbe Road",
         username=OFFICER, display_name="Agnes Nakato",
         role="PROCUREMENT_OFFICER", password=PASSWORD,
     )
@@ -491,3 +499,100 @@ def test_a_decision_is_attributed_to_whoever_signed_in(server, settings):
     [row] = settings.decisions.for_subject(SKU)
     assert row["actor"] == "b.okello"
     assert row["role"] == "PROCUREMENT_OFFICER"
+
+
+# --------------------------------------------------------------- setting up
+
+
+def test_a_fresh_install_says_it_needs_setting_up(anon):
+    """The only thing a browser may ask before anyone can possibly be signed in."""
+    call, _ = anon
+    status, body = call("/api/bootstrap")
+    assert status == 200
+    payload = json.loads(body)
+    assert payload["needs_setup"] is True
+    assert payload["organisation"] is None
+
+
+def test_setting_up_names_the_business_and_signs_the_owner_in(anon, settings):
+    call, _ = anon
+    status, body = call("/api/setup", {
+        "organisation": "Kigo Builders Ltd",
+        "locations": "Kigo, Entebbe Road",
+        "username": "j.mugisha",
+        "display_name": "Joseph Mugisha",
+        "role": "PROCUREMENT_MANAGER",
+        "password": PASSWORD,
+    })
+    assert status == 200
+    payload = json.loads(body)
+    assert payload["organisation"]["name"] == "Kigo Builders Ltd"
+    assert payload["user"]["is_owner"] is True
+    # the same browser is now signed in, without a second round trip
+    assert call("/api/session")[0] == 200
+    assert json.loads(call("/api/bootstrap")[1])["needs_setup"] is False
+
+
+def test_setup_is_refused_once_a_workspace_exists(live, server):
+    """Otherwise the route is a way to hand yourself an owner account."""
+    stranger = caller(server)
+    with pytest.raises(urllib.error.HTTPError) as exc:
+        stranger("/api/setup", {
+            "organisation": "Somebody Else Ltd", "username": "intruder",
+            "display_name": "Intruder", "role": "PROCUREMENT_MANAGER", "password": PASSWORD,
+        })
+    assert exc.value.code == 400
+    assert "already been set up" in exc.value.read().decode("utf-8")
+
+
+def test_the_owner_can_add_the_rest_of_the_people(live, settings):
+    call, _ = live
+    status, _ = call("/api/people", {
+        "username": "k.ssali", "display_name": "Kenneth Ssali",
+        "role": "PROCUREMENT_MANAGER", "password": PASSWORD,
+    })
+    assert status == 200
+    people = json.loads(call("/api/people")[1])["people"]
+    assert [person["username"] for person in people] == [OFFICER, "k.ssali"]
+    assert people[0]["is_owner"] is True
+
+
+def test_somebody_who_is_not_the_owner_cannot_add_people(live, server, settings):
+    call, _ = live
+    call("/api/people", {
+        "username": "k.ssali", "display_name": "Kenneth Ssali",
+        "role": "PROCUREMENT_MANAGER", "password": PASSWORD,
+    })
+    theirs = caller(server)
+    theirs("/api/login", {"username": "k.ssali", "password": PASSWORD})
+    assert theirs("/api/people")[0] == 200, "they may still see who is here"
+    with pytest.raises(urllib.error.HTTPError) as exc:
+        theirs("/api/people", {
+            "username": "sneaky", "display_name": "Sneaky",
+            "role": "PROCUREMENT_MANAGER", "password": PASSWORD,
+        })
+    assert exc.value.code == 403
+
+
+def test_the_people_list_carries_no_password_material(live):
+    call, _ = live
+    body = call("/api/people")[1]
+    assert "password_hash" not in body
+    assert "salt" not in body
+    assert PASSWORD not in body
+
+
+def test_the_session_carries_the_workspace_so_nothing_is_hardcoded(live):
+    call, _ = live
+    payload = json.loads(call("/api/session")[1])
+    assert payload["organisation"]["name"] == "Kigo Builders Ltd"
+    assert payload["organisation"]["locations"] == "Kigo, Entebbe Road"
+
+
+def test_no_business_name_is_baked_into_the_page(live):
+    """The markup used to carry a company nobody chose."""
+    call, _ = live
+    html = call("/")[1]
+    for invented in ["Ahumuza", "Nakawa and Kireka"]:
+        assert invented not in html
+    assert "Ahumuza" not in call("/static/app.js")[1]

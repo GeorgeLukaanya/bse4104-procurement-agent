@@ -353,12 +353,14 @@ is waiting for. Approving the price and sending it to the manager are two
 separate presses, because the task contract has two gates and nothing is
 written until the second one.
 
-You sign in. The first time the server starts it creates the charter's two
-roles, `a.nakato` (officer) and `k.ssali` (manager), with generated passwords
-printed once to the terminal. They are stored as scrypt hashes with a per-user
-salt, so nobody can recover one: if you lose it, delete `var/accounts.sqlite3`
-and start again, or add an account with
-`--add-user USERNAME "Display Name" ROLE`.
+The first time you open the page it asks you to set up a workspace: the name of
+your business, its branches, and your own account. That account owns the
+workspace and can add the rest of your people from the People screen. Nothing is
+seeded and no company is assumed.
+
+Passwords are stored as scrypt hashes with a per-user salt, so none can be read
+back. If somebody forgets theirs, the owner adds them again under a new
+username, or you delete `var/accounts.sqlite3` and set the workspace up afresh.
 
 The session is a random token in an HttpOnly, SameSite=Strict cookie, and the
 database stores only its hash. Every route that touches the dataset refuses a
@@ -380,7 +382,7 @@ copy.
 | `--port` | `8000` | |
 | `--review-date` | today | The Monday you are reviewing |
 | `--accounts` | `var/accounts.sqlite3` | Users and sessions |
-| `--add-user` | | `USERNAME "Display Name" ROLE`, asks for the password, then exits |
+| `--add-user` | | `USERNAME "Display Name" ROLE`, asks for the password, then exits. The People screen is the usual way. |
 | `--state-dir` | `var/agent-state` | Where runs resume from |
 | `--decisions` | `var/decisions.sqlite3` | The decision record |
 | `--run-log`, `--tool-log` | the shared evidence traces | Point these at a scratch file so a demo does not write into committed evidence |

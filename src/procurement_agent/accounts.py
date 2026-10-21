@@ -1,4 +1,9 @@
-"""User accounts and sessions, from the standard library.
+"""The workspace, its people, and their sessions, from the standard library.
+
+A workspace is set up once, by whoever opens the page first: they name the
+business and create their own account, and that account owns the workspace and
+may add the other people. Nothing is seeded, because a system that invents a
+company and two staff is a demonstration rather than a product.
 
 Known limitation KL-02 says identity and confirmation are trusted command-line
 inputs: ``--role`` and ``--officer`` are whatever the person starting the
@@ -64,6 +69,12 @@ MAX_FAILURES = 5
 LOCKOUT_MINUTES = 5
 
 SCHEMA = """
+CREATE TABLE IF NOT EXISTS organisation (
+  id         INTEGER PRIMARY KEY CHECK (id = 1),
+  name       TEXT NOT NULL,
+  locations  TEXT,
+  created_at TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS users (
   username      TEXT PRIMARY KEY,
   display_name  TEXT NOT NULL,
@@ -72,7 +83,8 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash BLOB NOT NULL,
   created_at    TEXT NOT NULL,
   failures      INTEGER NOT NULL DEFAULT 0,
-  locked_until  TEXT
+  locked_until  TEXT,
+  is_owner      INTEGER NOT NULL DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS sessions (
   token_hash  TEXT PRIMARY KEY,
@@ -152,9 +164,21 @@ class Accounts:
         connection.execute("PRAGMA foreign_keys = ON")
         if not self._ready:
             connection.executescript(SCHEMA)
+            self._migrate(connection)
             connection.commit()
             self._ready = True
         return connection
+
+    @staticmethod
+    def _migrate(connection: sqlite3.Connection) -> None:
+        """Add what a database made by an earlier version does not have yet.
+
+        CREATE TABLE IF NOT EXISTS leaves an existing table alone, columns and
+        all, so a new column has to be asked for by name.
+        """
+        columns = {row["name"] for row in connection.execute("PRAGMA table_info(users)")}
+        if "is_owner" not in columns:
+            connection.execute("ALTER TABLE users ADD COLUMN is_owner INTEGER NOT NULL DEFAULT 0")
 
     # -- accounts ---------------------------------------------------------
 
@@ -305,31 +329,118 @@ class Accounts:
         finally:
             connection.close()
 
-    # -- seeding ----------------------------------------------------------
+    # -- the workspace ----------------------------------------------------
 
-    def seed(self, people: Mapping[str, tuple[str, str]] | None = None) -> list[dict[str, Any]]:
-        """Create the charter's two roles with generated passwords.
+    def organisation(self) -> dict[str, Any] | None:
+        connection = self._connect()
+        try:
+            row = connection.execute(
+                "SELECT name, locations, created_at FROM organisation WHERE id = 1"
+            ).fetchone()
+        finally:
+            connection.close()
+        return dict(row) if row else None
 
-        The passwords are returned once so the caller can print them. They are
-        not written anywhere in the clear, which means nobody can recover one:
-        losing it means seeding a new account, and for synthetic data that is
-        the right trade.
+    def needs_setup(self) -> bool:
+        """True until somebody has made the first account."""
+        return self.count() == 0
+
+    def set_up(
+        self,
+        *,
+        organisation_name: str,
+        username: str,
+        display_name: str,
+        role: str,
+        password: str,
+        locations: str | None = None,
+    ) -> dict[str, Any]:
+        """Name the business and create the account that owns it.
+
+        Refused once anybody has an account, so the route behind it cannot be
+        used to add a second owner later. The check and the insert share one
+        transaction, so two browsers racing on first run cannot both win.
         """
-        wanted = people or {
-            "a.nakato": ("Agnes Nakato", ROLE_OFFICER),
-            "k.ssali": ("Kenneth Ssali", ROLE_MANAGER),
+        organisation_name = organisation_name.strip()
+        if not organisation_name:
+            raise AccountError("The business needs a name.")
+        if role not in ACCOUNT_ROLES:
+            raise AccountError(f"{role!r} is not one of the two roles.")
+        if len(password) < MIN_PASSWORD:
+            raise AccountError(f"The password must be at least {MIN_PASSWORD} characters.")
+        username = username.strip()
+        if not username:
+            raise AccountError("A username is required.")
+
+        salt = secrets.token_bytes(16)
+        now = _stamp(self._clock())
+        connection = self._connect()
+        try:
+            with connection:
+                existing = connection.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+                if existing:
+                    raise AccountError("This workspace has already been set up.")
+                connection.execute(
+                    "INSERT INTO organisation (id, name, locations, created_at) VALUES (1, ?, ?, ?)",
+                    (organisation_name, (locations or "").strip() or None, now),
+                )
+                connection.execute(
+                    "INSERT INTO users "
+                    "(username, display_name, role, salt, password_hash, created_at, is_owner) "
+                    "VALUES (?, ?, ?, ?, ?, ?, 1)",
+                    (username, display_name.strip() or username, role, salt,
+                     hash_password(password, salt), now),
+                )
+        except sqlite3.IntegrityError as exc:
+            raise AccountError("This workspace has already been set up.") from exc
+        finally:
+            connection.close()
+        return {
+            "organisation": {"name": organisation_name, "locations": locations or None},
+            "user": {"username": username, "display_name": display_name or username,
+                     "role": role, "is_owner": True},
         }
-        created: list[dict[str, Any]] = []
-        for username, (display_name, role) in wanted.items():
-            if self.get(username):
-                continue
-            password = generate_password()
-            account = self.create(
-                username=username, display_name=display_name, role=role, password=password,
-            )
-            account["password"] = password
-            created.append(account)
-        return created
+
+    def rename_organisation(self, name: str, locations: str | None = None) -> dict[str, Any]:
+        name = name.strip()
+        if not name:
+            raise AccountError("The business needs a name.")
+        connection = self._connect()
+        try:
+            with connection:
+                connection.execute(
+                    "UPDATE organisation SET name = ?, locations = ? WHERE id = 1",
+                    (name, (locations or "").strip() or None),
+                )
+        finally:
+            connection.close()
+        return {"name": name, "locations": locations or None}
+
+    # -- the people -------------------------------------------------------
+
+    def people(self) -> list[dict[str, Any]]:
+        connection = self._connect()
+        try:
+            rows = connection.execute(
+                "SELECT username, display_name, role, is_owner, created_at "
+                "FROM users ORDER BY is_owner DESC, created_at ASC"
+            ).fetchall()
+        finally:
+            connection.close()
+        return [
+            {**dict(row), "is_owner": bool(row["is_owner"])}
+            for row in rows
+        ]
+
+    def owns_workspace(self, username: str) -> bool:
+        connection = self._connect()
+        try:
+            row = connection.execute(
+                "SELECT is_owner FROM users WHERE username = ?", (username,)
+            ).fetchone()
+        finally:
+            connection.close()
+        return bool(row and row["is_owner"])
 
 
 def _token_hash(token: str) -> str:

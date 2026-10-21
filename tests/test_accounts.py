@@ -165,25 +165,96 @@ def test_a_username_is_claimed_once(accounts):
     assert "already has an account" in str(exc.value)
 
 
-def test_seeding_creates_the_two_charter_roles_once(tmp_path, clock):
+def test_a_fresh_install_asks_to_be_set_up(tmp_path, clock):
     store = Accounts(tmp_path / "accounts.sqlite3", clock=clock)
-    created = store.seed()
-    assert {account["role"] for account in created} == {OFFICER, MANAGER}
-    assert all(len(account["password"]) >= MIN_PASSWORD for account in created)
-    assert store.seed() == [], "a second start must not reseed"
-    assert store.count() == 2
+    assert store.needs_setup() is True
+    assert store.organisation() is None
 
 
-def test_a_seeded_password_works_and_is_not_recoverable(tmp_path, clock):
+def test_setting_up_names_the_business_and_creates_its_owner(tmp_path, clock):
     store = Accounts(tmp_path / "accounts.sqlite3", clock=clock)
-    [first] = [a for a in store.seed() if a["role"] == MANAGER]
-    token, user = store.sign_in(first["username"], first["password"])
+    created = store.set_up(
+        organisation_name="Kigo Builders Ltd",
+        locations="Kigo, Entebbe Road",
+        username="j.mugisha",
+        display_name="Joseph Mugisha",
+        role=MANAGER,
+        password=PASSWORD,
+    )
+    assert created["organisation"]["name"] == "Kigo Builders Ltd"
+    assert store.needs_setup() is False
+    assert store.organisation()["locations"] == "Kigo, Entebbe Road"
+    assert store.owns_workspace("j.mugisha") is True
+    token, user = store.sign_in("j.mugisha", PASSWORD)
     assert user["role"] == MANAGER
-    with sqlite3.connect(store.path) as connection:
-        row = connection.execute(
-            "SELECT * FROM users WHERE username = ?", (first["username"],)
-        ).fetchone()
-    assert first["password"] not in str(row)
+    assert token
+
+
+def test_a_workspace_is_set_up_once(tmp_path, clock):
+    """The route behind this must not become a way to add a second owner."""
+    store = Accounts(tmp_path / "accounts.sqlite3", clock=clock)
+    store.set_up(
+        organisation_name="Kigo Builders Ltd", username="j.mugisha",
+        display_name="Joseph Mugisha", role=MANAGER, password=PASSWORD,
+    )
+    with pytest.raises(AccountError) as exc:
+        store.set_up(
+            organisation_name="Somebody Else Ltd", username="intruder",
+            display_name="Intruder", role=MANAGER, password=PASSWORD,
+        )
+    assert "already been set up" in str(exc.value)
+    assert store.count() == 1
+    assert store.organisation()["name"] == "Kigo Builders Ltd"
+
+
+def test_a_business_needs_a_name(tmp_path, clock):
+    store = Accounts(tmp_path / "accounts.sqlite3", clock=clock)
+    with pytest.raises(AccountError):
+        store.set_up(
+            organisation_name="   ", username="j.mugisha",
+            display_name="Joseph", role=MANAGER, password=PASSWORD,
+        )
+    assert store.needs_setup() is True, "a refused setup must leave nothing behind"
+
+
+def test_the_people_list_names_the_owner(tmp_path, clock):
+    store = Accounts(tmp_path / "accounts.sqlite3", clock=clock)
+    store.set_up(
+        organisation_name="Kigo Builders Ltd", username="j.mugisha",
+        display_name="Joseph Mugisha", role=MANAGER, password=PASSWORD,
+    )
+    store.create(username="p.akello", display_name="Pamela Akello", role=OFFICER, password=PASSWORD)
+    people = store.people()
+    assert [person["username"] for person in people] == ["j.mugisha", "p.akello"]
+    assert people[0]["is_owner"] is True
+    assert people[1]["is_owner"] is False
+    assert store.owns_workspace("p.akello") is False
+    assert "password_hash" not in people[0]
+    assert "salt" not in people[0]
+
+
+def test_the_business_can_be_renamed(tmp_path, clock):
+    store = Accounts(tmp_path / "accounts.sqlite3", clock=clock)
+    store.set_up(
+        organisation_name="Kigo Builders", username="j.mugisha",
+        display_name="Joseph", role=MANAGER, password=PASSWORD,
+    )
+    store.rename_organisation("Kigo Builders Limited", "Kigo, Entebbe Road")
+    assert store.organisation()["name"] == "Kigo Builders Limited"
+
+
+def test_a_database_from_before_owners_existed_is_upgraded(tmp_path, clock):
+    """CREATE TABLE IF NOT EXISTS leaves an existing table's columns alone."""
+    path = tmp_path / "accounts.sqlite3"
+    with sqlite3.connect(path) as connection:
+        connection.execute(
+            "CREATE TABLE users (username TEXT PRIMARY KEY, display_name TEXT NOT NULL, "
+            "role TEXT NOT NULL, salt BLOB NOT NULL, password_hash BLOB NOT NULL, "
+            "created_at TEXT NOT NULL, failures INTEGER NOT NULL DEFAULT 0, locked_until TEXT)"
+        )
+    store = Accounts(path, clock=clock)
+    store.create(username="a.nakato", display_name="Agnes", role=OFFICER, password=PASSWORD)
+    assert store.people()[0]["is_owner"] is False
 
 
 def test_purge_removes_only_what_has_expired(accounts, clock):

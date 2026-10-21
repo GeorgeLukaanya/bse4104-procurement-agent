@@ -344,3 +344,45 @@ button.btn:disabled { opacity: 0.5; cursor: default; }
   background: var(--color-problem-bg); color: var(--color-problem-fg); font-size: 13px;
 }
 .who #sign-out { margin-left: auto; font-size: 13px; padding: var(--spacing-2xs) var(--spacing-xs); }
+
+/* -------------------------------------------------------------- setup */
+
+.setup { width: 480px; margin: 6vh auto 6vh; gap: var(--spacing-lg); }
+.setup h2 { margin: 0 0 var(--spacing-xs); font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+.setup .group { display: flex; flex-direction: column; gap: var(--spacing-sm); padding-top: var(--spacing-sm); border-top: 1px solid var(--color-border-default); }
+.setup .group-sub { display: flex; flex-direction: column; gap: var(--spacing-2xs); }
+.label-ish { font-size: 13px; color: var(--color-text-secondary); }
+
+.hint { font-size: 13px; color: var(--color-text-muted); }
+
+.roles { display: flex; flex-direction: column; gap: var(--spacing-2xs); }
+.role {
+  display: flex; flex-direction: row; align-items: flex-start; gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--color-border-default); border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.role:hover { background: var(--color-bg-inset); }
+.role:has(input:checked) { border-color: var(--color-accent-deep); background: var(--color-accent-bg); }
+.role input { margin-top: 5px; accent-color: var(--color-accent-deep); }
+.role span { display: flex; flex-direction: column; }
+.role strong { font-weight: 500; font-size: 15px; color: var(--color-text-primary); }
+
+/* ------------------------------------------------------------- people */
+
+.add-person {
+  width: 420px; margin: var(--spacing-lg);
+  display: flex; flex-direction: column; gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default); border-radius: var(--radius-md);
+}
+.add-person h2 { margin: 0; font-size: 16px; font-weight: 500; }
+.add-person label { display: flex; flex-direction: column; gap: var(--spacing-2xs); font-size: 13px; color: var(--color-text-secondary); }
+.add-person input, .add-person select {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--color-border-strong); border-radius: var(--radius-sm);
+  background: var(--color-bg-inset); font: inherit; font-size: 15px; color: var(--color-text-primary);
+}
+.add-person input:focus, .add-person select:focus { outline: 2px solid var(--color-accent-fg); outline-offset: -1px; background: var(--color-bg-surface); }
+.row .avatar { flex: 0 0 24px; }

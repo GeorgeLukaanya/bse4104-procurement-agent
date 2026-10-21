@@ -11,10 +11,10 @@
 
   <nav class="sidebar" aria-label="Sections">
     <div class="org">
-      <span class="org-mark" aria-hidden="true">A</span>
+      <span class="org-mark" id="org-mark" aria-hidden="true"></span>
       <span class="org-text">
-        <strong>Ahumuza Hardware</strong>
-        <span class="mono muted">Nakawa and Kireka</span>
+        <strong id="org-name"></strong>
+        <span class="mono muted" id="org-locations"></span>
       </span>
     </div>
 
@@ -23,14 +23,14 @@
     <div class="who" id="who">
       <span class="avatar" aria-hidden="true">··</span>
       <span class="who-text">
-        <span id="who-name">Loading</span>
+        <span id="who-name"></span>
         <span class="mono muted" id="who-role"></span>
       </span>
     </div>
   </nav>
 
   <main class="main" id="main">
-    <div class="loading" id="boot">Checking stock against reorder points…</div>
+    <div class="loading" id="boot">Starting…</div>
   </main>
 
   <aside class="drawer" id="drawer" hidden aria-label="Request"></aside>

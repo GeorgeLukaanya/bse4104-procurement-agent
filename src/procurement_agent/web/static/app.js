@@ -19,6 +19,8 @@
 
 const state = {
   user: null,
+  org: null,
+  people: null,
   inbox: null,
   tab: "needs_you",
   view: "requests",
@@ -142,6 +144,103 @@ function headline(request) {
   return { tone: "neutral", text: "Working on it." };
 }
 
+/* -------------------------------------------------------------- setup */
+
+const ROLES = [
+  ["PROCUREMENT_OFFICER", "I buy for the business", "You run the reorder reviews and prepare requisitions."],
+  ["PROCUREMENT_MANAGER", "I approve the spending", "You sign off what somebody else has prepared."],
+];
+
+function field(label, input, hint) {
+  return el("label", {}, [
+    el("span", { text: label }),
+    input,
+    hint ? el("span", { class: "hint", text: hint }) : null,
+  ]);
+}
+
+function renderSetup() {
+  document.querySelector(".sidebar").hidden = true;
+  document.getElementById("drawer").hidden = true;
+  const main = document.getElementById("main");
+  clear(main);
+
+  const organisation = el("input", { type: "text", id: "organisation", autocomplete: "organization", autofocus: true });
+  const locations = el("input", { type: "text", id: "locations", autocomplete: "off" });
+  const displayName = el("input", { type: "text", id: "display_name", autocomplete: "name" });
+  const username = el("input", { type: "text", id: "username", autocomplete: "username" });
+  const password = el("input", { type: "password", id: "password", autocomplete: "new-password" });
+
+  const roleChoice = el("div", { class: "roles" });
+  let chosenRole = ROLES[0][0];
+  for (const [value, label, blurb] of ROLES) {
+    const radio = el("input", { type: "radio", name: "role", value: value, id: "role-" + value });
+    if (value === chosenRole) radio.checked = true;
+    radio.addEventListener("change", () => { chosenRole = value; });
+    roleChoice.appendChild(el("label", { class: "role" }, [
+      radio,
+      el("span", {}, [el("strong", { text: label }), el("span", { class: "hint", text: blurb })]),
+    ]));
+  }
+
+  const form = el("form", { class: "signin setup" }, [
+    el("h1", { text: "Set up your workspace" }),
+    el("p", { class: "muted small", text: "This runs on this machine only. Nothing is sent anywhere." }),
+
+    el("div", { class: "group" }, [
+      el("h2", { text: "Your business" }),
+      field("Name", organisation, "What you would write at the top of a requisition."),
+      field("Branches", locations, "Optional. Separate them with commas."),
+    ]),
+
+    el("div", { class: "group" }, [
+      el("h2", { text: "Your account" }),
+      field("Your name", displayName),
+      field("Username", username, "What you will sign in with."),
+      field("Password", password, "At least 10 characters. It cannot be recovered, only replaced."),
+      el("div", { class: "group-sub" }, [el("span", { class: "label-ish", text: "What you do here" }), roleChoice]),
+    ]),
+
+    state.error ? el("div", { class: "signin-error", text: state.error }) : null,
+    el("button", { class: "btn", "data-kind": "primary", type: "submit", disabled: state.busy,
+      text: state.busy ? "Setting up…" : "Create the workspace" }),
+    el("p", { class: "muted small", text: "You can add the rest of your people afterwards." }),
+  ]);
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (state.busy) return;
+    state.busy = true;
+    state.error = null;
+    render();
+    try {
+      const payload = await api("/api/setup", {
+        method: "POST",
+        body: JSON.stringify({
+          organisation: organisation.value,
+          locations: locations.value,
+          display_name: displayName.value,
+          username: username.value,
+          password: password.value,
+          role: chosenRole,
+        }),
+      });
+      state.user = payload.user;
+      state.org = payload.organisation;
+      state.needsSetup = false;
+      state.busy = false;
+      await loadInbox();
+      return;
+    } catch (error) {
+      state.error = error.message;
+    }
+    state.busy = false;
+    render();
+  });
+
+  main.appendChild(form);
+}
+
 /* ------------------------------------------------------------ sign in */
 
 function renderSignIn() {
@@ -155,13 +254,13 @@ function renderSignIn() {
 
   const form = el("form", { class: "signin" }, [
     el("h1", { text: "Procurement requests" }),
-    el("p", { class: "muted small", text: "Ahumuza Hardware, Nakawa and Kireka" }),
+    state.org ? el("p", { class: "muted small", text: state.org.name }) : null,
     el("label", {}, [el("span", { text: "Username" }), username]),
     el("label", {}, [el("span", { text: "Password" }), password]),
     state.error ? el("div", { class: "signin-error", text: state.error }) : null,
     el("button", { class: "btn", "data-kind": "primary", type: "submit", disabled: state.busy,
       text: state.busy ? "Signing in…" : "Sign in" }),
-    el("p", { class: "muted small", text: "Accounts are seeded on the server the first time it starts, and the passwords are printed there once." }),
+    el("p", { class: "muted small", text: "Whoever set up this workspace can add you to it." }),
   ]);
 
   form.addEventListener("submit", async (event) => {
@@ -176,6 +275,7 @@ function renderSignIn() {
         body: JSON.stringify({ username: username.value, password: password.value }),
       });
       state.user = payload.user;
+      state.org = payload.organisation || state.org;
       state.busy = false;
       state.error = null;
       document.querySelector(".sidebar").hidden = false;
@@ -221,6 +321,8 @@ function renderNav() {
     { label: "Quotations", view: "quotations", enabled: false },
     { label: "Policies", view: "policies", enabled: false },
     { label: "Activity", view: "activity", enabled: true },
+    { group: "Workspace" },
+    { label: "People", view: "people", enabled: true },
   ];
 
   for (const entry of entries) {
@@ -241,6 +343,12 @@ function renderNav() {
       entry.count ? el("span", { class: "count", text: String(entry.count) }) : null,
     ]);
     nav.appendChild(el("li", {}, [button]));
+  }
+
+  if (state.org) {
+    document.getElementById("org-mark").textContent = (state.org.name || "?").trim()[0].toUpperCase();
+    document.getElementById("org-name").textContent = state.org.name;
+    document.getElementById("org-locations").textContent = state.org.locations || "";
   }
 
   if (state.user) {
@@ -514,6 +622,101 @@ function requirementText(requirement) {
   return "Policy asks for " + requirement.required_count + " comparable quotations and there are " + requirement.eligible_count + ". An exception would be needed.";
 }
 
+/* ------------------------------------------------------------- people */
+
+function renderPeople() {
+  const main = document.getElementById("main");
+  clear(main);
+  main.appendChild(el("div", { class: "head" }, [
+    el("div", {}, [
+      el("h1", { text: "People" }),
+      el("p", { class: "sub", text: "Who can sign in to this workspace, and what each of them does." }),
+    ]),
+  ]));
+
+  const data = state.people;
+  if (!data) {
+    main.appendChild(el("div", { class: "loading", text: "Reading the list…" }));
+    return;
+  }
+
+  const rows = el("div", { class: "rows" });
+  for (const person of data.people) {
+    rows.appendChild(el("div", { class: "row", "data-state": "done" }, [
+      el("span", { class: "avatar", "aria-hidden": "true", text: initials(person.display_name) }),
+      el("span", { class: "what" }, [
+        el("div", { class: "title", text: person.display_name }),
+        el("div", { class: "sub", text: person.username }),
+      ]),
+      el("span", { class: "state" }, [
+        el("span", { text: person.role === "PROCUREMENT_MANAGER" ? "Approves spending" : "Buys for the business" }),
+      ]),
+      el("span", { class: "age mono muted", text: person.is_owner ? "owner" : "" }),
+    ]));
+  }
+  main.appendChild(rows);
+
+  if (!data.you_may_add) {
+    main.appendChild(el("div", { class: "empty small", text: "Only whoever set up the workspace can add people." }));
+    return;
+  }
+
+  const displayName = el("input", { type: "text", autocomplete: "name" });
+  const username = el("input", { type: "text", autocomplete: "off" });
+  const password = el("input", { type: "password", autocomplete: "new-password" });
+  const role = el("select", {}, [
+    el("option", { value: "PROCUREMENT_OFFICER", text: "Buys for the business" }),
+    el("option", { value: "PROCUREMENT_MANAGER", text: "Approves spending" }),
+  ]);
+
+  const form = el("form", { class: "add-person" }, [
+    el("h2", { text: "Add someone" }),
+    field("Their name", displayName),
+    field("Username", username),
+    field("First password", password, "At least 10 characters. Tell it to them yourself; it cannot be read back."),
+    field("What they do", role),
+    state.error ? el("div", { class: "signin-error", text: state.error }) : null,
+    el("button", { class: "btn", "data-kind": "primary", type: "submit", disabled: state.busy,
+      text: state.busy ? "Adding…" : "Add them" }),
+  ]);
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (state.busy) return;
+    state.busy = true;
+    state.error = null;
+    render();
+    try {
+      await api("/api/people", {
+        method: "POST",
+        body: JSON.stringify({
+          display_name: displayName.value,
+          username: username.value,
+          password: password.value,
+          role: role.value,
+        }),
+      });
+      state.busy = false;
+      await loadPeople();
+      return;
+    } catch (error) {
+      state.error = error.message;
+    }
+    state.busy = false;
+    render();
+  });
+  main.appendChild(form);
+}
+
+async function loadPeople() {
+  try {
+    state.people = await api("/api/people");
+    state.error = null;
+  } catch (error) {
+    state.error = error.message;
+  }
+  render();
+}
+
 /* ----------------------------------------------------------- activity */
 
 function renderActivity() {
@@ -587,12 +790,14 @@ function describeDecision(row) {
 
 function render() {
   if (!state.user) {
-    renderSignIn();
+    if (state.needsSetup) renderSetup();
+    else renderSignIn();
     return;
   }
   document.querySelector(".sidebar").hidden = false;
   renderNav();
   if (state.view === "activity") renderActivity();
+  else if (state.view === "people") renderPeople();
   else renderRequests();
   renderDrawer();
   if (state.error) {
@@ -605,6 +810,7 @@ function go(view) {
   state.view = view;
   state.error = null;
   if (view === "activity") loadActivity();
+  else if (view === "people") loadPeople();
   render();
 }
 
@@ -712,10 +918,24 @@ async function submitRate() {
 
 async function boot() {
   try {
+    const start = await api("/api/bootstrap");
+    state.needsSetup = start.needs_setup;
+    state.org = start.organisation;
+  } catch (error) {
+    state.error = error.message;
+    render();
+    return;
+  }
+  if (state.needsSetup) {
+    render();
+    return;
+  }
+  try {
     const payload = await api("/api/session");
     state.user = payload.user;
+    state.org = payload.organisation || state.org;
   } catch (error) {
-    // Not signed in is the ordinary first visit, not something to report.
+    // Not signed in is the ordinary visit, not something to report.
     if (!error.unauthenticated) state.error = error.message;
     render();
     return;

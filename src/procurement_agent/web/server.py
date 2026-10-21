@@ -555,10 +555,31 @@ class Handler(BaseHTTPRequestHandler):
             if route.startswith("/static/"):
                 self._static(route)
                 return
+            if route == "/api/bootstrap":
+                # Unauthenticated on purpose: the page has to know whether to
+                # offer setup or sign-in before anyone can possibly be signed
+                # in. It says nothing about who exists, only whether anyone does.
+                organisation = self.settings.accounts.organisation()
+                self._json({
+                    "needs_setup": self.settings.accounts.needs_setup(),
+                    "organisation": organisation,
+                })
+                return
+            if route == "/api/people":
+                actor = self._require_user()
+                self._json({
+                    "people": self.settings.accounts.people(),
+                    "you_may_add": self.settings.accounts.owns_workspace(actor.username),
+                })
+                return
             if route == "/api/session":
                 actor = self._require_user()
                 self._json({
-                    "user": actor.to_dict(),
+                    "user": {
+                        **actor.to_dict(),
+                        "is_owner": self.settings.accounts.owns_workspace(actor.username),
+                    },
+                    "organisation": self.settings.accounts.organisation(),
                     "review_date": self.settings.today(),
                     "authenticated": True,
                 })
@@ -586,6 +607,56 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802
         route = urlparse(self.path).path
+        if route == "/api/setup":
+            try:
+                body = self._body()
+                created = self.settings.accounts.set_up(
+                    organisation_name=str(body.get("organisation") or ""),
+                    locations=str(body.get("locations") or "") or None,
+                    username=str(body.get("username") or ""),
+                    display_name=str(body.get("display_name") or ""),
+                    role=str(body.get("role") or ""),
+                    password=str(body.get("password") or ""),
+                )
+                token, user = self.settings.accounts.sign_in(
+                    created["user"]["username"], str(body.get("password") or ""),
+                )
+                self._json(
+                    {"user": {**created["user"]}, "organisation": created["organisation"],
+                     "review_date": self.settings.today(), "authenticated": True},
+                    extra=[self._cookie(token, SESSION_HOURS * 3600)],
+                )
+            except AccountError as exc:
+                self._error(HTTPStatus.BAD_REQUEST, str(exc))
+            except ValueError as exc:
+                self._error(HTTPStatus.BAD_REQUEST, str(exc))
+            return
+
+        if route == "/api/people":
+            try:
+                actor = self._require_user()
+                if not self.settings.accounts.owns_workspace(actor.username):
+                    self._error(
+                        HTTPStatus.FORBIDDEN,
+                        "Only whoever set up the workspace can add people.",
+                    )
+                    return
+                body = self._body()
+                person = self.settings.accounts.create(
+                    username=str(body.get("username") or ""),
+                    display_name=str(body.get("display_name") or ""),
+                    role=str(body.get("role") or ""),
+                    password=str(body.get("password") or ""),
+                )
+                self._json({"person": {**person, "is_owner": False}})
+            except Unauthorized:
+                self._error(HTTPStatus.UNAUTHORIZED, "Sign in first.")
+            except AccountError as exc:
+                self._error(HTTPStatus.BAD_REQUEST, str(exc))
+            except ValueError as exc:
+                self._error(HTTPStatus.BAD_REQUEST, str(exc))
+            return
+
         if route in {"/api/login", "/api/logout"}:
             try:
                 if route == "/api/logout":
@@ -597,7 +668,11 @@ class Handler(BaseHTTPRequestHandler):
                     str(body.get("username") or ""), str(body.get("password") or ""),
                 )
                 self._json(
-                    {"user": {k: user[k] for k in ("username", "role", "display_name")},
+                    {"user": {
+                        **{k: user[k] for k in ("username", "role", "display_name")},
+                        "is_owner": self.settings.accounts.owns_workspace(user["username"]),
+                     },
+                     "organisation": self.settings.accounts.organisation(),
                      "review_date": self.settings.today(), "authenticated": True},
                     extra=[self._cookie(token, SESSION_HOURS * 3600)],
                 )
@@ -795,15 +870,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"Created {username} ({role}).", file=sys.stderr)
         return 0
 
-    # First run on a machine: create the two roles the charter seeds and show
-    # their passwords once. They are stored only as scrypt hashes, so this is
-    # the only time anyone sees them, and losing one means seeding again.
-    for account in settings.accounts.seed():
-        print(
-            f"Created {account['username']} ({account['role']}) "
-            f"with password: {account['password']}",
-            file=sys.stderr,
-        )
     settings.accounts.purge_expired()
 
     try:
@@ -816,11 +882,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         return 2
     print(f"Requests page on http://{args.host}:{args.port}", file=sys.stderr)
+    if settings.accounts.needs_setup():
+        print("Nobody has set this up yet. Open the page and it will ask you to.", file=sys.stderr)
+    else:
+        organisation = settings.accounts.organisation() or {}
+        print(f"Sign in on the page. Workspace: {organisation.get('name', 'unnamed')}.", file=sys.stderr)
     print(
-        "Sign in on the page. Accounts live in "
-        f"{settings.accounts.path}; add one with --add-user. "
-        "The session cookie is HttpOnly and SameSite=Strict, but this is plain "
-        "http on localhost, so keep it there and on synthetic data.",
+        f"Accounts live in {settings.accounts.path}. The session cookie is HttpOnly "
+        "and SameSite=Strict, but this is plain http on localhost, so keep it "
+        "there and on synthetic data.",
         file=sys.stderr,
     )
     try:

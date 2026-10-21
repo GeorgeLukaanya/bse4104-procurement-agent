@@ -95,6 +95,12 @@ def test_cli_missing_quotations_reports_unavailable(tmp_path, capsys):
             str(tmp_path / "tools.jsonl"),
             "--store",
             str(tmp_path / "req.jsonl"),
+            # Without this the run saves its checkpoint under the real
+            # var/agent-state/, so the suite leaves a failed AH-CM-001 behind on
+            # the developer's machine and anything reading saved state later
+            # reports that item as stuck.
+            "--state-dir",
+            str(tmp_path / "agent-state"),
         ]
     )
     payload = json.loads(capsys.readouterr().out)

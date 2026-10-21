@@ -308,6 +308,26 @@ def test_the_cli_says_which_port_is_taken_instead_of_a_traceback(settings, live,
     assert "Requests page on" not in message
 
 
+def test_the_closed_drawer_takes_no_space(live):
+    """`display: flex` on .drawer overrides the browser's [hidden] rule.
+
+    Without an explicit override the closed drawer still occupies its 640px,
+    the queue is squeezed into what is left, and every row wraps into a column
+    of single words. It looks like a layout problem and it is a specificity one.
+    """
+    call, _ = live
+    css = call("/static/app.css")[1]
+    assert ".drawer[hidden] { display: none; }" in css
+
+
+def test_the_page_asks_for_nothing_off_the_machine(live):
+    """The server sends default-src 'self', so a remote asset would just fail."""
+    call, _ = live
+    html = call("/")[1]
+    for marker in ["http://", "https://", "//fonts.", "cdn."]:
+        assert marker not in html
+
+
 def test_a_path_outside_static_is_refused(live):
     """The static route serves one flat directory and nothing above it."""
     call, _ = live

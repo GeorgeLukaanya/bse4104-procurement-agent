@@ -27,6 +27,7 @@ const state = {
   activity: null,
   busy: false,
   error: null,
+  tabChosen: false,
 };
 
 /* ------------------------------------------------------------- helpers */
@@ -530,10 +531,25 @@ function go(view) {
 async function loadInbox() {
   try {
     state.inbox = await api("/api/requests");
+    chooseOpeningTab();
   } catch (error) {
     state.error = error.message;
   }
   render();
+}
+
+/* Needs you is the right tab to land on when there is something in it. On a
+ * week where nothing has been started yet it is empty, and opening on an empty
+ * tab reads as a broken page, so fall through to the first tab with rows.
+ * Only ever on the first load: after that the tab is the user's choice. */
+function chooseOpeningTab() {
+  if (state.tabChosen || !state.inbox) return;
+  state.tabChosen = true;
+  const items = state.inbox.items || [];
+  const firstWithRows = TABS.find((tab) => items.some(tab.match));
+  if (firstWithRows && !items.some(TABS.find((t) => t.key === state.tab).match)) {
+    state.tab = firstWithRows.key;
+  }
 }
 
 async function loadActivity() {

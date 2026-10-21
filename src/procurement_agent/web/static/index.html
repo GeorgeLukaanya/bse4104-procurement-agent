@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Procurement requests</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<div class="app">
+
+  <nav class="sidebar" aria-label="Sections">
+    <div class="org">
+      <span class="org-mark" aria-hidden="true">A</span>
+      <span class="org-text">
+        <strong>Ahumuza Hardware</strong>
+        <span class="mono muted">Nakawa and Kireka</span>
+      </span>
+    </div>
+
+    <ul class="nav" id="nav"></ul>
+
+    <div class="who" id="who">
+      <span class="avatar" aria-hidden="true">··</span>
+      <span class="who-text">
+        <span id="who-name">Loading</span>
+        <span class="mono muted" id="who-role"></span>
+      </span>
+    </div>
+  </nav>
+
+  <main class="main" id="main">
+    <div class="loading" id="boot">Checking stock against reorder points…</div>
+  </main>
+
+  <aside class="drawer" id="drawer" hidden aria-label="Request"></aside>
+
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>

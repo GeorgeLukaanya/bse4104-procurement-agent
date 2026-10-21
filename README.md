@@ -337,6 +337,45 @@ calls only** — cache hits made no request, and counting them would misrepresen
 what the model costs. With no live calls it says so rather than printing a
 figure.
 
+## Run it in a browser
+
+A page over the same loop, served by the standard library. No new dependency,
+no build step, nothing fetched from the network.
+
+```bash
+python -m procurement_agent.web --review-date 2026-09-25
+# then open http://127.0.0.1:8000
+```
+
+The inbox lists what is at or below its reorder point. Opening an item resumes
+that item's run and shows the comparison, the approval chain and what the loop
+is waiting for. Approving the price and sending it to the manager are two
+separate presses, because the task contract has two gates and nothing is
+written until the second one.
+
+There is no login. The officer and the role come from the command line, exactly
+as they do for `agent.cli`, which is known limitation KL-02. The server binds to
+`127.0.0.1` and prints that warning at startup. Keep it on localhost and on the
+synthetic dataset.
+
+Decisions are kept in `var/decisions.sqlite3`: who decided what, when, and the
+figures as they stood at the time. The table is append only and the database
+enforces it, so a decision that stops being true is superseded by a later row
+rather than edited. `--decisions` points somewhere else if you want a scratch
+copy.
+
+| Flag | Default | What it is for |
+|---|---|---|
+| `--port` | `8000` | |
+| `--review-date` | today | The Monday you are reviewing |
+| `--officer`, `--role` | `a.nakato`, `PROCUREMENT_OFFICER` | Trusted inputs, see KL-02 |
+| `--state-dir` | `var/agent-state` | Where runs resume from |
+| `--decisions` | `var/decisions.sqlite3` | The decision record |
+| `--run-log`, `--tool-log` | the shared evidence traces | Point these at a scratch file so a demo does not write into committed evidence |
+
+Design write-up:
+[`docs/architecture/ui-ux-blueprint.md`](docs/architecture/ui-ux-blueprint.md).
+
 ## Troubleshooting
 
 | Symptom | Cause and fix |

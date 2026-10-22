@@ -17,9 +17,14 @@ Index the final evaluation dataset, traces, guardrail evidence, failure catalogu
 
 Every claim the project makes about itself is backed by a file in this
 repository. This is the index of those files: what each one says, which commit
-produced it, and the command that regenerates it. Nothing here is a new result.
-If a figure in this table disagrees with the evidence it points at, the evidence
-is right and this file is wrong.
+produced it, and the command that regenerates it. If a figure here disagrees
+with the evidence it points at, the evidence is right and this file is wrong.
+
+One result in the pack was produced for the pack rather than indexed by it: the
+clean-tree repeat of the offline evaluation in
+[`week-08-clean/`](../../evidence/evaluation/week-08-clean/), run to give the
+Week 8 figures a commit they can be attributed to. Section 6 says what it
+settled. Everything else here is indexed, not generated.
 
 Read section 6 before quoting any number. Three of them are narrower than they
 look.
@@ -139,8 +144,11 @@ Read them with [`execution-traces.md`](execution-traces.md) and
 ### 5.3 Guardrail evidence
 
 [`week-07/guardrails.txt`](../../evidence/evaluation/week-07/guardrails.txt) is
-a single transcript of runs A to R, each pushing one guardrail and recording
-what came back. It is deterministic: no key, no network, no model.
+a single transcript of 20 recorded checks, lettered A to R with Q2 and Q3 under
+Q. Sixteen push a guardrail and record it refusing; the other four are controls
+that confirm ordinary work still passes, so the transcript shows the guardrails
+discriminating rather than simply blocking everything. It is deterministic: no
+key, no network, no model.
 
 Read it with [`guardrails.md`](guardrails.md), which quotes the transcript
 verbatim and maps each of the eight guardrails to the code that enforces it.
@@ -150,8 +158,12 @@ gap the evidence exposed.
 Regenerate with:
 
 ```bash
-python tools/capture_guardrails.py --out evidence/evaluation/week-07/guardrails.txt
+python tools/capture_guardrails.py --out /tmp/guardrails.txt
 ```
+
+Written somewhere other than the recorded path on purpose, for the same reason
+as the scenario runner in section 2: regenerating is for checking the evidence,
+not for replacing it.
 
 ### 5.4 Failure catalogue
 
@@ -202,8 +214,8 @@ offline scenarios only; the eight live ones were not run. The full run of all
 45, the only one that includes live model calls, is the 19 October one, and it
 scored 44.
 
-**The Week 8 results were produced from uncommitted work, and the offline half
-has since been repeated without it.** Its own
+**The Week 8 results were produced from uncommitted work. That caveat is now
+retired.** Its own
 [`verification.json`](../../evidence/evaluation/week-08-hardening/verification.json)
 says so in a field put there for the purpose: `working_tree_changes_included` is
 true, and the note reads "These results include the uncommitted Week 8 changes
@@ -214,17 +226,23 @@ been. Fifteen of the sixteen files it lists are byte-identical at `263b7ae` on
 by later merges and read by no test. **The Week 8 code and test changes are
 committed.**
 
-So the offline figures were re-run on a tree with no uncommitted tracked
+So the whole of that run was repeated on a tree with no uncommitted tracked
 changes, recorded in
 [`week-08-clean/`](../../evidence/evaluation/week-08-clean/) with
 `working_tree_changes_included: false` and a real commit. It reproduces the
-Week 8 offline result exactly: 37 run, 37 pass, 0 fail, 8 not run, 0 safety
-violations, the same counts in every category, and 541 tests passing.
+Week 8 result exactly: 37 run, 37 pass, 0 fail, 8 not run, 0 safety violations,
+the same counts in every category, and 541 tests passing. Nothing the Week 8
+evidence reports now rests on a dirty tree.
 
-What that clean run does not do is touch the live set. It ran the 37 offline
-scenarios only, so the dirty-tree caveat is retired for the offline figures and
-stands unchanged for the eight live ones, which have not been run since 19
-October.
+The reason the repeat covers all of it is that the Week 8 run was offline from
+the start. All eight live scenarios are recorded as `NOT_RUN` in its results,
+its `summary.latency.live` is null and its report-level `live` flag is false,
+so no live figure was ever produced from that tree and none needed repeating.
+
+That is a separate matter from the live set being stale. The eight live
+scenarios have not been run since 19 October, which is before the Week 8 fixes,
+so no live result exists for the current code at all. That is gap 3 in section
+7, and it is not a dirty-tree problem.
 
 **One scenario fails and it is not fixed.** S-38, a clean UGX quotation on the
 live path, returned `timeout` after 29.95 s against a 30 second budget, with no
@@ -251,14 +269,14 @@ tree, and should not be read as one anywhere else in this pack.
 |---|---|---|---|
 | 1 | No demo recording or deck in `evidence/demo/` | Ainamani Jim Isaac | [`final-presentation.md`](../architecture/final-presentation.md) |
 | 2 | Final engineering report not started | Nannyombi Shakiran | [`final-engineering-report.md`](../weekly-reports/final-engineering-report.md) |
-| 3 | Live scenarios not re-run since 19 October | whoever holds a key | A clean 45-scenario run at a tagged commit |
-| 4 | Week 8 live figures still rest on a dirty tree | Beingana Jim Junior | The offline half is retired by [`week-08-clean/`](../../evidence/evaluation/week-08-clean/); the live half is not |
+| 3 | Live scenarios not run since 19 October, which is before the Week 8 fixes | whoever holds a key | A 45-scenario run including live at the tagged commit |
+| 4 | ~~Week 8 evidence produced from a dirty tree~~ **Closed** by [`week-08-clean/`](../../evidence/evaluation/week-08-clean/), which repeats the whole run at a commit with no uncommitted changes | Beingana Jim Junior | Section 6 |
 | 5 | S-38 unresolved | model integration | KL-01 |
 
-A single clean run of all 45 scenarios, including live, at the tagged release
-commit would close gaps 3 and 4 together, and is the highest-value thing left
-in this pack. It would close gap 5 only if S-38 passes in that run; if it times
-out again, KL-01 stands and the honest result is 44 of 45 a second time.
+A run of all 45 scenarios including live, at the tagged release commit, closes
+gap 3 and is the highest-value thing left in this pack. It closes gap 5 only if
+S-38 passes in that run; if it times out again, KL-01 stands and the honest
+result is 44 of 45 a second time.
 
 It would do nothing for gaps 1 and 2. A recording and a report are written, not
 computed, and no scenario run produces either.

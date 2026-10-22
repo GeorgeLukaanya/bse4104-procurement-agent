@@ -7,7 +7,7 @@
 | Due | 30 October 2026 |
 | Status | Complete, awaiting team review |
 | Path | `docs/evaluation/final-evidence-pack.md` |
-| Indexed at | `263b7ae` on `main` |
+| Indexed at | `6958d44`, which differs from `main` at `263b7ae` by documentation only. The clean run in section 3 was produced at this commit. |
 
 ## Brief requirement
 
@@ -21,7 +21,7 @@ produced it, and the command that regenerates it. Nothing here is a new result.
 If a figure in this table disagrees with the evidence it points at, the evidence
 is right and this file is wrong.
 
-Read section 6 before quoting any number. Two of them are narrower than they
+Read section 6 before quoting any number. Three of them are narrower than they
 look.
 
 ## 2. Verify it yourself
@@ -34,8 +34,8 @@ python -m pytest -q
 ```
 
 That is 541 tests and it is the only check that needs nothing but the
-repository. Re-running the scenario evaluation and the guardrail capture needs
-the same, plus a key only for the eight live scenarios:
+repository. The scenario evaluation and the guardrail capture need the same and
+no more:
 
 ```bash
 python tools/run_scenarios.py                 # the 37 offline scenarios
@@ -43,21 +43,43 @@ python tools/capture_guardrails.py --out /tmp/guardrails.txt
 python tools/offline_demo.py                  # the extraction path, no key
 ```
 
+The eight live scenarios are the only thing here that calls a model. They need
+the `gemini` and `rag` extras, a built policy index, and a key in
+`GEMINI_API_KEY`:
+
+```bash
+pip install -e ".[dev,gemini,rag]"
+export GEMINI_API_KEY=...                     # the value is yours, not ours
+python -m procurement_agent.rag.ingest        # build the policy index first
+python tools/run_scenarios.py --live          # all 45, offline and live
+```
+
+`run_scenarios.py` writes into `evidence/evaluation/week-07/` unless
+`--output-dir` says otherwise, so pass one rather than overwriting a recorded
+run.
+
 ## 3. The headline numbers and where they come from
 
 | Claim | Figure | Evidence | Produced at |
 |---|---|---|---|
 | Scenario evaluation, full run including live | 45 scenarios, 44 pass, 1 fail | [`week-07-final/scenario-results.json`](../../evidence/evaluation/week-07-final/scenario-results.json) | `94e917c`, 19 Oct |
 | Safety violations across that run | 0 | same file, `summary.safety_violations` | `94e917c` |
-| Scenario re-run after the Week 8 fixes, offline only | 37 run, 37 pass, 8 not run | [`week-08-hardening/scenario-results.json`](../../evidence/evaluation/week-08-hardening/scenario-results.json) | `f13f2be`, 20 Oct |
-| Automated tests | 541 passed | [`week-08-hardening/pytest.txt`](../../evidence/evaluation/week-08-hardening/pytest.txt) | `f13f2be` |
+| Scenario re-run after the Week 8 fixes, offline only | 37 run, 37 pass, 8 not run | [`week-08-hardening/scenario-results.json`](../../evidence/evaluation/week-08-hardening/scenario-results.json) | `f13f2be`, 20 Oct, dirty tree |
+| The same offline set, repeated on a clean tree | 37 run, 37 pass, 8 not run | [`week-08-clean/scenario-results.json`](../../evidence/evaluation/week-08-clean/scenario-results.json) | `6958d44`, 22 Oct |
+| Automated tests | 541 passed | [`week-08-clean/pytest.txt`](../../evidence/evaluation/week-08-clean/pytest.txt), and [`week-08-hardening/pytest.txt`](../../evidence/evaluation/week-08-hardening/pytest.txt) at `f13f2be` | `6958d44` |
 | Targeted regression tests for the Week 8 fixes | 79 passed | [`week-08-hardening/targeted-tests.txt`](../../evidence/evaluation/week-08-hardening/targeted-tests.txt) | `f13f2be` |
-| Static security scan | [`bandit.txt`](../../evidence/evaluation/week-08-hardening/bandit.txt), [`bandit.json`](../../evidence/evaluation/week-08-hardening/bandit.json) | | `f13f2be` |
-| Guardrails, eight of them, each pushed | runs A to R | [`week-07/guardrails.txt`](../../evidence/evaluation/week-07/guardrails.txt) | `5f54052`, 16 Oct |
+| Static security scan | 0 high, 0 medium, 2 low severity, all high confidence, across 7,561 lines; both in `src/procurement_agent/client.py` | [`bandit.json`](../../evidence/evaluation/week-08-hardening/bandit.json) `metrics._totals`, console log in [`bandit.txt`](../../evidence/evaluation/week-08-hardening/bandit.txt) | `f13f2be` |
+| Guardrails, eight of them, each pushed | 20 recorded checks: 16 push a guardrail and it refused, 4 are controls confirming ordinary work still passes | [`week-07/guardrails.txt`](../../evidence/evaluation/week-07/guardrails.txt) | `5f54052`, 16 Oct |
 | Offline scenario latency | median 0.0009 s, p95 0.0101 s | `week-07-final/scenario-results.json`, `summary.latency` | `94e917c` |
 | Live scenario latency | median 2.34 s, p95 29.95 s | same | `94e917c` |
 
 The p95 live figure is the failure, not a slow pass. See section 6.
+
+One caveat on the bandit row. The counts above come from `metrics._totals` in
+`bandit.json`. Its `results` array is empty, because the run was filtered to
+medium severity and above, so the file records that two low-severity findings
+exist and in which file, but not which checks they were. Anyone who needs that
+detail has to re-run bandit without the filter.
 
 ## 4. The dataset
 
@@ -90,7 +112,8 @@ That is what scenario S-17 exercises.
 | Run | Evidence | Read it with |
 |---|---|---|
 | Final, offline and live | [`week-07-final/`](../../evidence/evaluation/week-07-final/) with eight per-scenario live records in [`live/`](../../evidence/evaluation/week-07-final/live/) | [`scenarios.md`](scenarios.md) |
-| Week 8 re-run, offline only | [`week-08-hardening/`](../../evidence/evaluation/week-08-hardening/) | [`known-limitations.md`](../architecture/known-limitations.md) |
+| Week 8 re-run, offline only, dirty tree | [`week-08-hardening/`](../../evidence/evaluation/week-08-hardening/) | [`known-limitations.md`](../architecture/known-limitations.md) |
+| The same offline set on a clean tree | [`week-08-clean/`](../../evidence/evaluation/week-08-clean/) | section 6 below |
 | Earlier full run, kept for comparison | [`week-07/`](../../evidence/evaluation/week-07/) | [`scenarios.md`](scenarios.md) |
 
 ### 5.2 Traces
@@ -179,13 +202,29 @@ offline scenarios only; the eight live ones were not run. The full run of all
 45, the only one that includes live model calls, is the 19 October one, and it
 scored 44.
 
-**The Week 8 results include uncommitted work.** Its own
+**The Week 8 results were produced from uncommitted work, and the offline half
+has since been repeated without it.** Its own
 [`verification.json`](../../evidence/evaluation/week-08-hardening/verification.json)
 says so in a field put there for the purpose: `working_tree_changes_included` is
 true, and the note reads "These results include the uncommitted Week 8 changes
 identified by the file hashes below; they are not a clean-commit or remote CI
-result." The file hashes are listed so the claim can be checked. The scenario
-runner reports the base commit `f13f2be`, which is not the tree that was run.
+result." The file hashes are listed so the claim can be checked, and it has
+been. Fifteen of the sixteen files it lists are byte-identical at `263b7ae` on
+`main`; the one that differs is `docs/README.md`, a documentation index edited
+by later merges and read by no test. **The Week 8 code and test changes are
+committed.**
+
+So the offline figures were re-run on a tree with no uncommitted tracked
+changes, recorded in
+[`week-08-clean/`](../../evidence/evaluation/week-08-clean/) with
+`working_tree_changes_included: false` and a real commit. It reproduces the
+Week 8 offline result exactly: 37 run, 37 pass, 0 fail, 8 not run, 0 safety
+violations, the same counts in every category, and 541 tests passing.
+
+What that clean run does not do is touch the live set. It ran the 37 offline
+scenarios only, so the dirty-tree caveat is retired for the offline figures and
+stands unchanged for the eight live ones, which have not been run since 19
+October.
 
 **One scenario fails and it is not fixed.** S-38, a clean UGX quotation on the
 live path, returned `timeout` after 29.95 s against a 30 second budget, with no
@@ -198,22 +237,31 @@ claims S-38 passes.
 
 Two smaller notes. The live latency p95 of 29.95 s is that timeout, so it
 describes the failure rather than typical performance; the median of 2.34 s is
-the figure to quote for a live call. And `python -m pytest` reports 541 tests on
-`main` today, which is the same number the Week 8 evidence recorded.
+the figure to quote for a live call.
+
+And on the test count: `python -m pytest` reports 541 on a clean tree today,
+the same number the Week 8 evidence recorded. In this case the matching count
+does mean a matching tree, because the hash comparison above establishes that
+separately. A matching test count is not on its own evidence of a matching
+tree, and should not be read as one anywhere else in this pack.
 
 ## 7. What is still open
 
-| Gap | Owner | Needed for |
-|---|---|---|
-| No demo recording or deck in `evidence/demo/` | Ainamani Jim Isaac | [`final-presentation.md`](../architecture/final-presentation.md) |
-| Final engineering report not started | Nannyombi Shakiran | [`final-engineering-report.md`](../weekly-reports/final-engineering-report.md) |
-| Live scenarios not re-run since 19 October | whoever holds a key | A clean 45-scenario run at a tagged commit |
-| Week 8 evidence produced from a dirty tree | Beingana Jim Junior | A re-run at a clean commit would retire the caveat in section 6 |
-| S-38 unresolved | model integration | KL-01 |
+| # | Gap | Owner | Needed for |
+|---|---|---|---|
+| 1 | No demo recording or deck in `evidence/demo/` | Ainamani Jim Isaac | [`final-presentation.md`](../architecture/final-presentation.md) |
+| 2 | Final engineering report not started | Nannyombi Shakiran | [`final-engineering-report.md`](../weekly-reports/final-engineering-report.md) |
+| 3 | Live scenarios not re-run since 19 October | whoever holds a key | A clean 45-scenario run at a tagged commit |
+| 4 | Week 8 live figures still rest on a dirty tree | Beingana Jim Junior | The offline half is retired by [`week-08-clean/`](../../evidence/evaluation/week-08-clean/); the live half is not |
+| 5 | S-38 unresolved | model integration | KL-01 |
 
-A single clean run of all 45 scenarios at the tagged release commit, with no
-working-tree changes, would close the first, third and fourth of those at once
-and is the highest-value thing left in this pack.
+A single clean run of all 45 scenarios, including live, at the tagged release
+commit would close gaps 3 and 4 together, and is the highest-value thing left
+in this pack. It would close gap 5 only if S-38 passes in that run; if it times
+out again, KL-01 stands and the honest result is 44 of 45 a second time.
+
+It would do nothing for gaps 1 and 2. A recording and a report are written, not
+computed, and no scenario run produces either.
 
 ## 8. Where every other document fits
 

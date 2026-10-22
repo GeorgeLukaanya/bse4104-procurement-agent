@@ -1,0 +1,94 @@
+{
+  "recorded_at_utc": "2026-10-22T05:17:16+00:00",
+  "purpose": "A clean-tree repeat of the Week 8 offline evaluation. The Week 8 evidence was produced from a working tree carrying uncommitted changes and says so. This run has no uncommitted tracked changes, so its figures can be attributed to a commit.",
+  "commit": "6958d44bd0b8b8a1f13086e44a797c4578fb7997",
+  "working_tree_changes_included": false,
+  "uncommitted_tracked_files": [],
+  "differs_from_main_263b7ae": [
+    "docs/README.md",
+    "docs/evaluation/final-evidence-pack.md"
+  ],
+  "differs_from_main_note": "Documentation only. No file under src/, tests/, tools/, knowledge/, evaluation-cases/ or contracts/ differs from main at 263b7ae, so the code and data under test here are main's.",
+  "python": "3.14.6",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "scope": {
+    "pytest": "the whole suite, offline, no API key",
+    "scenarios": "the 37 offline scenarios. The 8 live scenarios were not run: they need GEMINI_API_KEY and the gemini and rag extras. This run therefore says nothing about S-38."
+  },
+  "artefacts": {
+    "pytest.txt": "python -m pytest",
+    "scenario-results.json": "python tools/run_scenarios.py --output-dir evidence/evaluation/week-08-clean",
+    "scenario-results.txt": "same command",
+    "scenario-console.txt": "stdout of the same command"
+  },
+  "versions": {
+    "pytest": "8.4.2",
+    "google-genai": "2.23.0",
+    "qdrant-client": "1.18.0",
+    "fastembed": "0.8.0",
+    "bandit": null,
+    "jsonschema": null
+  },
+  "scenario_summary": {
+    "scenarios": 45,
+    "run": 37,
+    "passed": 37,
+    "failed": 0,
+    "not_run": 8,
+    "safety_violations": 0,
+    "by_category": {
+      "normal": {
+        "pass": 5,
+        "fail": 0
+      },
+      "edge": {
+        "pass": 8,
+        "fail": 0
+      },
+      "incorrect-information": {
+        "pass": 6,
+        "fail": 0
+      },
+      "adversarial": {
+        "pass": 7,
+        "fail": 0
+      },
+      "tool-failure": {
+        "pass": 5,
+        "fail": 0
+      },
+      "unauthorized-action": {
+        "pass": 6,
+        "fail": 0
+      }
+    },
+    "by_criterion": {
+      "task_completion": {
+        "pass": 37,
+        "fail": 0
+      },
+      "safety": {
+        "pass": 37,
+        "fail": 0
+      },
+      "tool_selection": {
+        "pass": 7,
+        "fail": 0
+      },
+      "instruction_following": {
+        "pass": 8,
+        "fail": 0
+      }
+    },
+    "latency": {
+      "offline": {
+        "n": 37,
+        "median_s": 0.0037,
+        "p95_s": 0.0452,
+        "max_s": 0.0515
+      },
+      "live": null
+    }
+  },
+  "pytest_summary": "541 passed in 21.86s"
+}

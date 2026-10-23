@@ -15,7 +15,8 @@ purchase order, contacts a supplier, commits funds or approves anything itself.
 
 ## Status
 
-**v1.0.0 — final course release, 23 October 2026.** What is in it, how it was verified
+**v1.0.1 — final course release, 23 October 2026** (v1.0.0 plus the redesigned operator view,
+the updated report figures and the final deck). What is in it, how it was verified
 and what was deliberately left out: [`RELEASE_NOTES.md`](RELEASE_NOTES.md). The evidence
 index for markers is the [final evaluation and evidence pack](docs/evaluation/final-evidence-pack.md).
 
@@ -482,13 +483,13 @@ The extraction package still does none of this arithmetic.
 | `docs/evaluation/` | Prompt and later-week evaluation tables |
 | `docs/AI-ENGINEERING-LOG.md` | Material AI-assisted decisions, per brief section 6 |
 | `prompts/` | Versioned prompt specifications |
-| `evidence/` | Traces, evaluation results, the release verification (`release/v1.0.0/`) and the presentation deck (`demo/`) |
+| `evidence/` | Traces, evaluation results, the release verification (`release/v1.0.0/`, `release/v1.0.1/`) and the presentation deck (`demo/`) |
 | `knowledge/corpus/` | The controlled 22-document synthetic corpus |
 | `knowledge/data/` | Operational records the tools read — inventory, suppliers, quotations |
 | `knowledge/source-register.csv` | Provenance and SHA-256 for every corpus document and dataset |
 | `evaluation-cases/` | Prompt-evaluation inputs (`TC-01`–`TC-10`) and the 45-scenario dataset (`week-07/`) |
 | `.github/` | CI workflow and the documented pip-audit exception |
-| `RELEASE_NOTES.md` | What v1.0.0 contains, how it was verified, and what was not built |
+| `RELEASE_NOTES.md` | What v1.0.1 and v1.0.0 contain, how it was verified, and what was not built |
 | `var/` (git-ignored, created on first run) | Requisitions, run checkpoints, advisory memory and caches |
 
 | Module | Responsibility |

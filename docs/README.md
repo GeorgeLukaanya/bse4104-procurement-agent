@@ -112,7 +112,7 @@ Due dates are the Friday of each teaching week.
 | Final engineering report | [`docs/weekly-reports/final-engineering-report.md`](weekly-reports/final-engineering-report.md) | Nannyombi Shakiran | Not started |
 | Presentation deck and live demonstration | [`docs/architecture/final-presentation.md`](architecture/final-presentation.md) | Ainamani Jim Isaac | Not started |
 | Hardening and known limitations | [`docs/architecture/known-limitations.md`](architecture/known-limitations.md) | Beingana Jim Junior | Complete locally; awaiting team review (20 Oct) |
-| Final evaluation / evidence pack | [`docs/evaluation/final-evidence-pack.md`](evaluation/final-evidence-pack.md) | Sekyeza Elroy Nunda | Not started |
+| Final evaluation / evidence pack | [`docs/evaluation/final-evidence-pack.md`](evaluation/final-evidence-pack.md) | Sekyeza Elroy Nunda | Complete, awaiting team review |
 | Tagged release + Week 8 progress report | [`README.md`](../README.md) run instructions + [`docs/weekly-reports/week-08.md`](weekly-reports/week-08.md) | Lukaanya George | Not started |
 
 ## ClickUp copy list

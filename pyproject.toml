@@ -21,6 +21,9 @@ gemini = ["google-genai>=2.23"]
 # fake embedder, and FastEmbed only downloads its model when one is actually
 # loaded. query_points, which retrieval uses, arrived in qdrant-client 1.10.
 rag = ["qdrant-client>=1.10", "fastembed>=0.3"]
+# Optional operator view. The package itself still has no required framework;
+# this extra wraps run_workflow for a browser demonstration.
+ui = ["streamlit>=1.28"]
 dev = ["pytest>=7.0"]
 # Security and audit tools used by .github/workflows/ci.yml. Semgrep is
 # installed in CI only (it is a large extra); run it locally with
@@ -38,6 +41,7 @@ procurement-policy-ingest = "procurement_agent.rag.ingest:main"
 procurement-tools = "procurement_agent.tools.cli:main"
 procurement-agent = "procurement_agent.agent.cli:main"
 procurement-memory = "procurement_agent.memory.cli:main"
+procurement-ui = "procurement_agent.ui.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

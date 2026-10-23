@@ -37,13 +37,14 @@ The current command-line components are:
 
 The agent-task contract and persistent state are implemented. Policy retrieval and
 quotation extraction still run separately from the deterministic agent workflow;
-model-written justification, document conversion and a user interface remain unbuilt.
+model-written justification, document conversion and a login remain unbuilt.
 See the [Week 8 hardening and limitations register](docs/architecture/known-limitations.md)
 for fixes, verification evidence and the remaining deployment constraints.
 
-There is deliberately **no application framework**. Django, FastAPI and Flask are
+There is deliberately **no required application framework**. Django, FastAPI and Flask are
 all absent, because the charter has not chosen one. The package is importable and
-will be consumed by whatever interface the team picks later.
+will be consumed by whatever interface the team picks later. An optional Streamlit
+view is available as the `[ui]` extra; it calls the same `run_workflow` the CLI does.
 
 ## Quick start
 
@@ -302,6 +303,23 @@ any decision (`--no-memory` hides it). `procurement-memory` adds, lists and
 deletes supplier notes. Write-up:
 [`docs/architecture/working-memory.md`](docs/architecture/working-memory.md).
 
+## Optional operator view
+
+A Streamlit page over the same cement review. Buttons call `run_workflow`; they
+do not bypass the dispatcher, and they do not approve anything. Confirmations
+are the same trusted flags as `--confirm-comparison` and `--confirm-draft`.
+There is still no login (KL-02). Mutable UI state lives under git-ignored
+`var/ui/`, so a demonstration does not overwrite evaluation traces.
+
+```bash
+pip install -e ".[ui]"
+procurement-ui
+```
+
+Open the printed local URL. **Run review** stops at Gate 2. **Confirm table and
+compile DRAFT** writes a requisition in `DRAFT`. Choosing the manager role is
+refused (POL-004-C03).
+
 ### What a run produces
 
 | Path | Contents | Tracked? |
@@ -343,6 +361,7 @@ figure.
 |---|---|
 | `error: No API key found...` | Expected without a key. Either `export GEMINI_API_KEY=...`, or use `python tools/offline_demo.py` to run with no key at all. |
 | `google-genai is not installed` | The SDK is an optional extra, so the tests can run without it. `pip install -e ".[gemini]"`. |
+| `Streamlit is not installed` | The operator view is optional. `pip install -e ".[ui]"`. |
 | `No module named procurement_agent` | The package was not installed, or the wrong virtualenv is active. Run `pip install -e ".[dev]"` from the repo root with `.venv` activated. |
 | `pytest: command not found` | `pip install -e ".[dev]"` — pytest comes from the `dev` extra. |
 | Exit code `1` on the fixtures | Correct. Fixture 05 is deliberately adversarial and comes back `SUPPRESSED`, so not every file is clean. |

@@ -18,20 +18,32 @@ Run instructions are in the [README](README.md). The evidence index for markers 
 | Checkpointed run state (resume, no duplicate requisitions) and advisory memory | 6 | [memory and state](docs/architecture/working-memory.md), [state model](docs/architecture/state-model.md) |
 | 45-scenario evaluation, guardrail evidence, observability, failure catalogue | 7 | [scenarios](docs/evaluation/scenarios.md), [guardrails](docs/evaluation/guardrails.md), [failures](docs/evaluation/failure-catalogue.md) |
 | Hardening: four reproduced high-severity defects fixed, limitations register | 8 | [hardening and limitations](docs/architecture/known-limitations.md) |
+| Optional browser operator view (`[ui]` extra, `procurement-ui`): Streamlit buttons over the same `run_workflow` and gates | 8 | [README](README.md) |
+| Final engineering report, evidence pack, presentation deck | 8 | [report](docs/weekly-reports/final-engineering-report.md), [evidence pack](docs/evaluation/final-evidence-pack.md), [presentation](docs/architecture/final-presentation.md) |
 
 ## Verified at release
 
-Every check below ran in a **fresh clone of `0496a03`** with no local changes, on Python 3.14.7.
-The release tag adds only documentation, evidence and the version number (`1.0.0` in
-`pyproject.toml` and `procurement_agent/__init__.py`); apart from that string, no source, tool,
-contract or data file differs from `0496a03`. The raw output is in
+The code was verified twice, each time in a **fresh clone with no local changes** on Python 3.14.7:
+
+- **`0496a03`** (morning): the full suite and all 45 scenarios, **including the 8 live Gemini
+  scenarios**.
+- **`034257a`** (the release candidate, after the final report and the optional operator view
+  merged): the full suite with every extra including `[ui]`, the 37 offline scenarios and the
+  dependency audit.
+
+Between the two, the only source changes are the new optional `procurement_agent/ui/` package
+and the version string. The extraction, retrieval, client, prompt, tool, agent and memory code
+is identical, so the live results recorded at `0496a03` apply to the release. Commits after
+`034257a` change only documentation and evidence. The raw output is in
 [`evidence/release/v1.0.0/`](evidence/release/v1.0.0/).
 
 | Check | Result |
 |---|---|
-| `pip install -e ".[dev]"`, then `pytest` | **452 passed**, 7 skipped (the optional extras), 0 failed |
-| `pip install -e ".[dev,rag,gemini]"`, policy index built, then `pytest` | **541 passed**, 0 skipped, 0 failed |
-| All 45 scenarios **including the 8 live Gemini scenarios** | **45/45 pass, 0 safety violations**; every live call ≤ 8.1 s (median 2.39 s) |
+| `pip install -e ".[dev]"`, then `pytest` (`034257a`) | **456 passed**, 8 skipped (the optional extras), 0 failed |
+| `pip install -e ".[dev,rag,gemini,ui]"`, policy index built, then `pytest` (`034257a`) | **548 passed**, 0 skipped, 0 failed |
+| 37 offline scenarios (`034257a`) | **37/37 pass, 0 safety violations** |
+| All 45 scenarios **including the 8 live Gemini scenarios** (`0496a03`) | **45/45 pass, 0 safety violations**; every live call ≤ 8.1 s (median 2.39 s) |
+| Dependency audit with every extra (`034257a`) | No known vulnerabilities apart from the documented exception below |
 | Agent run as in the README: stop at Gate 2, then confirm | Resumes from the checkpoint and compiles one DRAFT (4/8 iterations) |
 | Offline demo, no API key | Runs; writes only to `var/offline-demo/` |
 
@@ -56,9 +68,10 @@ Safety violations were 0 in every run.
 These are specified in the charter and requirements but out of reach in eight weeks. They are
 recorded, with their risks, in the [limitations register](docs/architecture/known-limitations.md):
 
-- **No user interface, authentication or database.** Gates are command-line flags; `--role` and
-  `--officer` are trusted (KL-02). Storage is local JSON/JSONL with no transactions or locking
-  (KL-03, KL-09, KL-10).
+- **No authentication, manager review screen or database.** The optional operator view is a
+  demonstration page over the same workflow; the role is chosen from a list, not a login, so
+  `--role`, `--officer` and the page's role are all trusted (KL-02). Storage is local JSON/JSONL
+  with no transactions or locking (KL-03, KL-09, KL-10).
 - **Gates 4 and 5 are not built** (submit, routing, manager approval and the Approval Record).
   Every run ends at `DRAFT`.
 - **The designed AI workflow is not fully integrated** (KL-04). The planner is deterministic;
@@ -78,6 +91,12 @@ text. Pillow is loaded by fastembed but no project input reaches its image decod
 CI ignores exactly those 35 IDs, listed with this reason and a removal condition in
 [`.github/pip-audit-exceptions.txt`](.github/pip-audit-exceptions.txt). Any other advisory still
 fails the build. Remove the exception once fastembed allows Pillow 13.
+
+## Fixed on release day
+
+PR #83 (the final report and the operator view) added a run's output record to the seed memory
+file `fixtures/memory/demo-memory.jsonl`, which broke two memory tests and left `main` red. The
+release restores the seed file to its reviewed contents.
 
 ## Known minor issue
 

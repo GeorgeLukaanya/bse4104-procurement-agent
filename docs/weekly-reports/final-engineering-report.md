@@ -671,7 +671,7 @@ The absence of purchase-order issuance, supplier contact, award, financial commi
 
 **Figure J4.** Week 3 RAG architecture ([`rag-architecture.md`](../architecture/rag-architecture.md)). Offline ingest builds a versioned index. At runtime the query is built from item, category and estimated total. Gemini explains only the clauses it was given. A citation that was not retrieved withholds that item.
 
-**What the officer actually sees.** There is no login. The command-line tools remain the operator interface (KL-02): identity and confirmation are trusted flags, not a session. The captures below are a live CLI run of the same cement review on 23 October 2026, against an isolated store so the evaluation evidence was not overwritten. An optional Streamlit view of the same loop follows as Figures J9 to J11.
+**What the officer actually sees.** There is no login. The command-line tools remain the operator interface (KL-02): identity and confirmation are trusted flags, not a session. The captures below are a live CLI run of the same cement review on 23 October 2026, against an isolated store so the evaluation evidence was not overwritten. An optional Streamlit view of the same loop follows as Figures J9 to J12.
 
 ![Officer run stops at Gate 2](../architecture/ui-awaiting-human.png)
 
@@ -689,16 +689,20 @@ The absence of purchase-order issuance, supplier contact, award, financial commi
 
 **Figure J8.** The manager's role is refused before any checkpoint is read (POL-004-C03). Approval is specified as a screen action; that screen was not built.
 
-The Streamlit page is an optional extra (`pip install -e ".[ui]"` then `procurement-ui`). The buttons call `run_workflow` with the same flags as the CLI. They do not bypass the dispatcher, and they do not approve. Mutable UI state is isolated under git-ignored `var/ui/`. This is not Gates 1, 4 or 5, and it does not close KL-02.
+The Streamlit page is an optional extra (`pip install -e ".[ui]"` then `procurement-ui`). It is laid out as the officer's week: a queue of the 11 flagged items with each one's status read from its checkpoint, the selected item with a five-step progress bar, and the one decision the officer owes in the middle of the screen. Every button calls `run_workflow` with the same flags as the CLI. They do not bypass the dispatcher, and they do not approve. Mutable UI state, including the exception reason the officer types, is isolated under git-ignored `var/ui/`. This is not Gates 1, 4 or 5, and it does not close KL-02.
 
 ![Streamlit run stops at Gate 2](../architecture/ui-web-awaiting-human.png)
 
-**Figure J9.** Optional operator view. **Run review** on cement. Stop `awaiting_human` after three tools. Reorder quantity 120 bags.
+**Figure J9.** Optional operator view, cement selected from the review queue. **Start review** stops `awaiting_human` at Gate 2 after three tools. The panel shows the ranked-first landed cost and the POL-001-C02 exception; **Confirm** stays disabled until the officer writes the reason for the exception. Notes from earlier reviews sit to the side and are marked advisory.
 
 ![Streamlit comparison table](../architecture/ui-web-comparison.png)
 
-**Figure J10.** The same run, Comparison tab. QT-002 ranked at **UGX 4,479,600**. Both Lakeview offers `NAME_DISCREPANCY`; QT-004 `BLACKLISTED`. POL-001-C02 exception required, draft not blocked.
+**Figure J10.** The same run, scrolled to the comparison. QT-002 ranked at **UGX 4,479,600**. Each excluded quotation is explained in a sentence, with the code kept beside it: both Lakeview offers `NAME_DISCREPANCY`, QT-004 `BLACKLISTED`.
 
 ![Streamlit DRAFT compiled](../architecture/ui-web-draft-created.png)
 
-**Figure J11.** A later **Run review** of the same cement item. `REQ-2026-001` is already in `DRAFT`, so no tool is called (FC-05). `routed_to` / `approved_by` / `decision` remain null. Unresolved issues travel with the record.
+**Figure J11.** After the officer confirms. `REQ-2026-001` is written in `DRAFT`; the progress bar is complete and the queue marks cement **Draft created**. The exception, its reason, the unresolved issues and the cited clauses travel with the draft. Submission and approval are shown as later human steps, not part of this release.
+
+![Streamlit exchange rate needed](../architecture/ui-web-exchange-rate.png)
+
+**Figure J12.** The safety helmet (`AH-HT-001`). QT-015 is in USD, so the run stops with `EXCHANGE_RATE_REQUIRED` (POL-003-C01) and asks for the rate and its effective date instead of guessing one. The expired QT-016 is listed and not compared.

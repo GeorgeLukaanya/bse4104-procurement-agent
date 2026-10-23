@@ -18,7 +18,7 @@
 
 ## 1. Executive summary
 
-Group Y built a bounded agentic system that helps a procurement officer in a small Ugandan trading business turn a weekly reorder review into a purchase requisition in `DRAFT` status, ready for a manager to approve. It is a Python package of about 9,000 lines with six command-line entry points, no application framework, and no runtime dependency; the Gemini SDK and the retrieval libraries are optional extras.
+Group Y built a bounded agentic system that helps a procurement officer in a small Ugandan trading business turn a weekly reorder review into a purchase requisition in `DRAFT` status, ready for a manager to approve. It is a Python package of about 9,000 lines with six command-line entry points, no required application framework, and no runtime dependency; the Gemini SDK, the retrieval libraries and an optional Streamlit operator view are extras.
 
 The design rests on one rule, fixed in the AI Boundary Matrix in Week 1 and unchanged since: **the model reads and writes language; deterministic code decides.** Gemini extracts eleven fields from a quotation document and explains retrieved policy clauses. Python computes every figure, checks every supplier, ranks every offer, and writes the only record the system can write. The model never calls a tool. No tool can approve, order, pay, or contact a supplier, because no such tool exists, and a static-analysis rule in CI fails the build if one is ever added.
 
@@ -199,7 +199,7 @@ A third run of the same command returns the existing requisition, calls no tool,
 
 **What this run does not do.** Gemini did not choose the next tool. Policy was not retrieved. The justification was not drafted by a model. The officer did not confirm extracted fields (Gate 1), retrieved clauses, or a model-written justification (Gate 3). The manager has no screen. Those are the designed phases in section 3.6. The recorded evaluation scores, including 0 safety violations, were taken against *this* four-step loop.
 
-**What the officer actually sees.** There is no web application and no login. The six commands *are* the interface (KL-02). The captures below are a live run of the same cement review on 23 October 2026, against an isolated store so the evaluation evidence was not overwritten.
+**What the officer actually sees.** There is no login. The six commands remain the operator interface (KL-02): identity and confirmation are trusted flags, not a session. The captures below are a live CLI run of the same cement review on 23 October 2026, against an isolated store so the evaluation evidence was not overwritten. An optional Streamlit view of the same loop follows as Figures 10–12.
 
 ![Officer run stops at Gate 2](../architecture/ui-awaiting-human.png)
 
@@ -217,9 +217,23 @@ A third run of the same command returns the existing requisition, calls no tool,
 
 **Figure 9.** The manager's role is refused before any checkpoint is read (POL-004-C03). Approval is specified as a screen action; that screen was not built.
 
-### 3.4 Why there is no framework
+The Streamlit page is an optional extra (`pip install -e ".[ui]"` then `procurement-ui`). The buttons call `run_workflow` with the same flags as the CLI. They do not bypass the dispatcher, and they do not approve. Mutable UI state is isolated under git-ignored `var/ui/`. This is not Gates 1, 4 or 5, and it does not close KL-02.
 
-`pyproject.toml` declares zero runtime dependencies. Django, FastAPI and Flask are absent because the charter has not chosen one and the Week 2 baseline was not allowed to force the decision. The package is importable, and every capability is reachable as a function with injected paths, so whatever interface the team picks later consumes the same code the tests do. The practical consequence is that `pip install -e ".[dev]"` and `pytest` work on a clean machine with no key, no network and no provider SDK.
+![Streamlit run stops at Gate 2](../architecture/ui-web-awaiting-human.png)
+
+**Figure 10.** Optional operator view. **Run review** on cement. Stop `awaiting_human` after three tools. Reorder quantity 120 bags.
+
+![Streamlit comparison table](../architecture/ui-web-comparison.png)
+
+**Figure 11.** The same run, Comparison tab. QT-002 ranked at **UGX 4,479,600**. Both Lakeview offers `NAME_DISCREPANCY`; QT-004 `BLACKLISTED`. POL-001-C02 exception required, draft not blocked.
+
+![Streamlit DRAFT compiled](../architecture/ui-web-draft-created.png)
+
+**Figure 12.** A later **Run review** of the same cement item. `REQ-2026-001` is already in `DRAFT`, so no tool is called (FC-05). `routed_to` / `approved_by` / `decision` remain null. Unresolved issues travel with the record.
+
+### 3.4 Why there is no required framework
+
+`pyproject.toml` declares zero runtime dependencies. Django, FastAPI and Flask are absent because the charter has not chosen one and the Week 2 baseline was not allowed to force the decision. Streamlit is an optional `[ui]` extra that wraps `run_workflow`; it is not a selected application framework and is not required to install, test or run the six commands. The package is importable, and every capability is reachable as a function with injected paths, so whatever interface the team picks later consumes the same code the tests do. The practical consequence is that `pip install -e ".[dev]"` and `pytest` work on a clean machine with no key, no network and no provider SDK.
 
 ### 3.5 The dispatcher is the only door
 

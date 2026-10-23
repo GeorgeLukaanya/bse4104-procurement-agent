@@ -23,7 +23,7 @@ gemini = ["google-genai>=2.23"]
 rag = ["qdrant-client>=1.10", "fastembed>=0.3"]
 # Optional operator view. The package itself still has no required framework;
 # this extra wraps run_workflow for a browser demonstration.
-ui = ["streamlit>=1.28"]
+ui = ["streamlit>=1.46"]
 dev = ["pytest>=7.0"]
 # Security and audit tools used by .github/workflows/ci.yml. Semgrep is
 # installed in CI only (it is a large extra); run it locally with

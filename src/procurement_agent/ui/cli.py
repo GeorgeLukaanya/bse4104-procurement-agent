@@ -25,6 +25,12 @@ def main() -> None:
         "run",
         str(app),
         "--browser.gatherUsageStats=false",
+        "--theme.base=light",
+        "--theme.primaryColor=#0B6B6B",
+        "--theme.backgroundColor=#F4F5F7",
+        "--theme.secondaryBackgroundColor=#FFFFFF",
+        "--theme.textColor=#1B1F24",
+        "--client.toolbarMode=viewer",
         *extra,
     ]
     stcli()

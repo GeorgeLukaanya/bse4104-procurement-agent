@@ -4,7 +4,7 @@
 **Group:** Y | **Week ending:** 2 October 2026 | **Version:** 1.0
 **Owner:** Beingana Jim Junior | **Prepared:** 9 October 2026
 **Repository:** [Group Y procurement agent](https://github.com/GeorgeLukaanya/bse4104-procurement-agent)
-**Tracker:** [Group Y ClickUp board](https://app.clickup.com/9012272120/v/s/90129079418)
+**Tracker:** [Group Y ClickUp board](https://sharing.clickup.com/9012272120/l/h/5-901213426906-1/31d463956153cf6)
 
 ## Introduction
 

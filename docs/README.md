@@ -2,7 +2,7 @@
 
 Course folders are the source of truth. Each week has five deliverables — one owned file per teammate. Do not add a second copy under a `weekN` folder.
 
-ClickUp board: [Group Y](https://app.clickup.com/9012272120/v/s/90129079418)
+ClickUp board: [Group Y](https://sharing.clickup.com/9012272120/l/h/5-901213426906-1/31d463956153cf6)
 
 ## Folders
 

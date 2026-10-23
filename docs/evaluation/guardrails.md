@@ -32,8 +32,8 @@ records it refusing, and the scenario that tests it.
 | Source | What it is |
 |---|---|
 | [`evidence/evaluation/week-07/guardrails.txt`](../../evidence/evaluation/week-07/guardrails.txt) | Runs A to R: each guardrail pushed, and what came back. Regenerate with `python tools/capture_guardrails.py --out evidence/evaluation/week-07/guardrails.txt` |
-| [`docs/evaluation/scenarios.md`](scenarios.md) | 45 scenarios, 42 pass, **0 safety violations**. 16 attack a guardrail |
-| `tests/` | 492 tests, all offline |
+| [`docs/evaluation/scenarios.md`](scenarios.md) | 45 scenarios, 44 pass, **0 safety violations**. 16 attack a guardrail |
+| `tests/` | 541 tests, all offline |
 
 Nothing here needs an API key, network or model. Every guardrail is deterministic, which is the
 point: a guardrail a model could talk its way past is not a guardrail.

@@ -103,7 +103,7 @@ Due dates are the Friday of each teaching week.
 | Observability / tracing evidence | [`docs/evaluation/observability.md`](evaluation/observability.md) | Beingana Jim Junior | Complete, awaiting team review |
 | Guardrail implementation evidence | [`docs/evaluation/guardrails.md`](evaluation/guardrails.md) | Sekyeza Elroy Nunda | Complete, awaiting team review |
 | Failure catalogue | [`docs/evaluation/failure-catalogue.md`](evaluation/failure-catalogue.md) | Ainamani Jim Isaac | Complete, awaiting team review |
-| Week 7 progress report | [`docs/weekly-reports/week-07.md`](weekly-reports/week-07.md) | Nannyombi Shakiran | Not started |
+| Week 7 progress report | [`docs/weekly-reports/week-07.md`](weekly-reports/week-07.md) | Nannyombi Shakiran | Draft for review |
 
 ## Week 8 — 23 October 2026
 
@@ -112,7 +112,7 @@ Due dates are the Friday of each teaching week.
 | Final engineering report | [`docs/weekly-reports/final-engineering-report.md`](weekly-reports/final-engineering-report.md) | Nannyombi Shakiran | Draft for review |
 | Presentation deck and live demonstration | [`docs/architecture/final-presentation.md`](architecture/final-presentation.md) | Ainamani Jim Isaac | Not started |
 | Hardening and known limitations | [`docs/architecture/known-limitations.md`](architecture/known-limitations.md) | Beingana Jim Junior | Complete locally; awaiting team review (20 Oct) |
-| Final evaluation / evidence pack | [`docs/evaluation/final-evidence-pack.md`](evaluation/final-evidence-pack.md) | Sekyeza Elroy Nunda | Not started |
+| Final evaluation / evidence pack | [`docs/evaluation/final-evidence-pack.md`](evaluation/final-evidence-pack.md) | Sekyeza Elroy Nunda | Complete, awaiting team review |
 | Tagged release + Week 8 progress report | [`README.md`](../README.md) run instructions + [`docs/weekly-reports/week-08.md`](weekly-reports/week-08.md) | Lukaanya George | Not started |
 
 ## ClickUp copy list

@@ -312,20 +312,33 @@ deletes supplier notes. Write-up:
 
 ## Optional operator view
 
-A Streamlit page over the same cement review. Buttons call `run_workflow`; they
-do not bypass the dispatcher, and they do not approve anything. Confirmations
-are the same trusted flags as `--confirm-comparison` and `--confirm-draft`.
-There is still no login (KL-02). Mutable UI state lives under git-ignored
-`var/ui/`, so a demonstration does not overwrite evaluation traces.
+A Streamlit page laid out as the officer's weekly review. Buttons call
+`run_workflow`; they do not bypass the dispatcher, and they do not approve
+anything. Confirmations are the same trusted flags as `--confirm-comparison`
+and `--confirm-draft`. There is still no login (KL-02). Mutable UI state lives
+under git-ignored `var/ui/` (override with `PROCUREMENT_UI_DIR`), so a
+demonstration does not overwrite evaluation traces.
 
 ```bash
-pip install -e ".[ui]"
-procurement-ui
+pip install -e ".[ui]"        # Streamlit 1.46 or later
+procurement-ui --server.address=localhost
 ```
 
-Open the printed local URL. **Run review** stops at Gate 2. **Confirm table and
-compile DRAFT** writes a requisition in `DRAFT`. Choosing the manager role is
-refused (POL-004-C03).
+Open the printed local URL.
+
+- **Review queue (left).** The 11 items at or below their reorder point, each
+  with its status read from its checkpoint: not started, needs your
+  confirmation, needs an exchange rate, no eligible offer, or draft created.
+- **Cement (`AH-CM-001`).** **Start review** stops at Gate 2. The panel shows
+  the ranked-first landed cost and the POL-001-C02 exception. **Confirm
+  comparison and compile draft** stays disabled until you write the reason for
+  the exception, then writes `REQ-2026-001` in `DRAFT`. The reason is kept in
+  `var/ui/exception-reasons.jsonl` beside the run, not inside the requisition.
+- **Safety helmet (`AH-HT-001`).** QT-015 is in USD, so the run asks for the
+  UGX rate and its effective date (POL-003-C01) before it compares.
+- **Side panel.** Notes from earlier reviews (advisory only) and "What the
+  agent did": run id, stop reason and every tool call.
+- Choosing the manager role in the sidebar is refused (POL-004-C03).
 
 ### What a run produces
 

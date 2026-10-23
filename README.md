@@ -454,10 +454,13 @@ The extraction package still does none of this arithmetic.
 
 | Path | Contents |
 |---|---|
-| `src/procurement_agent/` | Extraction, RAG and tools packages |
+| `src/procurement_agent/` | The package: extraction, `rag/`, `tools/`, `agent/`, `memory/` and the optional `ui/` |
 | `tests/` | Test suite — runs with no key, no network, no quota |
-| `fixtures/` | Synthetic quotation fixtures in Markdown |
+| `fixtures/` | Synthetic quotation fixtures in Markdown, the tool demo draft and the seed memory notes |
+| `contracts/` | The Agent Task Contract the agent loads at startup (limits, actions, stop reasons) |
 | `tools/offline_demo.py` | Drive the CLI with no key, no network, no quota |
+| `tools/run_scenarios.py` | The 45-scenario evaluation runner (offline, or `--live`) |
+| `tools/capture_guardrails.py` | Records the guardrail refusals used as Week 7 evidence |
 | `docs/README.md` | Week-by-week deliverable index, owners and ClickUp copy list |
 | `docs/requirements/` | Charter, user stories, AI boundary matrix |
 | `docs/architecture/` | Diagrams, model note, baseline, RAG and tools write-ups, tool catalogue, integration handover, CI map |
@@ -466,11 +469,14 @@ The extraction package still does none of this arithmetic.
 | `docs/evaluation/` | Prompt and later-week evaluation tables |
 | `docs/AI-ENGINEERING-LOG.md` | Material AI-assisted decisions, per brief section 6 |
 | `prompts/` | Versioned prompt specifications |
-| `evidence/` | Traces, screenshots, demo recordings |
+| `evidence/` | Traces, evaluation results, the release verification (`release/v1.0.0/`) and the presentation deck (`demo/`) |
 | `knowledge/corpus/` | The controlled 22-document synthetic corpus |
 | `knowledge/data/` | Operational records the tools read — inventory, suppliers, quotations |
 | `knowledge/source-register.csv` | Provenance and SHA-256 for every corpus document and dataset |
-| `evaluation-cases/` | Synthetic input documents for the prompt evaluation |
+| `evaluation-cases/` | Prompt-evaluation inputs (`TC-01`–`TC-10`) and the 45-scenario dataset (`week-07/`) |
+| `.github/` | CI workflow and the documented pip-audit exception |
+| `RELEASE_NOTES.md` | What v1.0.0 contains, how it was verified, and what was not built |
+| `var/` (git-ignored, created on first run) | Requisitions, run checkpoints, advisory memory and caches |
 
 | Module | Responsibility |
 |---|---|
@@ -504,6 +510,9 @@ The extraction package still does none of this arithmetic.
 | `agent/checkpoint.py` | Saves and restores run state so a re-run resumes |
 | `memory/store.py` | Advisory memory: prior outcomes and supplier notes, retention, deletion |
 | `memory/cli.py` | `procurement-memory` officer commands |
+| `ui/app.py` | Optional Streamlit operator view over `run_workflow` (`[ui]` extra) |
+| `ui/view.py` | Turns a workflow result into the tables and lines the page shows |
+| `ui/cli.py` | `procurement-ui` launcher |
 
 ## Specification
 

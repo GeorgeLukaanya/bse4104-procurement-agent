@@ -74,6 +74,12 @@ They are recorded in the limitations register and the release notes rather than 
 week the charter reserves for hardening. Every run ends at `DRAFT`, so no unbuilt control can be
 bypassed.
 
+**A dependency advisory arrived on release day.** pip-audit reported 35 advisories in Pillow
+12.3.0, fixed only in Pillow 13, which fastembed does not yet allow. The project never decodes an
+image, so CI now ignores exactly those 35 IDs, recorded with the reason and a removal condition
+in `.github/pip-audit-exceptions.txt`, and still fails on any other advisory. The exception is
+listed in the [release notes](../../RELEASE_NOTES.md#known-security-exception).
+
 **Deliverables outside the repository are hard to verify.** The presentation and, at the time of
 writing, the final report are not in the repository. The deliverable index and the issues are
 the only shared record of their state.

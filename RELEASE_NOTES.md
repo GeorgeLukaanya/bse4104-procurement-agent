@@ -67,6 +67,18 @@ recorded, with their risks, in the [limitations register](docs/architecture/know
 - **No document conversion or OCR.** Extraction starts from converted Markdown (KL-08).
 - **Synthetic data only.** The free-tier model key must not receive real supplier data.
 
+## Known security exception
+
+On release day the dependency audit (pip-audit) reported **35 advisories in Pillow 12.3.0**. All
+are fixed in Pillow 13.0.0, but Pillow comes in through fastembed (the `rag` extra), and even the
+latest fastembed (0.9.0) requires `pillow<13`, so the fix cannot be installed. The project uses
+only fastembed's text embedder and never decodes an image: every input is Markdown or policy
+text. Pillow is loaded by fastembed but no project input reaches its image decoders.
+
+CI ignores exactly those 35 IDs, listed with this reason and a removal condition in
+[`.github/pip-audit-exceptions.txt`](.github/pip-audit-exceptions.txt). Any other advisory still
+fails the build. Remove the exception once fastembed allows Pillow 13.
+
 ## Known minor issue
 
 The offline demo labels its scripted record `source: live call`, because to the extraction

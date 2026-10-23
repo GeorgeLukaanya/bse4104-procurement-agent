@@ -629,7 +629,7 @@ before merge, and every team member can explain the work submitted under their n
 
 ## Task board
 
-ClickUp: [Group Y board](https://app.clickup.com/9012272120/v/s/90129079418)
+ClickUp: [Group Y board](https://sharing.clickup.com/9012272120/l/h/5-901213426906-1/31d463956153cf6)
 
 Weekly deliverables, owners and GitHub paths: [`docs/README.md`](docs/README.md). Copy the ClickUp list from that file onto the board, one list per week.
 

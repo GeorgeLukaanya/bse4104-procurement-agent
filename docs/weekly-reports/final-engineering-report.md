@@ -12,7 +12,7 @@
 
 **Repository:** [GeorgeLukaanya/bse4104-procurement-agent](https://github.com/GeorgeLukaanya/bse4104-procurement-agent) | **Release:** [v1.0.0](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/releases/tag/v1.0.0)
 
-**Tracker:** [Group Y ClickUp board](https://app.clickup.com/9012272120/v/s/90129079418) | [GitHub issues](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues)
+**Tracker:** [Group Y ClickUp board](https://sharing.clickup.com/9012272120/l/h/5-901213426906-1/31d463956153cf6) | [GitHub issues](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues)
 
 Version 2.0 condenses version 1.4 (written by Nannyombi Shakiran) to the template's 8 to 12 pages, excluding appendices, and updates the results to the v1.0.0 release check. Detail removed from the body is kept in Appendices E to J. Condensed by Lukaanya George.
 

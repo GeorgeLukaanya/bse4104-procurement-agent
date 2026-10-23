@@ -188,7 +188,14 @@ jobs:
           python -m pip install -U pip setuptools
           pip install -e ".[dev,gemini,rag]" pip-audit
       - name: Audit installed packages
-        run: pip-audit --skip-editable
+        # Exceptions, with their reason and removal condition, are listed in
+        # .github/pip-audit-exceptions.txt. Any advisory not listed there fails.
+        run: |
+          args=()
+          while read -r id; do
+            [ -n "$id" ] && args+=(--ignore-vuln "$id")
+          done < <(grep -v '^#' .github/pip-audit-exceptions.txt)
+          pip-audit --skip-editable "${args[@]}"
 
   secrets-hygiene:
     name: Secrets not committed

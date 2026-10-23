@@ -71,7 +71,7 @@ Add more rules there as Week 4 tools land (for example: no HTTP client in a tool
 ## If a check fails and you think it is wrong
 
 - **Bandit / Semgrep:** read the finding. Bandit is set to report medium and high only (`-ll`), so a lone `assert` in `client.py` does not fail CI. If a finding is a false positive, document why in the PR; skip one line with `# nosec` (Bandit) or `nosemgrep` (Semgrep) — not a blanket disable.
-- **pip-audit:** pin or upgrade the package. Do not ignore a CVE in `google-genai` without writing it in the AI engineering log.
+- **pip-audit:** pin or upgrade the package. Do not ignore a CVE in `google-genai` without writing it in the AI engineering log. When an upgrade is impossible because another dependency pins the old version, add the advisory IDs to [`.github/pip-audit-exceptions.txt`](../../.github/pip-audit-exceptions.txt) with the package, the date, the reason and the condition for removing them. CI ignores exactly those IDs and still fails on anything else. The current entries are 35 Pillow 12.3.0 advisories, held back by fastembed (23 October 2026).
 - **Behind main:** merge main; do not skip the job.
 
 ## Evidence for the course

@@ -1,0 +1,47 @@
+# pip-audit exceptions. Each line below the comments is one advisory ID that CI
+# deliberately does not fail on. Anything not listed here still fails the build.
+#
+# Package:  pillow 12.3.0 (transitive, via fastembed in the `rag` extra)
+# Added:    23 October 2026, for the v1.0.0 release. Agreed by the team lead.
+# Why:      All 35 advisories are fixed in pillow 13.0.0, but fastembed (latest
+#           0.9.0) requires pillow<13, so the fix cannot be installed. The
+#           project uses only fastembed's TextEmbedding and never decodes an
+#           image: every input is Markdown or policy text. Pillow is imported
+#           by fastembed but no project input reaches its image decoders.
+# Remove:   As soon as a fastembed release allows pillow>=13. Then delete this
+#           block, upgrade, and let pip-audit run clean.
+CVE-2026-112390
+CVE-2026-112391
+CVE-2026-112392
+CVE-2026-112393
+CVE-2026-112395
+CVE-2026-112396
+CVE-2026-112397
+CVE-2026-112399
+CVE-2026-112400
+CVE-2026-112401
+CVE-2026-112402
+CVE-2026-112404
+CVE-2026-112405
+CVE-2026-112406
+CVE-2026-112891
+CVE-2026-112892
+CVE-2026-112893
+CVE-2026-112894
+CVE-2026-112895
+CVE-2026-112896
+CVE-2026-112897
+CVE-2026-112899
+CVE-2026-112900
+CVE-2026-112901
+CVE-2026-96636
+CVE-2026-96637
+CVE-2026-96638
+CVE-2026-96639
+CVE-2026-96640
+CVE-2026-96641
+CVE-2026-96642
+CVE-2026-96643
+CVE-2026-96644
+CVE-2026-96778
+GHSA-78g4-xqwv-q3g8

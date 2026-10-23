@@ -15,9 +15,11 @@ purchase order, contacts a supplier, commits funds or approves anything itself.
 
 ## Status
 
-**Week 8 of 8 — hardening and known limitations.**
+**v1.0.0 — final course release, 23 October 2026.** What is in it, how it was verified
+and what was deliberately left out: [`RELEASE_NOTES.md`](RELEASE_NOTES.md). The evidence
+index for markers is the [final evaluation and evidence pack](docs/evaluation/final-evidence-pack.md).
 
-The current command-line components are:
+The command-line components are:
 
 - **Quotation extraction** (Week 2) — takes a Converted Quotation Document in
   Markdown and returns a validated eleven-field Normalised Quotation record.
@@ -34,6 +36,10 @@ The current command-line components are:
 - **Persistent state and advisory memory** (Week 6) — resumes interrupted reviews,
   prevents ordinary completed-run duplicates and shows prior outcomes and supplier notes.
   Write-up: [`docs/architecture/working-memory.md`](docs/architecture/working-memory.md).
+- **Evaluation and guardrails** (Week 7) — a 45-scenario evaluation across normal, edge,
+  incorrect-information, adversarial, tool-failure and unauthorized-action cases, run
+  offline in CI and live against Gemini. At the release: 45/45 pass, 0 safety violations.
+  Write-up: [`docs/evaluation/scenarios.md`](docs/evaluation/scenarios.md).
 
 The agent-task contract and persistent state are implemented. Policy retrieval and
 quotation extraction still run separately from the deterministic agent workflow;
@@ -48,8 +54,9 @@ view is available as the `[ui]` extra; it calls the same `run_workflow` the CLI 
 
 ## Quick start
 
-Requires Python 3.10 or newer. Week 8 hardening was verified on 3.11; 3.10 is
-the floor declared in `pyproject.toml` but was not tested in this review.
+Requires Python 3.10 or newer. Verified on 3.11 (Week 8 hardening) and on 3.14.7
+(the v1.0.0 release check, from a fresh clone). 3.10 is the floor declared in
+`pyproject.toml` but was not tested.
 
 ```bash
 git clone https://github.com/GeorgeLukaanya/bse4104-procurement-agent.git
@@ -355,6 +362,26 @@ calls only** — cache hits made no request, and counting them would misrepresen
 what the model costs. With no live calls it says so rather than printing a
 figure.
 
+## Evaluate it (Week 7)
+
+The 45-scenario evaluation runs the real entry points and scores task completion, tool
+selection, instruction following, groundedness, latency and safety.
+
+```bash
+python tools/run_scenarios.py --output-dir var/eval     # 37 offline scenarios, no key, seconds
+
+pip install -e ".[dev,rag,gemini]"
+python -m procurement_agent.rag.ingest                  # build the policy index once
+python tools/run_scenarios.py --live --output-dir var/eval   # all 45; about 8 Gemini calls
+```
+
+`--output-dir` keeps your run separate from the recorded evidence. The recorded release run
+is in [`evidence/release/v1.0.0/scenarios/`](evidence/release/v1.0.0/scenarios/). CI re-runs
+the 37 offline scenarios on every push and fails if any outcome changes. Write-ups:
+[scenarios](docs/evaluation/scenarios.md), [guardrails](docs/evaluation/guardrails.md),
+[failure catalogue](docs/evaluation/failure-catalogue.md),
+[observability](docs/evaluation/observability.md).
+
 ## Troubleshooting
 
 | Symptom | Cause and fix |
@@ -536,6 +563,8 @@ Live calls have been made. These figures are recorded, not estimated:
 | Extraction latency (v1.4) | median 3.2218s, worst 15.6125s | same |
 | RAG case pass rate | 13 of 15 | `docs/evaluation/rag-evaluation.md` |
 | RAG requisition latency | 42.01s on one Gemini call | `evidence/traces/rag-weekly-reorder-run.txt` |
+| 45-scenario evaluation at the v1.0.0 release, including 8 live | 45 of 45 pass, 0 safety violations; live calls median 2.39s, worst 8.05s | `evidence/release/v1.0.0/scenarios/` |
+| Same evaluation, 19 October | 44 of 45 (S-38 hit the 30s deadline) | `evidence/evaluation/week-07-final/` |
 
 **FC-08 and FC-09 are fixed as of 17 October 2026.** TC-04 and S-41 both return
 exactly `each`. S-41, S-44 and S-45 passed together at 5.9860s, 2.5054s and
@@ -549,7 +578,8 @@ Still unknown:
 
 - Actual free-tier rate limits (RPM, TPM, RPD) for our project — read them from the
   AI Studio rate limit view and record the date
-- Whether the tool contracts hold in implementation — no tool is built yet
+- Repeated-run reliability of the live model: each live scenario has been run a handful of
+  times, not enough for a reliability estimate (limitation KL-12)
 
 See `docs/AI-ENGINEERING-LOG.md`.
 

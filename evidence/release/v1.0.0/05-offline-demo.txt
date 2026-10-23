@@ -1,0 +1,22 @@
+$ python tools/offline_demo.py fixtures/01-clean-table-ugx.md   (no key)
+OFFLINE DEMO — scripted backend, no API call was made.
+Latency below is a simulated sleep, not a measurement of the model, and the records
+are hand-written. Extraction accuracy remains unverified.
+
+========================================================================
+fixtures/01-clean-table-ugx.md
+========================================================================
+status              : OK
+source              : live call
+latency             : 0.050s  (1 attempt(s))
+cache key           : 394d220b3cf5717b…
+
+quotation-level fields
+  supplier name           : Nakawa Building Supplies Ltd
+  currency                : UGX
+  VAT treatment           : exclusive
+  VAT rate (%)            : 18
+  delivery/freight cost   : 250000
+  lead time (days)        : 5
+  validity date           : 2026-10-02
+(exit 0)

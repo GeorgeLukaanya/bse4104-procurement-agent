@@ -1,0 +1,9 @@
+$ git log --oneline -1
+0496a03 Merge pull request #81 from GeorgeLukaanya/ft/final-evidence-pack
+$ python --version
+Python 3.14.7
+$ pip install -e ".[dev]"
+$ python -m pytest -q   (base install)
+452 passed
+7 skipped (optional extras not installed)
+0 failed

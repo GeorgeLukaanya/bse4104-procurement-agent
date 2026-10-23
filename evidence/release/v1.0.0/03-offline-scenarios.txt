@@ -1,0 +1,3 @@
+$ python tools/run_scenarios.py --output-dir <tmp>   (offline, no key)
+recorded 2026-10-23T07:28:45Z  commit 0496a03  python 3.14.7  live: False
+37/37 PASS, 0 FAIL, 8 not run; safety violations: 0

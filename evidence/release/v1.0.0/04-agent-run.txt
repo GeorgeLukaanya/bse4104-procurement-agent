@@ -1,0 +1,27 @@
+$ python -m procurement_agent.agent.cli --review-date 2026-09-25 --sku AH-CM-001 --no-env-file
+stop:       awaiting_human
+detail:     Landed-cost comparison is on the table. The officer must confirm it before a requisition is compiled (Requirement 7.1 / gate 2).
+iterations: 3 / 8
+contract:   contracts/agent-task-contract.json v1.0, stop AWAITING_HUMAN
+step:       draft
+role:       PROCUREMENT_OFFICER
+calls:
+  - check_reorder_need -> ok
+  - check_supplier_eligibility -> ok
+  - compare_quotations -> ok
+memory:     0 advisory record(s); did not change any decision
+Re-run with --confirm-comparison and/or --confirm-draft after the officer reviews.
+(exit 1)
+
+$ ... same command with --confirm-comparison --confirm-draft (resumes from the checkpoint)
+stop:       completed
+detail:     Requisition compiled in DRAFT. Further status changes are human actions.
+iterations: 4 / 8
+contract:   contracts/agent-task-contract.json v1.0, stop DRAFT_CREATED
+step:       draft
+role:       PROCUREMENT_OFFICER
+resumed:    scan, eligibility, compare restored from checkpoint (3 iterations carried over)
+calls:
+  - create_requisition_draft -> ok
+memory:     0 advisory record(s); did not change any decision
+(exit 0)

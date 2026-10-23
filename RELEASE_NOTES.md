@@ -7,6 +7,15 @@ The final course release. It prepares a weekly reorder review up to a purchase r
 Run instructions are in the [README](README.md). The evidence index for markers is the
 [final evaluation and evidence pack](docs/evaluation/final-evidence-pack.md).
 
+## Since v1.0.0 (on `main`, not tagged)
+
+- The optional operator view was redesigned around the officer's review queue (PR #86): item
+  statuses from checkpoints, a five-step progress bar, a required exception reason before the
+  Gate 2 confirmation, an exchange-rate form for USD quotations, and plain-language exclusion
+  reasons. It still calls only `run_workflow`. The `[ui]` extra now needs `streamlit>=1.46`.
+  554 tests pass with all extras. The agent, tools, contract and evaluation results are unchanged.
+- The final engineering report's Figures J9 to J11 show the new screens; Figure J12 is new.
+
 ## What is in this release
 
 | Capability | Week | Write-up |

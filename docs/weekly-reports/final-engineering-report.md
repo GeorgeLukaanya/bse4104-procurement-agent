@@ -10,7 +10,7 @@
 
 **Members:** Sekyeza Elroy Nunda, Lukaanya George, Ainamani Jim Isaac, Beingana Jim Junior, Nannyombi Shakiran
 
-**Repository:** [GeorgeLukaanya/bse4104-procurement-agent](https://github.com/GeorgeLukaanya/bse4104-procurement-agent) | **Release:** [v1.0.0](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/releases/tag/v1.0.0)
+**Repository:** [GeorgeLukaanya/bse4104-procurement-agent](https://github.com/GeorgeLukaanya/bse4104-procurement-agent) | **Release:** [v1.0.1](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/releases/tag/v1.0.1)
 
 **Tracker:** [Group Y ClickUp board](https://sharing.clickup.com/9012272120/l/h/5-901213426906-1/31d463956153cf6) | [GitHub issues](https://github.com/GeorgeLukaanya/bse4104-procurement-agent/issues)
 

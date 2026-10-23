@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "procurement-agent"
-version = "1.0.0"
+version = "1.0.1"
 description = "Quotation field extraction baseline for the SME Procurement-Preparation Agent"
 requires-python = ">=3.10"
 # No application framework. Project Charter v1.1 has not chosen one, and Week 2

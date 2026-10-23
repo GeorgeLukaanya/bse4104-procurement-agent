@@ -1,0 +1,27 @@
+v1.0.1 release check. Patch on v1.0.0: redesigned optional operator view
+(PR #86), final report figures J9 to J12, final panel deck (PR #87), and the
+version string.
+
+Fresh clone of branch release-v1.0.1 at aab7138, Python 3.14.7, new venvs.
+
+$ pip install -e ".[dev]"; pytest
+460 passed, 8 skipped (optional extras not installed), 0 failed
+
+$ pip install -e ".[dev,rag,gemini,ui]"; python -m procurement_agent.rag.ingest; pytest
+554 passed, 0 skipped, 0 failed
+
+$ python tools/run_scenarios.py --output-dir <tmp>   (offline, no key)
+recorded 2026-10-23T09:45:01Z  commit aab7138  python 3.14.7  live: False
+37/37 PASS, 0 FAIL, 8 not run; safety violations: 0
+
+$ python -m pip install -U pip setuptools   (as CI does)
+$ pip-audit --skip-editable --ignore-vuln <35 IDs in .github/pip-audit-exceptions.txt>
+  (with the [ui] extra installed as well as dev, rag and gemini)
+No known vulnerabilities found, 35 ignored
+
+Live scenarios: the 45-scenario live run in ../v1.0.0/scenarios/ still
+applies. Between v1.0.0 and aab7138 there are no changes to
+src/procurement_agent/{agent,tools,rag,memory},
+src/procurement_agent/{client,extract,prompts,config}.py, tools, contracts,
+knowledge, prompts, evaluation-cases or fixtures
+(git diff --stat v1.0.0 aab7138 -- <those paths>: empty).

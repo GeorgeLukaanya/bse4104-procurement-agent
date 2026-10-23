@@ -199,6 +199,24 @@ A third run of the same command returns the existing requisition, calls no tool,
 
 **What this run does not do.** Gemini did not choose the next tool. Policy was not retrieved. The justification was not drafted by a model. The officer did not confirm extracted fields (Gate 1), retrieved clauses, or a model-written justification (Gate 3). The manager has no screen. Those are the designed phases in section 3.6. The recorded evaluation scores, including 0 safety violations, were taken against *this* four-step loop.
 
+**What the officer actually sees.** There is no web application and no login. The six commands *are* the interface (KL-02). The captures below are a live run of the same cement review on 23 October 2026, against an isolated store so the evaluation evidence was not overwritten.
+
+![Officer run stops at Gate 2](../architecture/ui-awaiting-human.png)
+
+**Figure 6.** First command. Scan, eligibility and comparison run. The loop stops at Gate 2 with exit 1. Three advisory memory notes are shown and do not change the ranking.
+
+![Landed-cost comparison](../architecture/ui-comparison.png)
+
+**Figure 7.** The comparison the officer is asked to confirm. QT-002 is the only ranked offer, at **UGX 4,479,600**. The two Lakeview quotations are `NAME_DISCREPANCY`; the cheapest headline price is `BLACKLISTED`. POL-001-C02 still requires three eligible quotations, so `exception_required` is true.
+
+![Officer confirms and a DRAFT is written](../architecture/ui-draft-created.png)
+
+**Figure 8.** The same command with `--confirm-comparison --confirm-draft`. The checkpoint restores the three completed steps. Only `create_requisition_draft` runs. Stop `completed`, exit 0. The isolated store received `REQ-2026-001` in `DRAFT`.
+
+![Manager cannot operate the loop](../architecture/ui-manager-refused.png)
+
+**Figure 9.** The manager's role is refused before any checkpoint is read (POL-004-C03). Approval is specified as a screen action; that screen was not built.
+
 ### 3.4 Why there is no framework
 
 `pyproject.toml` declares zero runtime dependencies. Django, FastAPI and Flask are absent because the charter has not chosen one and the Week 2 baseline was not allowed to force the decision. The package is importable, and every capability is reachable as a function with injected paths, so whatever interface the team picks later consumes the same code the tests do. The practical consequence is that `pip install -e ".[dev]"` and `pytest` work on a clean machine with no key, no network and no provider SDK.

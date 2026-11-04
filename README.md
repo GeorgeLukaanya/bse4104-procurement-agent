@@ -17,86 +17,58 @@ purchase order, contacts a supplier, commits funds or approves anything itself.
 
 ```mermaid
 flowchart TB
-    officer(["Procurement officer"]):::human
-    manager(["Procurement manager"]):::human
+    officer(["Procurement officer<br/>starts the weekly review"]):::human
 
-    subgraph extraction["1. Quotation extraction · calls Gemini"]
-        direction TB
-        qdoc[/"Supplier quotation<br/>PDF or Word, text layer"/]
-        conv["Convert to Markdown<br/>cached on content + config fingerprint"]
-        ext["extract.py + prompts.py<br/>schema-constrained decoding, temperature 0"]:::model
-        rec["Normalised quotation record<br/>schema-validated, guard-scanned"]
+    agent["The agent<br/>a bounded loop under a written task contract<br/>fixed step order, hard limits, a named reason for every stop"]:::core
+
+    subgraph cap["What it is allowed to do"]
+        direction LR
+        read["Read supplier<br/>quotations<br/><b>AI</b>"]:::ai
+        find["Find the policy<br/>that applies<br/><b>AI</b>"]:::ai
+        calc["Work out costs and<br/>check eligibility<br/><b>code only</b>"]:::code
+        mem["Recall what happened<br/>last time<br/><b>advisory only</b>"]:::code
     end
 
-    subgraph policy["2. Policy retrieval · calls Gemini · this is the RAG part"]
-        direction TB
-        corp[("Policy corpus<br/>23 documents, chunked by clause")]
-        idx[("Vector index<br/>Qdrant + BAAI/bge-small-en-v1.5")]
-        ret["retriever.py<br/>two searches, score cutoffs, top_k 5"]
-        grd["grounding.py + citations.py<br/>every clause cited or stated absent"]:::model
-    end
+    data[("Governed data<br/>policy corpus, inventory, suppliers, held quotations<br/>every file checksummed before it is read")]:::data
 
-    subgraph agentloop["3. Bounded agent loop · no model at all"]
-        direction TB
-        plan["planner.py<br/>deterministic, fixed charter order"]
-        disp["dispatch.py<br/>step allow-list + role check + output schema"]
-        t1["check_reorder_need"]
-        t2["check_supplier_eligibility"]
-        t3["compare_quotations<br/>all arithmetic lives here"]
-        t4["create_requisition_draft"]
-    end
+    out["A requisition in DRAFT<br/>with the figures, the clauses and an audit trail"]:::out
 
-    data[("Registered data<br/>inventory, suppliers, quotations<br/>SHA-256 in the source register")]
-    gate2{{"Officer confirms<br/>the landed-cost comparison"}}:::gate
-    gate3{{"Officer confirms<br/>compilation"}}:::gate
-    draft["Requisition in DRAFT<br/>the only status this system writes"]:::out
-    trace[("Traces, checkpoints and<br/>advisory memory, append-only")]
+    manager(["Procurement manager<br/>approves or sends it back"]):::human
 
-    qdoc --> conv --> ext --> rec --> data
-    corp --> idx --> ret --> grd
+    guards["Checked on every single call<br/>who is asking, which tool is allowed now,<br/>and whether the answer is the shape it must be"]:::guard
 
-    officer --> plan
-    plan --> disp
-    disp --> t1
-    disp --> t2
-    disp --> t3
-    disp --> t4
-    data --> t1
-    data --> t2
-    data --> t3
-    grd -.->|"applicable clauses"| t3
-    t3 --> gate2
-    gate2 --> gate3
-    gate3 --> t4
-    t4 --> draft
-    draft --> manager
-    agentloop --> trace
+    officer --> agent
+    agent --> cap
+    cap --> data
+    agent --> out
+    out --> manager
+    guards -.- agent
 
     classDef human fill:#DCE9FC,stroke:#14499F,color:#0E2439
-    classDef model fill:#FBEEDA,stroke:#B06A00,color:#0E2439
-    classDef gate fill:#FBE4E1,stroke:#B3372C,color:#0E2439
+    classDef core fill:#FFFFFF,stroke:#14499F,stroke-width:2px,color:#0E2439
+    classDef ai fill:#FBEEDA,stroke:#B06A00,color:#0E2439
+    classDef code fill:#ECF2FA,stroke:#41566E,color:#0E2439
+    classDef data fill:#F6F9FD,stroke:#7E93AC,color:#0E2439
     classDef out fill:#DCF2E9,stroke:#0E7C5A,color:#0E2439
+    classDef guard fill:#FBE4E1,stroke:#B3372C,color:#0E2439
 ```
 
-**How to read it.** Only the two amber boxes call a model. Everything in lane 3
-is deterministic: `planner.py` chooses the next tool from a fixed order and the
-loop calls no model at all, which is why a whole run finishes in milliseconds
-and why the same inputs always give the same result. All arithmetic, every
-eligibility check and the approval routing sit in lane 3 as well.
+The agent prepares; a person decides. Of the four things it may do, two use a
+model and two never do: the arithmetic and the eligibility rules are ordinary
+code, so the same inputs always give the same answer. The loop itself calls no
+model at all.
 
-Lane 2 is the retrieval-augmented part, and it is one subsystem rather than the
-shape of the whole system. Lane 1 is the other model path. The two red gates are
-human confirmations: the loop stops at each and will not continue until the
-officer acts, and nothing is written before the second one.
+It stops and waits for the officer twice, and nothing is written until the
+second time. DRAFT is the only status it can write, so a requisition reaches the
+manager and goes no further without a human.
 
-The manager approves outside all three lanes. No tool can move a requisition
-past DRAFT.
-
-Diagrams for each lane on its own: [system
+Each box in more detail: [system
 context](docs/architecture/context-diagram.md), [updated
 architecture](docs/architecture/architecture.md), [bounded
 agent](docs/architecture/agent-architecture.md), [RAG
-pipeline](docs/architecture/rag-architecture.md).
+pipeline](docs/architecture/rag-architecture.md), [task
+contract](docs/requirements/agent-task-contract.md), [AI boundary
+matrix](docs/requirements/ai-boundary-matrix.md).
 
 ## Status
 

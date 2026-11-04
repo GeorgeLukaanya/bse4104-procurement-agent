@@ -52,6 +52,20 @@ def test_the_discard_envelope_itself_conforms(tmp_path, monkeypatch):
     assert output_schema.check("check_reorder_need", result) == []
 
 
+def test_an_installed_copy_finds_schemas_from_the_repository(tmp_path, monkeypatch):
+    """Site-packages is not four parents above a checkout.
+
+    Streamlit Cloud installs the package into the interpreter, so the
+    historical schema path does not exist. The files remain in the cloned
+    repository, which is the working directory.
+    """
+    missing = tmp_path / "venv" / "lib" / "python3.12" / "docs" / "architecture" / "schemas"
+    monkeypatch.setattr(output_schema, "_DEFAULT_SCHEMA_DIR", missing)
+    monkeypatch.setattr(output_schema, "SCHEMA_DIR", missing)
+    schema = output_schema.load("check_reorder_need")
+    assert "properties" in schema
+
+
 def test_a_missing_schema_fails_closed(tmp_path, monkeypatch):
     monkeypatch.setattr(output_schema, "SCHEMA_DIR", tmp_path / "nowhere")
     result = invoke(

@@ -25,7 +25,39 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-SCHEMA_DIR = Path(__file__).resolve().parents[3] / "docs" / "architecture" / "schemas"
+_SCHEMA_MARKER = Path("docs") / "architecture" / "schemas"
+# A source checkout keeps this file at src/procurement_agent/tools/. Four
+# parents up is the repository, and the schemas sit there. An installed copy
+# lives under site-packages, so the same climb lands inside the interpreter
+# (the Streamlit Cloud failure: .../python3.12/docs/architecture/schemas).
+_DEFAULT_SCHEMA_DIR = Path(__file__).resolve().parents[3] / _SCHEMA_MARKER
+SCHEMA_DIR = _DEFAULT_SCHEMA_DIR
+
+
+def resolve_schema_dir() -> Path:
+    """Where the published ``*.output.json`` files are.
+
+    An explicit ``SCHEMA_DIR`` override is used as given, including when it
+    does not exist, so a missing schema still fails closed. The default path
+    is kept when it contains the contract. Otherwise the working directory
+    and this file are walked until ``docs/architecture/schemas`` is found.
+    """
+    chosen = Path(SCHEMA_DIR)
+    if chosen != _DEFAULT_SCHEMA_DIR:
+        return chosen
+    if (chosen / "check_reorder_need.output.json").is_file():
+        return chosen
+    seen: set[Path] = set()
+    starts = [Path.cwd().resolve(), Path(__file__).resolve().parent]
+    for start in starts:
+        for parent in (start, *start.parents):
+            if parent in seen:
+                continue
+            seen.add(parent)
+            candidate = parent / _SCHEMA_MARKER
+            if (candidate / "check_reorder_need.output.json").is_file():
+                return candidate
+    return chosen
 
 _ANNOTATIONS = {"$schema", "$id", "title", "description", "format", "default", "examples"}
 _SUPPORTED = _ANNOTATIONS | {
@@ -40,7 +72,8 @@ class SchemaUnavailable(RuntimeError):
 
 @lru_cache(maxsize=None)
 def load(tool_name: str, schema_dir: str | None = None) -> dict[str, Any]:
-    path = Path(schema_dir or SCHEMA_DIR) / f"{tool_name}.output.json"
+    directory = Path(schema_dir) if schema_dir is not None else resolve_schema_dir()
+    path = directory / f"{tool_name}.output.json"
     try:
         return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:

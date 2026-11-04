@@ -15,6 +15,46 @@ purchase order, contacts a supplier, commits funds or approves anything itself.
 
 ## Architecture
 
+### What it talks to
+
+```mermaid
+flowchart TB
+    officer(["<b>Procurement officer</b><br/>prepares the weekly reorder.<br/>Nothing happens unless they start it."]):::human
+    manager(["<b>Procurement manager</b><br/>holds the financial authority.<br/>Reads and decides, cannot edit."]):::human
+
+    system["<b>SME Procurement-Preparation Agent</b><br/>turns a weekly reorder review into a policy-compliant<br/>purchase requisition, ready for a person to approve.<br/>All data it holds is synthetic and team-authored."]:::system
+
+    gemini[["<b>Gemini API</b><br/>the only service outside this machine.<br/>Used to read quotations and to find policy."]]:::ext
+
+    never["<b>Deliberately not connected</b><br/>no ERP, no live stock system, no supplier contact,<br/>no purchase order, no payment"]:::never
+
+    officer -->|"starts a review, confirms the figures twice"| system
+    system -->|"a requisition in DRAFT, with an audit trail"| manager
+    manager -->|"approves, or sends it back with a reason"| system
+    system -->|"document text and policy questions"| gemini
+    system -.->|"by design, not by omission"| never
+
+    classDef human fill:#DCE9FC,stroke:#14499F,color:#0E2439
+    classDef system fill:#FFFFFF,stroke:#14499F,stroke-width:2px,color:#0E2439
+    classDef ext fill:#FBEEDA,stroke:#B06A00,color:#0E2439
+    classDef never fill:#FBE4E1,stroke:#B3372C,stroke-dasharray:4 4,color:#0E2439
+```
+
+Two people and one outside service. The officer starts every run and confirms
+twice; the agent never acts on a schedule or on its own. The manager is the only
+one who can take a requisition past DRAFT, and that decision is recorded rather
+than reported.
+
+The red box is the point of the project. Everything it would take to actually
+spend money sits outside the boundary and is not wired up, which is a design
+decision and not an unfinished edge.
+
+Full write-up, including the data the system holds:
+[context-diagram.md](docs/architecture/context-diagram.md).
+
+### What is inside it
+
+
 ```mermaid
 flowchart TB
     officer(["Procurement officer<br/>starts the weekly review"]):::human

@@ -20,7 +20,7 @@ purchase order, contacts a supplier, commits funds or approves anything itself.
 ```mermaid
 flowchart TB
     officer(["<b>Procurement officer</b><br/>prepares the weekly reorder.<br/>Nothing happens unless they start it."]):::human
-    manager(["<b>Procurement manager</b><br/>holds the financial authority.<br/>Reads and decides, cannot edit."]):::human
+    manager(["<b>Procurement manager</b><br/>holds the financial authority.<br/>Approval happens outside this release."]):::pending
 
     system["<b>SME Procurement-Preparation Agent</b><br/>turns a weekly reorder review into a policy-compliant<br/>purchase requisition, ready for a person to approve.<br/>All data it holds is synthetic and team-authored."]:::system
 
@@ -29,8 +29,7 @@ flowchart TB
     never["<b>Deliberately not connected</b><br/>no ERP, no live stock system, no supplier contact,<br/>no purchase order, no payment"]:::never
 
     officer -->|"starts a review, confirms the figures twice"| system
-    system -->|"a requisition in DRAFT, with an audit trail"| manager
-    manager -->|"approves, or sends it back with a reason"| system
+    system -.->|"a requisition in DRAFT, handed over by hand"| manager
     system -->|"document text and policy questions"| gemini
     system -.->|"by design, not by omission"| never
 
@@ -38,12 +37,19 @@ flowchart TB
     classDef system fill:#FFFFFF,stroke:#14499F,stroke-width:2px,color:#0E2439
     classDef ext fill:#FBEEDA,stroke:#B06A00,color:#0E2439
     classDef never fill:#FBE4E1,stroke:#B3372C,stroke-dasharray:4 4,color:#0E2439
+    classDef pending fill:#FFFFFF,stroke:#7E93AC,stroke-dasharray:4 4,color:#41566E
 ```
 
 Two people and one outside service. The officer starts every run and confirms
-twice; the agent never acts on a schedule or on its own. The manager is the only
-one who can take a requisition past DRAFT, and that decision is recorded rather
-than reported.
+twice; the agent never acts on a schedule or on its own.
+
+The manager is drawn with a dashed border because that half is not built. The
+charter asks for a dedicated review screen and this release does not have one.
+`create_requisition_draft` writes `routed_to`, `approved_by` and `decision` as
+null and the output schema types all three as `null`, so no tool can set them
+even in principle. A finished requisition is handed over by hand, and approval
+happens outside this release. Do not promise a live approval in a demonstration:
+there is nothing to click.
 
 The red box is the point of the project. Everything it would take to actually
 spend money sits outside the boundary and is not wired up, which is a design
@@ -73,7 +79,7 @@ flowchart TB
 
     out["A requisition in DRAFT<br/>with the figures, the clauses and an audit trail"]:::out
 
-    manager(["Procurement manager<br/>approves or sends it back"]):::human
+    manager(["Procurement manager<br/>approval happens outside this release"]):::pending
 
     guards["Checked on every single call<br/>who is asking, which tool is allowed now,<br/>and whether the answer is the shape it must be"]:::guard
 
@@ -81,7 +87,7 @@ flowchart TB
     agent --> cap
     cap --> data
     agent --> out
-    out --> manager
+    out -.-> manager
     guards -.- agent
 
     classDef human fill:#DCE9FC,stroke:#14499F,color:#0E2439
@@ -91,6 +97,7 @@ flowchart TB
     classDef data fill:#F6F9FD,stroke:#7E93AC,color:#0E2439
     classDef out fill:#DCF2E9,stroke:#0E7C5A,color:#0E2439
     classDef guard fill:#FBE4E1,stroke:#B3372C,color:#0E2439
+    classDef pending fill:#FFFFFF,stroke:#7E93AC,stroke-dasharray:4 4,color:#41566E
 ```
 
 The agent prepares; a person decides. Of the four things it may do, two use a
@@ -99,8 +106,8 @@ code, so the same inputs always give the same answer. The loop itself calls no
 model at all.
 
 It stops and waits for the officer twice, and nothing is written until the
-second time. DRAFT is the only status it can write, so a requisition reaches the
-manager and goes no further without a human.
+second time. DRAFT is the only status it can write, and nothing in this release
+can write any other, so a requisition goes no further on its own.
 
 Each box in more detail: [system
 context](docs/architecture/context-diagram.md), [updated

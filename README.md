@@ -13,6 +13,91 @@ procurement policy and drafts a written justification. Deterministic code perfor
 all arithmetic, eligibility checks and approval routing. The system never issues a
 purchase order, contacts a supplier, commits funds or approves anything itself.
 
+## Architecture
+
+```mermaid
+flowchart TB
+    officer(["Procurement officer"]):::human
+    manager(["Procurement manager"]):::human
+
+    subgraph extraction["1. Quotation extraction · calls Gemini"]
+        direction TB
+        qdoc[/"Supplier quotation<br/>PDF or Word, text layer"/]
+        conv["Convert to Markdown<br/>cached on content + config fingerprint"]
+        ext["extract.py + prompts.py<br/>schema-constrained decoding, temperature 0"]:::model
+        rec["Normalised quotation record<br/>schema-validated, guard-scanned"]
+    end
+
+    subgraph policy["2. Policy retrieval · calls Gemini · this is the RAG part"]
+        direction TB
+        corp[("Policy corpus<br/>23 documents, chunked by clause")]
+        idx[("Vector index<br/>Qdrant + BAAI/bge-small-en-v1.5")]
+        ret["retriever.py<br/>two searches, score cutoffs, top_k 5"]
+        grd["grounding.py + citations.py<br/>every clause cited or stated absent"]:::model
+    end
+
+    subgraph agentloop["3. Bounded agent loop · no model at all"]
+        direction TB
+        plan["planner.py<br/>deterministic, fixed charter order"]
+        disp["dispatch.py<br/>step allow-list + role check + output schema"]
+        t1["check_reorder_need"]
+        t2["check_supplier_eligibility"]
+        t3["compare_quotations<br/>all arithmetic lives here"]
+        t4["create_requisition_draft"]
+    end
+
+    data[("Registered data<br/>inventory, suppliers, quotations<br/>SHA-256 in the source register")]
+    gate2{{"Officer confirms<br/>the landed-cost comparison"}}:::gate
+    gate3{{"Officer confirms<br/>compilation"}}:::gate
+    draft["Requisition in DRAFT<br/>the only status this system writes"]:::out
+    trace[("Traces, checkpoints and<br/>advisory memory, append-only")]
+
+    qdoc --> conv --> ext --> rec --> data
+    corp --> idx --> ret --> grd
+
+    officer --> plan
+    plan --> disp
+    disp --> t1
+    disp --> t2
+    disp --> t3
+    disp --> t4
+    data --> t1
+    data --> t2
+    data --> t3
+    grd -.->|"applicable clauses"| t3
+    t3 --> gate2
+    gate2 --> gate3
+    gate3 --> t4
+    t4 --> draft
+    draft --> manager
+    agentloop --> trace
+
+    classDef human fill:#DCE9FC,stroke:#14499F,color:#0E2439
+    classDef model fill:#FBEEDA,stroke:#B06A00,color:#0E2439
+    classDef gate fill:#FBE4E1,stroke:#B3372C,color:#0E2439
+    classDef out fill:#DCF2E9,stroke:#0E7C5A,color:#0E2439
+```
+
+**How to read it.** Only the two amber boxes call a model. Everything in lane 3
+is deterministic: `planner.py` chooses the next tool from a fixed order and the
+loop calls no model at all, which is why a whole run finishes in milliseconds
+and why the same inputs always give the same result. All arithmetic, every
+eligibility check and the approval routing sit in lane 3 as well.
+
+Lane 2 is the retrieval-augmented part, and it is one subsystem rather than the
+shape of the whole system. Lane 1 is the other model path. The two red gates are
+human confirmations: the loop stops at each and will not continue until the
+officer acts, and nothing is written before the second one.
+
+The manager approves outside all three lanes. No tool can move a requisition
+past DRAFT.
+
+Diagrams for each lane on its own: [system
+context](docs/architecture/context-diagram.md), [updated
+architecture](docs/architecture/architecture.md), [bounded
+agent](docs/architecture/agent-architecture.md), [RAG
+pipeline](docs/architecture/rag-architecture.md).
+
 ## Status
 
 **Week 8 of 8 — hardening and known limitations.**
